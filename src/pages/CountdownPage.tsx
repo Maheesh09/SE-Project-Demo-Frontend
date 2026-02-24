@@ -8,7 +8,7 @@ import { Rocket, Mail, ArrowRight, Sparkles, BookOpen } from "lucide-react";
    🎯 CUSTOMIZE YOUR LAUNCH DATE HERE
    Format: "YYYY-MM-DDTHH:MM:SS" (local time)
    ─────────────────────────────────────────────── */
-const LAUNCH_DATE = new Date("2026-04-01T00:00:00");
+const LAUNCH_DATE = new Date("2026-05-01T12:00:00");
 
 interface TimeLeft {
     days: number;
