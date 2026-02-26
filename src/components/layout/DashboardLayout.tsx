@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  BookOpen, LayoutDashboard, Trophy, StickyNote, Calendar, BarChart3,
+  LayoutDashboard, Trophy, StickyNote, Calendar, BarChart3,
   Settings, LogOut, ChevronLeft, ChevronRight
 } from "lucide-react";
 
@@ -24,15 +24,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="flex min-h-screen w-full bg-background">
       {/* Sidebar */}
       <aside
-        className={`${
-          collapsed ? "w-16" : "w-64"
-        } bg-primary flex flex-col transition-all duration-300 sticky top-0 h-screen`}
+        className={`${collapsed ? "w-16" : "w-64"
+          } bg-primary flex flex-col transition-all duration-300 sticky top-0 h-screen`}
       >
         {/* Logo */}
         <div className="h-16 flex items-center px-4 gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center flex-shrink-0">
-            <BookOpen className="w-4 h-4 text-primary-foreground" />
-          </div>
+          <img src="/logo.png" alt="MindUp Logo" className="w-8 h-8 object-contain flex-shrink-0" />
           {!collapsed && <span className="text-lg font-bold text-primary-foreground">MindUp</span>}
         </div>
 
@@ -44,11 +41,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               <Link
                 key={item.url}
                 to={item.url}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
-                  active
-                    ? "bg-accent text-accent-foreground"
-                    : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
-                }`}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${active
+                  ? "bg-accent text-accent-foreground"
+                  : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                  }`}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {!collapsed && <span>{item.title}</span>}

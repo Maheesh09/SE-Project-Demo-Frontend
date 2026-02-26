@@ -2,7 +2,7 @@ import { useState, useEffect, FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Rocket, Mail, ArrowRight, Sparkles, BookOpen } from "lucide-react";
+import { Rocket, Mail, ArrowRight, Sparkles } from "lucide-react";
 
 /* ───────────────────────────────────────────────
    🎯 CUSTOMIZE YOUR LAUNCH DATE HERE
@@ -42,7 +42,7 @@ const FlipCard = ({ value, label }: { value: number; label: string }) => (
     >
         <div className="relative group">
             {/* Glow effect */}
-            <div className="absolute -inset-1 bg-gradient-to-br from-sage/30 to-clay/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute -inset-1 bg-gradient-to-br from-[#A3B18A]/30 to-[#F59E0B]/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             <div className="relative w-[60px] h-[70px] sm:w-[80px] sm:h-[92px] md:w-[110px] md:h-[120px] rounded-lg sm:rounded-xl overflow-hidden backdrop-blur-xl bg-white/10 border border-white/20 shadow-xl flex items-center justify-center">
                 {/* Top shine */}
@@ -138,9 +138,9 @@ const CountdownPage = () => {
     return (
         <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* ── Background ── */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1a2a1a] via-[#1e2d1e] to-[#2a1f1a]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(76_35%_25%/0.3)_0%,_transparent_60%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_hsl(28_70%_30%/0.15)_0%,_transparent_50%)]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1a2216] via-[#1a1b1a] to-[#261b11]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(163,177,138,0.25)_0%,_transparent_60%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_rgba(245,158,11,0.15)_0%,_transparent_50%)]" />
 
             {/* Grid pattern */}
             <div
@@ -171,18 +171,13 @@ const CountdownPage = () => {
                     className="mb-6 sm:mb-8"
                 >
                     <div className="flex items-center justify-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-sage to-sage-dark flex items-center justify-center shadow-lg shadow-sage/20">
-                            <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                        </div>
+                        <img src="/logo.png" alt="MindUp Logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
                         <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                            Mind<span className="text-clay">Up</span>
+                            Mind<span className="text-[#fab646]">Up</span>
                         </h2>
                     </div>
 
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                        <Sparkles className="w-3.5 h-3.5 text-clay" />
-                        <span className="text-sm text-white/60 font-medium">Smart Learning Platform</span>
-                    </div>
+
                 </motion.div>
 
                 {/* Headline */}
@@ -194,9 +189,9 @@ const CountdownPage = () => {
                 >
                     <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-white leading-tight mb-3 sm:mb-4 px-2">
                         {isLaunched ? (
-                            <>We're <span className="text-transparent bg-clip-text bg-gradient-to-r from-sage to-clay">Live!</span></>
+                            <>We're <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#A3B18A] to-[#F59E0B]">Live!</span></>
                         ) : (
-                            <>Something <span className="text-transparent bg-clip-text bg-gradient-to-r from-sage to-clay">Amazing</span> is Coming</>
+                            <>Something <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#fab646] to-[#fab646]">Amazing</span> is Coming</>
                         )}
                     </h1>
                     <p className="text-base sm:text-lg md:text-xl text-white/50 max-w-lg mx-auto leading-relaxed px-2">
@@ -233,15 +228,15 @@ const CountdownPage = () => {
                 >
                     {isSubmitted ? (
                         <div className="flex flex-col items-center gap-3 px-6 py-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-                            <div className="w-12 h-12 rounded-full bg-sage/20 flex items-center justify-center">
-                                <Rocket className="w-6 h-6 text-sage" />
+                            <div className="w-12 h-12 rounded-full bg-[#A3B18A]/20 flex items-center justify-center">
+                                <Rocket className="w-6 h-6 text-[#A3B18A]" />
                             </div>
                             <p className="text-white font-semibold">You're on the list!</p>
                             <p className="text-sm text-white/50">We'll send you an email when MindUp launches.</p>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="relative">
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-2 p-3 sm:p-1.5 rounded-2xl sm:rounded-full bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl shadow-black/20 focus-within:border-sage/40 transition-colors duration-300">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-2 p-3 sm:p-1.5 rounded-2xl sm:rounded-full bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl shadow-black/20 focus-within:border-[#F59E0B]/40 transition-colors duration-300">
                                 <div className="flex items-center gap-2 flex-1">
                                     <div className="pl-2 sm:pl-4">
                                         <Mail className="w-5 h-5 text-white/30" />
@@ -258,7 +253,7 @@ const CountdownPage = () => {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl sm:rounded-full bg-gradient-to-r from-sage to-sage-dark text-white font-semibold text-sm sm:text-base shadow-lg shadow-sage/20 hover:shadow-sage/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                    className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl sm:rounded-full bg-gradient-to-r from-[#809c4f] to-[#809c4f] text-white font-semibold text-sm sm:text-base shadow-lg shadow-[#F59E0B]/20 hover:shadow-[#F59E0B]/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                                 >
                                     {isSubmitting ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
