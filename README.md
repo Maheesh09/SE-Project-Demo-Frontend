@@ -1,73 +1,88 @@
-# Welcome to your Lovable project
+# MINDUP — Level Up Your Mind 🧠
 
-## Project info
+A gamified self-learning platform that makes education feel like playing. Built with modern web technologies and designed with a premium, animated UI.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**🌐 Domain:** [mindup.lk](https://mindup.lk)
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## ✨ Features
 
-**Use Lovable**
+- **Gamified Learning** — XP, badges, streaks, and leaderboards
+- **AI-Powered Tutor** — Personalized learning paths that adapt to your pace
+- **Weekly Leaderboard** — Compete with learners and earn real merch rewards
+- **Clerk Authentication** — Secure login/signup with Google, email, and more
+- **Countdown Page** — Coming soon page at `/countdown`
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## 🛠 Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+| Technology        | Purpose                  |
+| ----------------- | ------------------------ |
+| **React 18**      | UI framework             |
+| **TypeScript**    | Type safety              |
+| **Vite**          | Build tool & dev server  |
+| **Tailwind CSS**  | Utility-first styling    |
+| **Framer Motion** | Animations & transitions |
+| **Clerk**         | Authentication           |
+| **shadcn/ui**     | UI components            |
+| **Lucide React**  | Icons                    |
 
-**Use your preferred IDE**
+## 🎨 Design
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Background:** `#f7f5df` (warm cream)
+- **Accent:** `#acd663` (fresh green)
+- **Text:** Dark black/gray on light background
+- **Style:** Glassmorphism, micro-animations, hover effects, floating orbs
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🚀 Getting Started
 
-Follow these steps:
+```bash
+# Clone the repo
+git clone https://github.com/Maheesh09/SE-Project-Demo-Frontend.git
+cd SE-Project-Demo-Frontend
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Set up environment variables
+# Create a .env file with your Clerk publishable key:
+# VITE_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start dev server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 📁 Project Structure
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+src/
+├── components/
+│   ├── Navbar.tsx           # Navigation with Clerk auth
+│   ├── HeroSection.tsx      # Hero with typing animation buttons
+│   ├── AboutSection.tsx     # "Why MINDUP?" features section
+│   ├── EventsSection.tsx    # Leaderboard + merch rewards
+│   ├── BlogsSection.tsx     # Testimonials carousel
+│   ├── BoardSection.tsx     # Pricing (it's all free!)
+│   └── ContactSection.tsx   # Footer with newsletter
+├── pages/
+│   ├── Index.tsx            # Main landing page
+│   ├── Countdown.tsx        # Coming soon countdown
+│   └── NotFound.tsx         # 404 page
+└── App.tsx                  # Routes + ClerkProvider
+```
 
-**Use GitHub Codespaces**
+## 📦 Deployment
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+npm run build
+```
 
-## What technologies are used for this project?
+Deploy the `dist/` folder to Vercel, Netlify, or Cloudflare Pages, then point your domain DNS accordingly.
 
-This project is built with:
+## 👨‍💻 Team
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+MINDUP — by SEDS SLIIT
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+© 2026 MINDUP. All rights reserved.
