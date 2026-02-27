@@ -44,7 +44,7 @@ const FlipCard = ({ value, label }: { value: number; label: string }) => (
             {/* Glow effect */}
             <div className="absolute -inset-1 bg-gradient-to-br from-[#A3B18A]/30 to-[#F59E0B]/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-            <div className="relative w-[60px] h-[70px] sm:w-[80px] sm:h-[92px] md:w-[110px] md:h-[120px] rounded-lg sm:rounded-xl overflow-hidden backdrop-blur-xl bg-white/10 border border-white/20 shadow-xl flex items-center justify-center">
+            <div className="relative w-[60px] h-[70px] sm:w-[80px] sm:h-[92px] md:w-[110px] md:h-[120px] rounded-lg sm:rounded-xl overflow-hidden backdrop-blur-xl bg-amber-50/10 border border-amber-100/20 shadow-xl flex items-center justify-center">
                 {/* Top shine */}
                 <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent" />
 
@@ -66,7 +66,7 @@ const FlipCard = ({ value, label }: { value: number; label: string }) => (
 /* ── Floating Particle ── */
 const FloatingParticle = ({ delay, size, x, y }: { delay: number; size: number; x: string; y: string }) => (
     <motion.div
-        className="absolute rounded-full bg-white/5"
+        className="absolute rounded-full bg-amber-100/10"
         style={{ width: size, height: size, left: x, top: y }}
         animate={{
             y: [0, -30, 0],
@@ -138,9 +138,10 @@ const CountdownPage = () => {
     return (
         <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* ── Background ── */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1a2216] via-[#1a1b1a] to-[#261b11]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(163,177,138,0.25)_0%,_transparent_60%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_rgba(245,158,11,0.15)_0%,_transparent_50%)]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#2B2318] via-[#1E1B12] to-[#261E14]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(210,190,150,0.18)_0%,_transparent_60%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_rgba(172,214,99,0.12)_0%,_transparent_55%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(230,210,170,0.08)_0%,_transparent_50%)]" />
 
             {/* Grid pattern */}
             <div
@@ -173,7 +174,7 @@ const CountdownPage = () => {
                     <div className="flex items-center justify-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
                         <img src="/logo.png" alt="MindUp Logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
                         <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                            Mind<span className="text-[#fab646]">Up</span>
+                            Mind<span className="text-[#acd663]">Up</span>
                         </h2>
                     </div>
 
@@ -191,7 +192,7 @@ const CountdownPage = () => {
                         {isLaunched ? (
                             <>We're <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#A3B18A] to-[#F59E0B]">Live!</span></>
                         ) : (
-                            <>Something <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#fab646] to-[#fab646]">Amazing</span> is Coming</>
+                            <>Something <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#acd663] to-[#acd663]">Amazing</span> is Coming</>
                         )}
                     </h1>
                     <p className="text-base sm:text-lg md:text-xl text-white/50 max-w-lg mx-auto leading-relaxed px-2">
