@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MINDUP | Coming Soon</title>
+  <meta name="description" content="MINDUP is launching soon. A gamified self-learning platform. Level Up Your Mind." />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #f7f5df;
+      color: #141414;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Floating background orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.12;
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite;
+    }
+    .orb-1 { width: 400px; height: 400px; background: #acd663; top: -100px; left: -100px; animation-delay: 0s; }
+    .orb-2 { width: 300px; height: 300px; background: #acd663; bottom: -80px; right: -80px; animation-delay: 3s; }
+    .orb-3 { width: 200px; height: 200px; background: #ffb347; top: 40%; right: 10%; animation-delay: 5s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-30px) scale(1.05); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 2rem;
+      max-width: 640px;
+      width: 100%;
+    }
+
+    /* Logo */
+    .logo {
+      height: 60px;
+      margin-bottom: 2rem;
+      animation: fadeDown 1s ease forwards;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Heading */
+    .heading {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.2rem, 6vw, 3.5rem);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      animation: fadeUp 0.8s 0.2s ease forwards;
+      opacity: 0;
+    }
+    .heading .highlight {
+      color: #acd663;
+    }
+
+    .subtext {
+      font-size: 1.1rem;
+      color: rgba(20, 20, 20, 0.55);
+      font-weight: 500;
+      margin-bottom: 3rem;
+      animation: fadeUp 0.8s 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Countdown */
+    .countdown {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+      animation: fadeUp 0.8s 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    .countdown-block {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 16px;
+      padding: 1.2rem 1rem;
+      min-width: 80px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .countdown-block:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(255, 149, 0, 0.12);
+    }
+
+    .countdown-number {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 2.5rem;
+      line-height: 1;
+      color: #141414;
+    }
+
+    .countdown-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(20, 20, 20, 0.4);
+      margin-top: 0.4rem;
+    }
+
+    /* Email form */
+    .email-form {
+      display: flex;
+      gap: 0.5rem;
+      max-width: 400px;
+      margin: 0 auto 1.5rem;
+      animation: fadeUp 0.8s 0.8s ease forwards;
+      opacity: 0;
+    }
+
+    .email-input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      color: #141414;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .email-input::placeholder { color: rgba(20, 20, 20, 0.3); }
+    .email-input:focus { border-color: #acd663; }
+
+    .notify-btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      border: none;
+      background: #acd663;
+      color: #000;
+      font-weight: 700;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+    .notify-btn:hover {
+      background: #96ba50;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 149, 0, 0.3);
+    }
+
+    .note {
+      font-size: 0.8rem;
+      color: rgba(20, 20, 20, 0.35);
+      animation: fadeUp 0.8s 1s ease forwards;
+      opacity: 0;
+    }
+
+    /* Success message */
+    .success-msg {
+      color: #acd663;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .success-msg.show { display: block; }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .countdown { gap: 0.6rem; }
+      .countdown-block { min-width: 65px; padding: 1rem 0.7rem; }
+      .countdown-number { font-size: 1.8rem; }
+      .email-form { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="container">
+    <img src="logo.png" alt="MINDUP Logo" class="logo" />
+
+    <h1 class="heading">
+      Something Big Is <span class="highlight">Coming</span>
+    </h1>
+    <p class="subtext">Level Up Your Mind — launching soon</p>
+
+    <div class="countdown" id="countdown">
+      <div class="countdown-block">
+        <div class="countdown-number" id="days">00</div>
+        <div class="countdown-label">Days</div>
+      </div>
+      <div class="countdown-block">
+        <div class="countdown-number" id="hours">00</div>
+        <div class="countdown-label">Hours</div>
+      </div>
+      <div class="countdown-block">
+        <div class="countdown-number" id="minutes">00</div>
+        <div class="countdown-label">Minutes</div>
+      </div>
+      <div class="countdown-block">
+        <div class="countdown-number" id="seconds">00</div>
+        <div class="countdown-label">Seconds</div>
+      </div>
+    </div>
+
+    <div class="success-msg" id="successMsg">You're on the list! We'll notify you at launch.</div>
+
+    <form class="email-form" id="emailForm">
+      <input type="email" class="email-input" placeholder="your@email.com" required />
+      <button type="submit" class="notify-btn">Notify Me</button>
+    </form>
+
+    <p class="note">Be the first to know when we go live.</p>
+  </div>
+
+  <script>
+    // Set launch date — change this to your actual launch date
+    const launchDate = new Date('2025-04-15T00:00:00').getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const diff = launchDate - now;
+
+      if (diff <= 0) {
+        document.getElementById('days').textContent = '00';
+        document.getElementById('hours').textContent = '00';
+        document.getElementById('minutes').textContent = '00';
+        document.getElementById('seconds').textContent = '00';
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      document.getElementById('days').textContent = String(days).padStart(2, '0');
+      document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+      document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+      document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Email form
+    document.getElementById('emailForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      this.style.display = 'none';
+      document.getElementById('successMsg').classList.add('show');
+    });
+  </script>
+</body>
+</html>
