@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
+import { Trophy } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
-import LeaderboardRow from "@/components/LeaderboardRow";
+import AnimatedList from "@/components/AnimatedList";
 
 const leaderboard = [
   { rank: 1, name: "Sarah K.", xp: 3200, level: 15 },
@@ -16,6 +17,32 @@ const leaderboard = [
 ];
 
 const LeaderboardPage = () => {
+  const items = leaderboard.map((entry) => (
+    <div className="flex items-center gap-4" key={entry.rank}>
+      <div className="w-9 flex justify-center">
+        {entry.rank <= 3 ? (
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            entry.rank === 1 ? 'gradient-accent' : entry.rank === 2 ? 'bg-muted' : 'gradient-primary'
+          }`}>
+            <Trophy className="w-4 h-4 text-primary-foreground" />
+          </div>
+        ) : (
+          <span className="text-sm font-bold text-muted-foreground">#{entry.rank}</span>
+        )}
+      </div>
+      <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-muted text-muted-foreground">
+        {entry.name[0]}
+      </div>
+      <div className="flex-1">
+        <p className={`text-sm font-semibold ${entry.isYou ? 'text-primary' : 'text-foreground'}`}>
+          {entry.name}
+        </p>
+        <p className="text-xs text-muted-foreground">Level {entry.level}</p>
+      </div>
+      <span className="text-sm font-bold text-foreground">{entry.xp.toLocaleString()} XP</span>
+    </div>
+  ));
+
   return (
     <AppLayout>
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -26,18 +53,14 @@ const LeaderboardPage = () => {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="glass rounded-2xl p-4 max-w-2xl mx-auto space-y-1"
+        className="glass rounded-2xl p-4 max-w-2xl mx-auto"
       >
-        {leaderboard.map((entry, i) => (
-          <motion.div
-            key={entry.rank}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 + i * 0.04 }}
-          >
-            <LeaderboardRow {...entry} />
-          </motion.div>
-        ))}
+        <AnimatedList
+          items={items}
+          showGradients={true}
+          enableArrowNavigation={true}
+          displayScrollbar={true}
+        />
       </motion.div>
     </AppLayout>
   );

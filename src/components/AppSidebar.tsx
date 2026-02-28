@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { LayoutDashboard, BookOpen, Brain, Trophy, BarChart3, MessageCircle, Settings, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import mindupLogo from "@/assets/mindup-logo.png";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -18,10 +19,8 @@ const AppSidebar = () => {
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-64 gradient-sidebar flex flex-col z-50">
       {/* Logo */}
-      <div className="px-6 py-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-          <Zap className="w-5 h-5 text-primary-foreground" />
-        </div>
+      <div className="px-6 py-5 flex items-center gap-3">
+        <img src={mindupLogo} alt="MindUp" className="w-10 h-10 rounded-xl" />
         <span className="text-xl font-display font-bold text-sidebar-accent-foreground">MindUp</span>
       </div>
 
@@ -29,10 +28,10 @@ const AppSidebar = () => {
       <div className="mx-4 mb-6 p-4 rounded-xl bg-sidebar-accent">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
-            L
+            U
           </div>
           <div>
-            <p className="text-sm font-semibold text-sidebar-accent-foreground">Learner</p>
+            <p className="text-sm font-semibold text-sidebar-accent-foreground">User</p>
             <p className="text-xs text-sidebar-foreground">Level 12</p>
           </div>
         </div>
@@ -73,7 +72,6 @@ const AppSidebar = () => {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="px-6 py-4 text-xs text-sidebar-foreground/50">
         2026 MindUp Learning
       </div>

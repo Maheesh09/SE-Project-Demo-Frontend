@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import chatbotOwl from "@/assets/chatbot-owl.png";
 
 interface Message {
   role: "bot" | "user";
@@ -28,6 +29,7 @@ const ChatbotPage = () => {
     <AppLayout>
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3 mb-6">
+          <img src={chatbotOwl} alt="AI Chatbot" className="w-10 h-10 object-contain" />
           <h1 className="text-3xl font-display font-bold text-foreground">AI Chatbot</h1>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
@@ -37,7 +39,6 @@ const ChatbotPage = () => {
       </motion.div>
 
       <div className="glass rounded-2xl flex flex-col" style={{ height: "calc(100vh - 180px)" }}>
-        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.map((msg, i) => (
             <motion.div
@@ -46,6 +47,9 @@ const ChatbotPage = () => {
               animate={{ opacity: 1, y: 0 }}
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
+              {msg.role === "bot" && (
+                <img src={chatbotOwl} alt="Bot" className="w-8 h-8 object-contain mr-2 flex-shrink-0 mt-1" />
+              )}
               <div
                 className={`max-w-md px-4 py-3 rounded-2xl text-sm ${
                   msg.role === "user"
@@ -59,7 +63,6 @@ const ChatbotPage = () => {
           ))}
         </div>
 
-        {/* Input */}
         <div className="p-4 border-t border-border">
           <div className="flex gap-3">
             <input

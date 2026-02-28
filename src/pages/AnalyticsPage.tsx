@@ -47,18 +47,11 @@ const AnalyticsPage = () => {
           <h3 className="font-display font-bold text-foreground mb-4">Subject Scores</h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={subjectScores}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 90%)" />
-              <XAxis dataKey="subject" tick={{ fontSize: 12, fill: "hsl(220 10% 50%)" }} />
-              <YAxis tick={{ fontSize: 12, fill: "hsl(220 10% 50%)" }} />
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(0 0% 100%)",
-                  border: "1px solid hsl(220 15% 90%)",
-                  borderRadius: "12px",
-                  fontSize: "13px",
-                }}
-              />
-              <Bar dataKey="score" fill="hsl(172 66% 40%)" radius={[6, 6, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(40 15% 85%)" />
+              <XAxis dataKey="subject" tick={{ fontSize: 12, fill: "hsl(30 10% 50%)" }} />
+              <YAxis tick={{ fontSize: 12, fill: "hsl(30 10% 50%)" }} />
+              <Tooltip contentStyle={{ background: "hsl(40 25% 97%)", border: "1px solid hsl(40 15% 85%)", borderRadius: "12px", fontSize: "13px" }} />
+              <Bar dataKey="score" fill="hsl(100 25% 55%)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
@@ -72,10 +65,10 @@ const AnalyticsPage = () => {
           <h3 className="font-display font-bold text-foreground mb-4">Skill Radar</h3>
           <ResponsiveContainer width="100%" height={250}>
             <RadarChart data={radarData}>
-              <PolarGrid stroke="hsl(220 15% 90%)" />
-              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: "hsl(220 10% 50%)" }} />
-              <PolarRadiusAxis tick={{ fontSize: 10, fill: "hsl(220 10% 50%)" }} />
-              <Radar dataKey="value" stroke="hsl(172 66% 40%)" fill="hsl(172 66% 40%)" fillOpacity={0.2} />
+              <PolarGrid stroke="hsl(40 15% 85%)" />
+              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: "hsl(30 10% 50%)" }} />
+              <PolarRadiusAxis tick={{ fontSize: 10, fill: "hsl(30 10% 50%)" }} />
+              <Radar dataKey="value" stroke="hsl(100 25% 55%)" fill="hsl(100 25% 55%)" fillOpacity={0.2} />
             </RadarChart>
           </ResponsiveContainer>
         </motion.div>
@@ -90,18 +83,11 @@ const AnalyticsPage = () => {
         <h3 className="font-display font-bold text-foreground mb-4">Weekly XP Progress</h3>
         <ResponsiveContainer width="100%" height={250}>
           <AreaChart data={weeklyXP}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 90%)" />
-            <XAxis dataKey="week" tick={{ fontSize: 12, fill: "hsl(220 10% 50%)" }} />
-            <YAxis tick={{ fontSize: 12, fill: "hsl(220 10% 50%)" }} />
-            <Tooltip
-              contentStyle={{
-                background: "hsl(0 0% 100%)",
-                border: "1px solid hsl(220 15% 90%)",
-                borderRadius: "12px",
-                fontSize: "13px",
-              }}
-            />
-            <Area type="monotone" dataKey="xp" stroke="hsl(15 85% 58%)" fill="hsl(15 85% 58%)" fillOpacity={0.1} strokeWidth={2} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(40 15% 85%)" />
+            <XAxis dataKey="week" tick={{ fontSize: 12, fill: "hsl(30 10% 50%)" }} />
+            <YAxis tick={{ fontSize: 12, fill: "hsl(30 10% 50%)" }} />
+            <Tooltip contentStyle={{ background: "hsl(40 25% 97%)", border: "1px solid hsl(40 15% 85%)", borderRadius: "12px", fontSize: "13px" }} />
+            <Area type="monotone" dataKey="xp" stroke="hsl(30 55% 65%)" fill="hsl(30 55% 65%)" fillOpacity={0.15} strokeWidth={2} />
           </AreaChart>
         </ResponsiveContainer>
       </motion.div>
