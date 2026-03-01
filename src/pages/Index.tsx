@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { Star, Zap, BookOpen, TrendingUp, Brain, BarChart3, ArrowRight } from "lucide-react";
+import BlurText from "@/components/BlurText";
 import { Link, useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import StatCard from "@/components/StatCard";
-import MagicBentoCard from "@/components/MagicBentoCard";
+import { BentoCardGrid, MagicCard } from "@/components/MagicCard";
 import AnimatedList from "@/components/AnimatedList";
 import chatbotOwl from "@/assets/chatbot-owl.png";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
@@ -39,9 +40,8 @@ const Index = () => {
 
   const leaderboardItems = leaderboard.map((entry) => (
     <div className="flex items-center gap-3" key={entry.rank}>
-      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-        entry.rank <= 3 ? 'gradient-accent text-accent-foreground' : 'bg-muted text-muted-foreground'
-      }`}>
+      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${entry.rank <= 3 ? 'gradient-accent text-accent-foreground' : 'bg-muted text-muted-foreground'
+        }`}>
         {entry.rank}
       </span>
       <div className="flex-1">
@@ -57,9 +57,13 @@ const Index = () => {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <h1 className="text-3xl font-display font-bold text-foreground">
-            Welcome back, User!
-          </h1>
+          <BlurText
+            text="Welcome back, User!"
+            delay={50}
+            animateBy="words"
+            direction="top"
+            className="text-3xl font-display font-bold text-foreground"
+          />
           <p className="text-muted-foreground mt-1">
             Keep up the momentum — you're on a <span className="font-semibold text-streak">7-day streak!</span>
           </p>
@@ -84,36 +88,30 @@ const Index = () => {
       </div>
 
       {/* Bento Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <BentoCardGrid className="grid grid-cols-3 gap-4 mb-8">
         {/* Go to Quizzes */}
-        <MagicBentoCard onClick={() => navigate('/quizzes')} glowColor="100, 70, 50">
-          <div className="magic-bento-card__header">
-            <div className="magic-bento-card__label">Challenge</div>
-          </div>
-          <div className="magic-bento-card__content">
+        <MagicCard onClick={() => navigate('/quizzes')} enableTilt={true} enableMagnetism={true} enableStars={true} glowColor="178,197,157">
+          <div className="flex flex-col h-full bg-background/60 p-4 rounded-xl border border-transparent hover:border-border/50 transition-colors">
             <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center mb-3">
               <Brain className="w-6 h-6 text-primary-foreground" />
             </div>
-            <h2 className="magic-bento-card__title">Go to Quizzes</h2>
-            <p className="magic-bento-card__description">Test your knowledge and earn XP rewards</p>
-            <div className="mt-3 flex gap-2">
+            <h2 className="text-xl font-display font-bold text-foreground mb-1">Go to Quizzes</h2>
+            <p className="text-sm text-muted-foreground">Test your knowledge and earn XP rewards</p>
+            <div className="mt-auto pt-3 flex gap-2">
               <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">6 available</span>
               <span className="text-xs px-2 py-1 rounded-full bg-accent/10 text-accent font-medium">+50-120 XP</span>
             </div>
           </div>
-        </MagicBentoCard>
+        </MagicCard>
 
         {/* Analytics */}
-        <MagicBentoCard onClick={() => navigate('/analytics')} glowColor="100, 70, 50">
-          <div className="magic-bento-card__header">
-            <div className="magic-bento-card__label">Progress</div>
-          </div>
-          <div className="magic-bento-card__content">
+        <MagicCard onClick={() => navigate('/analytics')} enableTilt={true} enableMagnetism={true} enableStars={true} glowColor="212,168,122">
+          <div className="flex flex-col h-full bg-background/60 p-4 rounded-xl border border-transparent hover:border-border/50 transition-colors">
             <div className="w-12 h-12 rounded-xl gradient-accent flex items-center justify-center mb-3">
               <BarChart3 className="w-6 h-6 text-accent-foreground" />
             </div>
-            <h2 className="magic-bento-card__title">Analytics</h2>
-            <div className="mt-2" style={{ height: 80 }}>
+            <h2 className="text-xl font-display font-bold text-foreground mb-1">Analytics</h2>
+            <div className="mt-auto h-[80px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={subjectScores}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(40 15% 85%)" />
@@ -125,24 +123,21 @@ const Index = () => {
               </ResponsiveContainer>
             </div>
           </div>
-        </MagicBentoCard>
+        </MagicCard>
 
         {/* AI Chatbot */}
-        <MagicBentoCard onClick={() => navigate('/chatbot')} glowColor="100, 70, 50">
-          <div className="magic-bento-card__header">
-            <div className="magic-bento-card__label">AI Assistant</div>
-          </div>
-          <div className="magic-bento-card__content flex flex-col items-center text-center">
+        <MagicCard onClick={() => navigate('/chatbot')} enableTilt={true} enableMagnetism={true} enableStars={true} glowColor="176,138,104">
+          <div className="flex flex-col items-center justify-center h-full bg-background/60 p-4 rounded-xl border border-transparent hover:border-border/50 text-center transition-colors">
             <img src={chatbotOwl} alt="AI Chatbot" className="w-20 h-20 object-contain mb-2" />
-            <h2 className="magic-bento-card__title">AI Chatbot</h2>
-            <p className="magic-bento-card__description">Get instant help with your studies</p>
-            <div className="mt-2 flex items-center gap-1.5">
+            <h2 className="text-xl font-display font-bold text-foreground mb-1">AI Chatbot</h2>
+            <p className="text-sm text-muted-foreground">Get instant help with your studies</p>
+            <div className="mt-3 flex items-center gap-1.5 bg-background/80 px-3 py-1.5 rounded-full border border-border/50">
               <span className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
               <span className="text-xs font-medium text-success">Online</span>
             </div>
           </div>
-        </MagicBentoCard>
-      </div>
+        </MagicCard>
+      </BentoCardGrid>
 
       {/* Courses + Leaderboard */}
       <div className="grid grid-cols-3 gap-6">
@@ -155,35 +150,45 @@ const Index = () => {
             </Link>
           </div>
           <div className="glass rounded-2xl p-4">
-            <div className="grid grid-cols-3 gap-3">
+            <BentoCardGrid className="grid grid-cols-3 gap-3">
               {courses.map((course, i) => (
-                <motion.div
+                <MagicCard
                   key={course.name}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 + i * 0.05 }}
-                  className="p-4 rounded-xl bg-background/60 border border-border/40 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer"
+                  glowColor="178,197,157"
+                  enableTilt={true}
+                  enableMagnetism={true}
+                  particleCount={5}
+                  className="rounded-xl overflow-hidden cursor-pointer"
                   onClick={() => navigate('/courses')}
                 >
-                  <h3 className="text-sm font-display font-bold text-foreground">{course.name}</h3>
-                  <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${course.progress}%` }}
-                      transition={{ delay: 0.5 + i * 0.05, duration: 0.8, ease: "easeOut" }}
-                      className="h-full rounded-full gradient-primary"
-                    />
-                  </div>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{course.progress}%</span>
-                    <span className="flex items-center gap-1 text-xs font-medium text-xp">
-                      <Star className="w-3 h-3" />
-                      {course.xp}
-                    </span>
-                  </div>
-                </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + i * 0.05 }}
+                    className="p-4"
+                  >
+                    <div className="relative z-10 w-full">
+                      <h3 className="text-sm font-display font-bold text-foreground transition-colors">{course.name}</h3>
+                      <div className="mt-3 h-1.5 rounded-full bg-border overflow-hidden relative">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${course.progress}%` }}
+                          transition={{ delay: 0.5 + i * 0.05, duration: 1, ease: "easeOut" }}
+                          className="h-full rounded-full gradient-primary absolute left-0 top-0"
+                        />
+                      </div>
+                      <div className="mt-2.5 flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground transition-colors">{course.progress}% done</span>
+                        <span className="flex items-center gap-1 text-xs font-medium text-xp transition-colors">
+                          <Star className="w-3.5 h-3.5 fill-current opacity-70" />
+                          {course.xp}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </MagicCard>
               ))}
-            </div>
+            </BentoCardGrid>
           </div>
         </div>
 

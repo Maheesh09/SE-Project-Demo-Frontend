@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Trophy } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import BlurText from "@/components/BlurText";
 import AnimatedList from "@/components/AnimatedList";
 
 const leaderboard = [
@@ -21,9 +22,8 @@ const LeaderboardPage = () => {
     <div className="flex items-center gap-4" key={entry.rank}>
       <div className="w-9 flex justify-center">
         {entry.rank <= 3 ? (
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            entry.rank === 1 ? 'gradient-accent' : entry.rank === 2 ? 'bg-muted' : 'gradient-primary'
-          }`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${entry.rank === 1 ? 'gradient-accent' : entry.rank === 2 ? 'bg-muted' : 'gradient-primary'
+            }`}>
             <Trophy className="w-4 h-4 text-primary-foreground" />
           </div>
         ) : (
@@ -46,7 +46,13 @@ const LeaderboardPage = () => {
   return (
     <AppLayout>
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-display font-bold text-foreground mb-8">Leaderboard</h1>
+        <BlurText
+          text="Leaderboard"
+          delay={50}
+          animateBy="words"
+          direction="top"
+          className="text-3xl font-display font-bold text-foreground mb-8"
+        />
       </motion.div>
 
       <motion.div

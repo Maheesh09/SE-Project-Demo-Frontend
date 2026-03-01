@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import AppLayout from "@/components/AppLayout";
+import BlurText from "@/components/BlurText";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, AreaChart, Area } from "recharts";
 
 const subjectScores = [
@@ -34,7 +35,13 @@ const AnalyticsPage = () => {
   return (
     <AppLayout>
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-display font-bold text-foreground mb-8">Analytics</h1>
+        <BlurText
+          text="Analytics"
+          delay={50}
+          animateBy="words"
+          direction="top"
+          className="text-3xl font-display font-bold text-foreground mb-8"
+        />
       </motion.div>
 
       <div className="grid grid-cols-5 gap-6 mb-6">

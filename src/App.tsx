@@ -10,6 +10,7 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import SettingsPage from "./pages/SettingsPage";
+import LogoutPage from "./pages/LogoutPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/logout" element={<LogoutPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

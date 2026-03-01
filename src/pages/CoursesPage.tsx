@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import BlurText from "@/components/BlurText";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 
 const courses = [
@@ -26,7 +27,13 @@ const CoursesPage = () => {
     <AppLayout>
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3 mb-4">
-          <h1 className="text-3xl font-display font-bold text-foreground">My Courses</h1>
+          <BlurText
+            text="My Courses"
+            delay={50}
+            animateBy="words"
+            direction="top"
+            className="text-3xl font-display font-bold text-foreground"
+          />
           <span className="text-xs font-medium px-3 py-1 rounded-full bg-primary/10 text-primary">
             {courses.length} subjects
           </span>

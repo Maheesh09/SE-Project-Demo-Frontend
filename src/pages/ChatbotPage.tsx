@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import BlurText from "@/components/BlurText";
 import chatbotOwl from "@/assets/chatbot-owl.png";
 
 interface Message {
@@ -30,7 +31,13 @@ const ChatbotPage = () => {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3 mb-6">
           <img src={chatbotOwl} alt="AI Chatbot" className="w-10 h-10 object-contain" />
-          <h1 className="text-3xl font-display font-bold text-foreground">AI Chatbot</h1>
+          <BlurText
+            text="AI Chatbot"
+            delay={50}
+            animateBy="words"
+            direction="top"
+            className="text-3xl font-display font-bold text-foreground"
+          />
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
             <span className="text-sm font-medium text-success">Online</span>
@@ -51,11 +58,10 @@ const ChatbotPage = () => {
                 <img src={chatbotOwl} alt="Bot" className="w-8 h-8 object-contain mr-2 flex-shrink-0 mt-1" />
               )}
               <div
-                className={`max-w-md px-4 py-3 rounded-2xl text-sm ${
-                  msg.role === "user"
+                className={`max-w-md px-4 py-3 rounded-2xl text-sm ${msg.role === "user"
                     ? "gradient-primary text-primary-foreground"
                     : "bg-muted text-foreground"
-                }`}
+                  }`}
               >
                 {msg.text}
               </div>

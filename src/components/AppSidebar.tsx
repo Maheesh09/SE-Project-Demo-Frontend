@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, BookOpen, Brain, Trophy, BarChart3, MessageCircle, Settings, Zap } from "lucide-react";
+import { LayoutDashboard, BookOpen, Brain, Trophy, BarChart3, MessageCircle, Settings, Zap, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import mindupLogo from "@/assets/mindup-logo.png";
 
@@ -27,7 +27,7 @@ const AppSidebar = () => {
       {/* User Profile */}
       <div className="mx-4 mb-6 p-4 rounded-xl bg-sidebar-accent">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
             U
           </div>
           <div>
@@ -41,7 +41,7 @@ const AppSidebar = () => {
             <span>3,000 XP</span>
           </div>
           <div className="h-1.5 rounded-full bg-sidebar-border overflow-hidden">
-            <div className="h-full rounded-full gradient-primary" style={{ width: "82%" }} />
+            <div className="h-full rounded-full bg-primary" style={{ width: "82%" }} />
           </div>
         </div>
         <div className="mt-2 flex items-center gap-1.5 text-xs text-streak">
@@ -61,8 +61,8 @@ const AppSidebar = () => {
               className={cn(
                 "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "gradient-primary text-primary-foreground shadow-glow"
-                  : "text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm font-semibold"
+                  : "text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
               )}
             >
               <item.icon className="w-5 h-5" />
@@ -72,8 +72,31 @@ const AppSidebar = () => {
         })}
       </nav>
 
-      <div className="px-6 py-4 text-xs text-sidebar-foreground/50">
-        2026 MindUp Learning
+      <div className="mx-4 mt-auto mb-4 p-4 rounded-xl bg-gradient-to-br from-sidebar-accent to-sidebar-background border border-sidebar-border shadow-sm flex flex-col items-start gap-2 relative overflow-hidden">
+        <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/20 blur-2xl rounded-full pointer-events-none"></div>
+        <div className="flex items-center gap-2 text-primary">
+          <Zap className="w-5 h-5" />
+          <h4 className="font-display font-bold text-sm text-sidebar-accent-foreground">MindUp Pro</h4>
+        </div>
+        <p className="text-xs text-sidebar-foreground">Unlock all courses, AI tutors, and custom study plans.</p>
+        <button className="mt-2 w-full py-2 bg-primary text-primary-foreground font-bold text-xs rounded-lg hover:opacity-90 transition-opacity">
+          Upgrade Now
+        </button>
+      </div>
+
+      <div className="px-4 py-3 mt-auto mb-2">
+        <NavLink
+          to="/logout"
+          className={cn(
+            "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+            location.pathname === "/logout"
+              ? "bg-destructive/10 text-destructive font-semibold shadow-sm"
+              : "text-sidebar-foreground hover:bg-destructive/5 hover:text-destructive"
+          )}
+        >
+          <LogOut className="w-5 h-5" />
+          Log Out
+        </NavLink>
       </div>
     </aside>
   );
