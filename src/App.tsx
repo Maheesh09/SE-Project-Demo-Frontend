@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ClerkProvider, SignIn, SignUp, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { ClerkProvider, SignIn, SignUp, SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import CoursesPage from "./pages/CoursesPage";
@@ -16,6 +16,7 @@ import LogoutPage from "./pages/LogoutPage";
 import SubjectPage from "./pages/SubjectPage";
 import SubjectQuizzesPage from "./pages/SubjectQuizzesPage";
 import Countdown from "./pages/Countdown";
+import CompleteProfilePage from "./pages/CompleteProfilePage";
 import NotFound from "./pages/NotFound";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -27,14 +28,25 @@ if (!PUBLISHABLE_KEY) {
 const queryClient = new QueryClient();
 
 // Wraps routes that require Clerk authentication
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => (
-  <>
-    <SignedIn>{children}</SignedIn>
-    <SignedOut>
-      <Navigate to="/login" replace />
-    </SignedOut>
-  </>
-);
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isLoaded } = useUser();
+
+  if (!isLoaded) return null; // you might want a genuine loading spinner here later
+
+  // If signed in, but no grade is set in metadata, force profile completion
+  if (user && !user.unsafeMetadata?.grade) {
+    return <Navigate to="/complete-profile" replace />;
+  }
+
+  return (
+    <>
+      <SignedIn>{children}</SignedIn>
+      <SignedOut>
+        <Navigate to="/login" replace />
+      </SignedOut>
+    </>
+  );
+};
 
 const App = () => (
   <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
@@ -59,10 +71,12 @@ const App = () => (
               path="/signup/*"
               element={
                 <div className="min-h-screen flex items-center justify-center bg-background">
-                  <SignUp routing="path" path="/signup" signInUrl="/login" afterSignUpUrl="/dashboard" />
+                  <SignUp routing="path" path="/signup" signInUrl="/login" afterSignUpUrl="/complete-profile" />
                 </div>
               }
             />
+
+            <Route path="/complete-profile" element={<><SignedIn><CompleteProfilePage /></SignedIn><SignedOut><Navigate to="/login" replace /></SignedOut></>} />
 
             {/* Protected dashboard routes */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
