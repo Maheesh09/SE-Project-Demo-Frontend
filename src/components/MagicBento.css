@@ -1,0 +1,85 @@
+:root {
+    --hue: 27;
+    --sat: 69%;
+    --white: hsl(0, 0%, 100%);
+    --purple-primary: rgba(132, 0, 255, 1);
+    --purple-glow: rgba(132, 0, 255, 0.2);
+    --purple-border: rgba(132, 0, 255, 0.8);
+    --border-color: rgba(255, 255, 255, 0.1);
+    color-scheme: light dark;
+}
+
+.magic-bento-card {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    font-weight: 300;
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.4s ease;
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+
+    --glow-x: 50%;
+    --glow-y: 50%;
+    --glow-intensity: 0;
+    --glow-radius: 250px;
+}
+
+.magic-bento-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Border glow effect */
+.magic-bento-card--border-glow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    background: radial-gradient(var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+            rgba(var(--glow-color), calc(var(--glow-intensity) * 0.8)) 0%,
+            rgba(var(--glow-color), calc(var(--glow-intensity) * 0.4)) 30%,
+            transparent 60%);
+    border-radius: inherit;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.magic-bento-card--border-glow:hover::after {
+    opacity: 1;
+}
+
+.particle-container {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Global spotlight styles */
+.global-spotlight {
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+    z-index: 20 !important;
+    pointer-events: none;
+}
+
+.bento-section {
+    position: relative;
+    user-select: none;
+}

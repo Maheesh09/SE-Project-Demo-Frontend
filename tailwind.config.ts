@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Orbitron", "sans-serif"],
-        body: ["Rajdhani", "sans-serif"],
-        sans: ["Rajdhani", "sans-serif"],
+        display: ['"Space Grotesk"', "Orbitron", "sans-serif"],
+        body: ['"Plus Jakarta Sans"', "Rajdhani", "sans-serif"],
+        sans: ['"Plus Jakarta Sans"', "Rajdhani", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -62,6 +62,24 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        xp: "hsl(var(--xp))",
+        streak: "hsl(var(--streak))",
+        course: {
+          science: "hsl(var(--course-science))",
+          english: "hsl(var(--course-english))",
+          maths: "hsl(var(--course-maths))",
+          civics: "hsl(var(--course-civics))",
+          history: "hsl(var(--course-history))",
+          health: "hsl(var(--course-health))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -77,9 +95,17 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        float: {
+        "pulse-glow": {
+          "0%, 100%": { opacity: "0.6" },
+          "50%": { opacity: "1" },
+        },
+        "float": {
           "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
+        "slide-up": {
+          from: { opacity: "0", transform: "translateY(10px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
         glow: {
           "0%, 100%": { opacity: "0.6" },
@@ -97,7 +123,9 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        float: "float 6s ease-in-out infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "slide-up": "slide-up 0.4s ease-out",
+        "float": "float 3s ease-in-out infinite",
         glow: "glow 3s ease-in-out infinite",
         "marquee-left": "marquee-left 25s linear infinite",
         "marquee-right": "marquee-right 25s linear infinite",
