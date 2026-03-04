@@ -1,12 +1,13 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Brain, Trophy,
-  BarChart3, MessageCircle, Settings, Zap, LogOut, ChevronRight,
+  BarChart3, MessageCircle, Settings, Zap, LogOut, ChevronRight, User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import mindupLogo from "@/assets/mindup-logo.png";
 import { useState } from "react";
 import ProfileModal from "./ProfileModal";
+import { useAuth } from "@/context/AuthContext";
 
 const mainNav = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -65,6 +66,11 @@ const AppSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { user } = useAuth();
+
+  const displayName = user?.fullName || user?.username || "Student";
+  const initial = displayName.charAt(0).toUpperCase();
+  const subLabel = [user?.grade, user?.district ? `${user.district}` : null].filter(Boolean).join(" · ") || "Level 12";
 
   return (
     <>
@@ -87,12 +93,15 @@ const AppSidebar = () => {
           className="mx-3 my-4 p-3.5 rounded-xl bg-sidebar-accent/70 border border-sidebar-border/20 cursor-pointer hover:bg-sidebar-accent transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center text-sm font-bold text-primary-foreground flex-shrink-0 shadow-sm">
-              U
+            <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center text-sm font-bold text-primary-foreground flex-shrink-0 shadow-sm overflow-hidden">
+              {user?.avatar
+                ? <img src={user.avatar} alt={displayName} className="w-full h-full object-cover" />
+                : initial
+              }
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-sidebar-accent-foreground truncate">User</p>
-              <p className="text-[11px] text-sidebar-foreground/70">Level 12 · Colombo</p>
+              <p className="text-sm font-bold text-sidebar-accent-foreground truncate">{displayName}</p>
+              <p className="text-[11px] text-sidebar-foreground/70 truncate">{subLabel}</p>
             </div>
             <div className="w-2 h-2 rounded-full bg-success animate-pulse flex-shrink-0" title="Online" />
           </div>

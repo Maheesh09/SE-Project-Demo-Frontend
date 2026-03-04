@@ -13,7 +13,6 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import SettingsPage from "./pages/SettingsPage";
 import LogoutPage from "./pages/LogoutPage";
-import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import CompleteProfilePage from "./pages/CompleteProfilePage";
@@ -24,31 +23,25 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Wraps routes that require authentication
+// Wraps routes that require a completed profile
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isProfileComplete } = useAuth();
-
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  const { isProfileComplete } = useAuth();
   if (!isProfileComplete) return <Navigate to="/complete-profile" replace />;
-
   return <>{children}</>;
 };
 
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isProfileComplete } = useAuth();
-
-  if (isAuthenticated) {
-    if (!isProfileComplete) return <Navigate to="/complete-profile" replace />;
-    return <Navigate to="/" replace />;
-  }
-
+  const { isProfileComplete } = useAuth();
+  if (isProfileComplete) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 
 const AppRoutes = () => (
   <Routes>
+    {/* Redirect /login to the dashboard (login page removed) */}
+    <Route path="/login" element={<Navigate to="/" replace />} />
+
     {/* Public Auth Routes */}
-    <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
     <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
     <Route path="/verify-email" element={<EmailVerificationPage />} />
     <Route path="/complete-profile" element={<CompleteProfilePage />} />

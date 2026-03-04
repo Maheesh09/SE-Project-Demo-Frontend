@@ -14,6 +14,7 @@ import AnimatedList from "@/components/AnimatedList";
 import chatbotOwl from "@/assets/chatbot-owl.png";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, Area } from "recharts";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -276,6 +277,12 @@ const SectionHeader = ({ title, linkTo, linkLabel = "View All", delay = 0 }: {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Derive display name — prefer fullName, fall back to username or 'Student'
+  const displayName = user?.fullName || user?.username || "Student";
+  const gradeLabel = user?.grade ? ` · ${user.grade}` : "";
+  const districtLabel = user?.district ? ` · ${user.district} District` : "";
 
   const leaderboardItems = leaderboard.map((entry) => (
     <div className="flex items-center gap-3 px-2 py-1" key={entry.rank}>
@@ -302,7 +309,7 @@ const Index = () => {
       {/* ── Header ── */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-7">
         <div>
-          <BlurText text={`${getGreeting()}, User`} delay={40} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground" />
+          <BlurText text={`${getGreeting()}, ${displayName}!`} delay={40} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground" />
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Calendar className="w-3.5 h-3.5" />
@@ -312,6 +319,7 @@ const Index = () => {
             <span className="flex items-center gap-1 text-xs font-semibold text-streak">
               <Flame className="w-3.5 h-3.5" /> 7-day streak!
             </span>
+            {gradeLabel && <span className="text-xs text-muted-foreground font-medium">{gradeLabel}{districtLabel}</span>}
           </div>
         </div>
         <div className="flex items-center gap-2.5">

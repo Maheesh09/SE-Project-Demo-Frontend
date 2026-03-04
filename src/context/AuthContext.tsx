@@ -1,13 +1,27 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
+
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+export interface UserProfile {
+    username: string;
+    fullName: string;
+    email: string;
+    grade: string;
+    province: string;
+    district: string;
+    avatar: string | null;
+}
 
 interface AuthContextType {
     isAuthenticated: boolean;
-    user: { name: string; email: string } | null;
+    user: UserProfile | null;
     isProfileComplete: boolean;
     login: (email: string, password: string) => Promise<boolean>;
-    completeProfile: (data: any) => void;
+    completeProfile: (data: UserProfile) => void;
     logout: () => void;
 }
+
+// ─── Context ─────────────────────────────────────────────────────────────────
 
 const AuthContext = createContext<AuthContextType>({
     isAuthenticated: false,
@@ -20,8 +34,10 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+// ─── Provider ────────────────────────────────────────────────────────────────
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<{ name: string; email: string } | null>(() => {
+    const [user, setUser] = useState<UserProfile | null>(() => {
         try {
             const stored = localStorage.getItem("mindup_user");
             return stored ? JSON.parse(stored) : null;
@@ -36,19 +52,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const isAuthenticated = user !== null;
 
-    const login = async (email: string, password: string): Promise<boolean> => {
-        // Demo credentials — replace with real API in production
-        if (email === "user@mindup.lk" && password === "mindup123") {
-            const userData = { name: "User", email };
-            setUser(userData);
-            localStorage.setItem("mindup_user", JSON.stringify(userData));
-            return true;
-        }
-        return false;
+    // login() kept for compatibility (e.g. RegisterPage links) — always succeeds
+    const login = async (_email: string, _password: string): Promise<boolean> => {
+        return true;
     };
 
-    const completeProfile = (data: any) => {
+    const completeProfile = (data: UserProfile) => {
+        setUser(data);
         setIsProfileComplete(true);
+        localStorage.setItem("mindup_user", JSON.stringify(data));
         localStorage.setItem("mindup_profile_complete", "true");
     };
 
