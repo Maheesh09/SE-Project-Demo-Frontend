@@ -187,7 +187,7 @@ const NotificationPanel = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.97 }}
             transition={{ duration: 0.18 }}
-            className="absolute right-0 top-11 w-[380px] bg-card border border-border/50 rounded-2xl shadow-xl z-50 overflow-hidden"
+            className="absolute right-0 top-11 w-[calc(100vw-32px)] sm:w-[380px] max-w-sm bg-card border border-border/50 rounded-2xl shadow-xl z-50 overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
@@ -300,7 +300,7 @@ const Dashboard = () => {
     <AppLayout>
 
       {/* ── Header ── */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-7">
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-7">
         <div>
           <BlurText text={`${getGreeting()}, User`} delay={40} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground" />
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -308,18 +308,18 @@ const Dashboard = () => {
               <Calendar className="w-3.5 h-3.5" />
               <span>{todayLabel}</span>
             </div>
-            <span className="text-border/60 select-none">·</span>
-            <span className="flex items-center gap-1 text-xs font-semibold text-streak">
+            <span className="text-border/60 select-none hidden sm:inline">·</span>
+            <span className="flex items-center gap-1 text-xs font-semibold text-streak mt-1 sm:mt-0">
               <Flame className="w-3.5 h-3.5" /> 7-day streak!
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center flex-wrap sm:flex-nowrap gap-2.5">
           <LiveClock />
           <NotificationPanel />
           <Link
             to="/courses"
-            className="inline-flex items-center gap-2 gradient-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 gradient-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm"
           >
             Continue Learning <ArrowRight className="w-4 h-4" />
           </Link>
@@ -327,7 +327,7 @@ const Dashboard = () => {
       </motion.div>
 
       {/* ── KPI row ── */}
-      <div className="grid grid-cols-4 gap-4 mb-7">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
         <StatCard icon={Star} label="Total XP" value="2,450" subtitle="+120 this week" subtitleTrend="up" colorClass="text-xp" delay={0} />
         <StatCard icon={Zap} label="Day Streak" value="7" subtitle="Best: 14 days" subtitleTrend="neutral" colorClass="text-streak" delay={0.07} />
         <StatCard icon={BookOpen} label="Courses Active" value="6" subtitle="2 completed" subtitleTrend="up" colorClass="text-primary" delay={0.14} />
@@ -335,11 +335,11 @@ const Dashboard = () => {
       </div>
 
       {/* ── Progress + Quick-action row ── */}
-      <div className="grid grid-cols-3 gap-4 mb-7">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-7">
 
         {/* Weekly XP chart */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-          className="col-span-2 glass rounded-2xl p-5">
+          className="lg:col-span-2 glass rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-display font-bold text-foreground">Weekly XP Activity</h3>
@@ -359,7 +359,7 @@ const Dashboard = () => {
 
         {/* Today's goals */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
-          className="glass rounded-2xl p-5">
+          className="glass rounded-2xl p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-4">
             <Target className="w-4 h-4 text-accent" />
             <h3 className="text-sm font-display font-bold text-foreground">Today's Goals</h3>
@@ -394,7 +394,7 @@ const Dashboard = () => {
 
       {/* ── Quick action bento ── */}
       <SectionHeader title="Quick Actions" delay={0.3} />
-      <BentoCardGrid className="grid grid-cols-3 gap-4 mb-7">
+      <BentoCardGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
 
         <MagicCard onClick={() => navigate("/quizzes")} enableTilt enableMagnetism enableStars glowColor="178,197,157">
           <div className="flex flex-col h-full bg-card p-5 rounded-xl border border-transparent hover:border-border/50 transition-colors">
@@ -449,12 +449,12 @@ const Dashboard = () => {
       <div className="border-t border-border/40 mb-7" />
 
       {/* ── Courses + Leaderboard ── */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <div className="col-span-2">
+        <div className="lg:col-span-2">
           <SectionHeader title="My Courses" linkTo="/courses" delay={0.35} />
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }} className="glass rounded-2xl p-4">
-            <BentoCardGrid className="grid grid-cols-3 gap-3">
+            <BentoCardGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {courses.map((course, i) => (
                 <MagicCard key={course.name} glowColor="178,197,157" enableTilt enableMagnetism particleCount={5} className="rounded-xl overflow-hidden cursor-pointer" onClick={() => navigate("/subject/" + course.name.toLowerCase().replace(/\s+/g, '-'))}>
                   <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.05 }} className="p-4">

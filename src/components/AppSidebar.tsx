@@ -1,11 +1,11 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Brain, Trophy,
-  BarChart3, MessageCircle, Settings, Zap, LogOut, ChevronRight,
+  BarChart3, MessageCircle, Settings, Zap, LogOut, ChevronRight, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import mindupLogo from "@/assets/mindup-logo.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProfileModal from "./ProfileModal";
 import { useUser } from "@clerk/clerk-react";
 
@@ -62,11 +62,16 @@ const NavSection = ({
   </div>
 );
 
-const AppSidebar = () => {
+const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user } = useUser();
+
+  // Close sidebar on route change for mobile
+  useEffect(() => {
+    if (onClose) onClose();
+  }, [location.pathname]);
 
   const displayName = user?.firstName || user?.username || "User";
   const initial = displayName[0]?.toUpperCase() || "U";
@@ -75,7 +80,20 @@ const AppSidebar = () => {
     <>
       <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
 
-      <aside className="fixed left-0 top-0 bottom-0 w-64 gradient-sidebar flex flex-col z-50 border-r border-sidebar-border/30">
+      <aside className={cn(
+        "fixed left-0 top-0 bottom-0 w-64 gradient-sidebar flex flex-col z-50 border-r border-sidebar-border/30 transition-transform duration-300 ease-in-out",
+        isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
+
+        {/* Mobile close button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="md:hidden absolute top-5 right-4 p-1.5 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors z-50"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
 
         {/* Logo / Brand */}
         <NavLink to="/" className="px-5 pt-6 pb-4 flex items-center gap-3 border-b border-sidebar-border/20 hover:opacity-80 transition-opacity">
