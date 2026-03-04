@@ -78,13 +78,13 @@ const AppSidebar = () => {
       <aside className="fixed left-0 top-0 bottom-0 w-64 gradient-sidebar flex flex-col z-50 border-r border-sidebar-border/30">
 
         {/* Logo / Brand */}
-        <div className="px-5 pt-6 pb-4 flex items-center gap-3 border-b border-sidebar-border/20">
+        <NavLink to="/" className="px-5 pt-6 pb-4 flex items-center gap-3 border-b border-sidebar-border/20 hover:opacity-80 transition-opacity">
           <img src={mindupLogo} alt="MindUp" className="w-9 h-9 rounded-xl shadow-sm flex-shrink-0" />
           <div>
             <span className="text-lg font-display font-bold text-sidebar-accent-foreground tracking-tight block leading-none">MindUp</span>
             <span className="text-[10px] text-sidebar-foreground/60 font-medium">Learning Platform</span>
           </div>
-        </div>
+        </NavLink>
 
         {/* User profile */}
         <div

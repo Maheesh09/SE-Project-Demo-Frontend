@@ -71,20 +71,22 @@ const Navbar = () => {
             </button>
           </SignedOut>
           <SignedIn>
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="px-5 py-2 text-[15px] lg:text-base font-bold rounded-full bg-[#acd663] text-black hover:bg-[#96ba50] transition-all duration-300 ml-2"
-            >
-              Dashboard
-            </button>
-            <div className="ml-2">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "w-8 h-8",
-                  },
-                }}
-              />
+            <div className="flex items-center">
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="px-5 py-2 text-[15px] lg:text-base font-bold rounded-full bg-[#acd663] text-black hover:bg-[#96ba50] transition-all duration-300 ml-2"
+              >
+                Dashboard
+              </button>
+              <div className="ml-2">
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                    },
+                  }}
+                />
+              </div>
             </div>
           </SignedIn>
         </div>
@@ -122,14 +124,16 @@ const Navbar = () => {
               </button>
             </SignedOut>
             <SignedIn>
-              <button
-                onClick={() => { setMobileOpen(false); navigate("/dashboard"); }}
-                className="w-[80%] mt-2 px-6 py-2.5 rounded-full bg-[#acd663] text-black font-bold hover:bg-[#96ba50] transition-all"
-              >
-                Dashboard
-              </button>
-              <div className="mt-2">
-                <UserButton />
+              <div className="flex flex-col items-center w-full">
+                <button
+                  onClick={() => { setMobileOpen(false); navigate("/dashboard"); }}
+                  className="w-[80%] mt-2 px-6 py-2.5 rounded-full bg-[#acd663] text-black font-bold hover:bg-[#96ba50] transition-all"
+                >
+                  Dashboard
+                </button>
+                <div className="mt-2">
+                  <UserButton />
+                </div>
               </div>
             </SignedIn>
           </div>
