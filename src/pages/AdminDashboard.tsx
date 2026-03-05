@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BrainCircuit, Plus, Trash2, Check, ExternalLink, LogOut, Upload, Loader2, Save } from "lucide-react";
+import { BrainCircuit, Plus, Trash2, Check, ExternalLink, LogOut, Upload, Loader2, Save, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
+import { api } from "@/lib/api";
+
+const ADMIN_API_KEY = import.meta.env.VITE_ADMIN_API_KEY ?? "change-me";
 
 interface Option {
     id: string;
@@ -37,6 +40,25 @@ const TOPICS = [
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+
+    // ── Student count from Supabase students table ──
+    const [studentCount, setStudentCount] = useState<number | null>(null);
+    const [countLoading, setCountLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const data = await api.getStudentCount(ADMIN_API_KEY);
+                if (!cancelled) setStudentCount(data.count);
+            } catch (err) {
+                console.error("Failed to fetch student count:", err);
+            } finally {
+                if (!cancelled) setCountLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, []);
 
     // Form State
     const [subjectId, setSubjectId] = useState<string>("1");
@@ -169,6 +191,42 @@ const AdminDashboard = () => {
                 </div>
 
                 <nav className="flex-1 space-y-2">
+                    {/* ── Registered Students Count ── */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-4"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center shadow-sm">
+                                <Users className="w-5 h-5 text-accent-foreground" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                    Registered Students
+                                </p>
+                                {countLoading ? (
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                                        <span className="text-xs text-muted-foreground">Loading…</span>
+                                    </div>
+                                ) : studentCount !== null ? (
+                                    <p className="text-2xl font-display font-black text-primary leading-tight">
+                                        {studentCount.toLocaleString()}
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-destructive font-medium mt-0.5">
+                                        Could not load
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-2">
+                            Total students in the system
+                        </p>
+                    </motion.div>
+
                     <Button variant="secondary" className="w-full justify-start gap-3 bg-primary/10 text-primary hover:bg-primary/20">
                         <Plus className="w-4 h-4" />
                         Insert Question
@@ -314,8 +372,8 @@ const AdminDashboard = () => {
                                             animate={{ opacity: 1, x: 0 }}
                                             exit={{ opacity: 0, scale: 0.95 }}
                                             className={`flex items-start gap-4 p-4 rounded-xl border transition-colors ${opt.is_correct
-                                                    ? "bg-success/5 border-success/30 ring-1 ring-success/20"
-                                                    : "bg-background/40 border-border/50 hover:bg-background/60"
+                                                ? "bg-success/5 border-success/30 ring-1 ring-success/20"
+                                                : "bg-background/40 border-border/50 hover:bg-background/60"
                                                 }`}
                                         >
                                             <div className="flex flex-col items-center gap-2 mt-1">
