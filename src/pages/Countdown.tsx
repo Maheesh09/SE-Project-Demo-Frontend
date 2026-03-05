@@ -1,14 +1,34 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 const Countdown = () => {
-  const launchDate = new Date("2025-04-15T00:00:00").getTime();
+  // Set launch date to May 1, 2026
+  const launchDate = new Date("2026-05-01T00:00:00").getTime();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [submitted, setSubmitted] = useState(false);
+  const [email, setEmail] = useState("");
+
+  // Twinkling stars (same as landing page)
+  const stars = useMemo(
+    () =>
+      Array.from({ length: 60 }, (_, i) => ({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        delay: `${Math.random() * 6}s`,
+        duration: `${2.5 + Math.random() * 5}s`,
+        size: Math.random() > 0.85 ? 3 : Math.random() > 0.5 ? 2 : 1,
+        opacity: 0.15 + Math.random() * 0.35,
+      })),
+    []
+  );
 
   useEffect(() => {
     const tick = () => {
       const diff = launchDate - Date.now();
-      if (diff <= 0) return;
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
       setTimeLeft({
         days: Math.floor(diff / (1000 * 60 * 60 * 24)),
         hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
@@ -24,70 +44,326 @@ const Countdown = () => {
   const pad = (n: number) => String(n).padStart(2, "0");
 
   const blocks = [
-    { value: timeLeft.days, label: "Days" },
-    { value: timeLeft.hours, label: "Hours" },
-    { value: timeLeft.minutes, label: "Minutes" },
-    { value: timeLeft.seconds, label: "Seconds" },
+    { value: timeLeft.days, label: "DAYS" },
+    { value: timeLeft.hours, label: "HOURS" },
+    { value: timeLeft.minutes, label: "MINUTES" },
+    { value: timeLeft.seconds, label: "SECONDS" },
   ];
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
-      {/* Floating orbs */}
-      <div className="absolute w-[400px] h-[400px] bg-[#acd663]/10 rounded-full blur-[80px] -top-24 -left-24 animate-[float_8s_ease-in-out_infinite]" />
-      <div className="absolute w-[300px] h-[300px] bg-[#acd663]/10 rounded-full blur-[80px] -bottom-20 -right-20 animate-[float_8s_ease-in-out_infinite_3s]" />
-      <div className="absolute w-[200px] h-[200px] bg-[#ffb347]/10 rounded-full blur-[80px] top-[40%] right-[10%] animate-[float_8s_ease-in-out_infinite_5s]" />
+    <div className="countdown-page" style={{
+      minHeight: "100vh",
+      background: "#f7f5df",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative",
+      overflow: "hidden",
+      fontFamily: "'Inter', 'Rajdhani', sans-serif",
+    }}>
+      {/* Background image — same hero bg as landing page, subtle */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        backgroundImage: "url('/hero-bg.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        transform: "scaleX(-1)",
+        opacity: 0.15,
+        pointerEvents: "none",
+      }} />
+      {/* Cream overlay gradient */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        background: "radial-gradient(ellipse at 50% 30%, rgba(247,245,223,0.7) 0%, #f7f5df 70%)",
+        pointerEvents: "none",
+      }} />
 
-      <div className="relative z-10 text-center px-6 max-w-xl w-full">
-        {/* Logo */}
-        <img src="/logo.png" alt="MINDUP" className="h-14 mx-auto mb-8 animate-[fadeDown_1s_ease_forwards]" />
+      {/* Twinkling stars like landing page */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+        {stars.map((star) => (
+          <div
+            key={star.id}
+            style={{
+              position: "absolute",
+              left: star.left,
+              top: star.top,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              borderRadius: "50%",
+              background: "rgba(0,0,0,0.4)",
+              opacity: star.opacity,
+              animation: `twinkle ${star.duration} ease-in-out infinite`,
+              animationDelay: star.delay,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={{
+        position: "relative",
+        zIndex: 10,
+        textAlign: "center",
+        padding: "0 24px",
+        maxWidth: "720px",
+        width: "100%",
+      }}>
+        {/* Logo only — no text */}
+        <div style={{
+          marginBottom: "40px",
+          animation: "countdownSlideDown 0.8s ease forwards",
+        }}>
+          <img
+            src="/logo.png"
+            alt="MINDUP"
+            style={{
+              height: "72px",
+              margin: "0 auto",
+              display: "block",
+              filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.08))",
+            }}
+          />
+        </div>
 
         {/* Heading */}
-        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-black mb-2 animate-[fadeUp_0.8s_0.2s_ease_forwards] opacity-0" style={{ animationFillMode: 'forwards' }}>
-          Something Big Is <span className="text-[#acd663]">Coming</span>
+        <h1 style={{
+          fontFamily: "'Orbitron', 'Rajdhani', sans-serif",
+          fontSize: "clamp(30px, 5vw, 52px)",
+          fontWeight: 800,
+          color: "#1a1a0a",
+          lineHeight: 1.15,
+          marginBottom: "16px",
+          letterSpacing: "-0.5px",
+          animation: "countdownSlideUp 0.8s 0.2s ease forwards",
+          opacity: 0,
+        }}>
+          Something <span style={{ color: "#acd663" }}>Amazing</span> is Coming
         </h1>
-        <p className="text-foreground/50 text-lg font-semibold mb-10 animate-[fadeUp_0.8s_0.4s_ease_forwards] opacity-0" style={{ animationFillMode: 'forwards' }}>
-          Level Up Your Mind — launching soon
+
+        {/* Subheading */}
+        <p style={{
+          color: "rgba(26,26,10,0.5)",
+          fontSize: "clamp(14px, 2vw, 17px)",
+          maxWidth: "480px",
+          margin: "0 auto 44px",
+          lineHeight: 1.7,
+          fontWeight: 500,
+          animation: "countdownSlideUp 0.8s 0.35s ease forwards",
+          opacity: 0,
+        }}>
+          We're building a smarter way to learn. Be the first to
+          <br />
+          experience MindUp when we launch.
         </p>
 
-        {/* Countdown */}
-        <div className="flex justify-center gap-3 sm:gap-4 mb-10 animate-[fadeUp_0.8s_0.6s_ease_forwards] opacity-0" style={{ animationFillMode: 'forwards' }}>
-          {blocks.map((b) => (
-            <div
-              key={b.label}
-              className="bg-white/60 backdrop-blur-sm border border-foreground/5 rounded-2xl px-4 py-5 min-w-[70px] sm:min-w-[85px] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#acd663]/10 transition-all duration-300"
-            >
-              <div className="font-display text-3xl sm:text-4xl font-black leading-none">{pad(b.value)}</div>
-              <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-foreground/35 mt-2">{b.label}</div>
+        {/* Countdown blocks */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "0",
+          marginBottom: "48px",
+          animation: "countdownSlideUp 0.8s 0.5s ease forwards",
+          opacity: 0,
+        }}>
+          {blocks.map((b, i) => (
+            <div key={b.label} style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ textAlign: "center" }}>
+                <div
+                  className="countdown-block"
+                  style={{
+                    background: "rgba(26,26,10,0.85)",
+                    border: "1px solid rgba(172,214,99,0.25)",
+                    borderRadius: "16px",
+                    padding: "20px 10px",
+                    minWidth: "82px",
+                    transition: "all 0.3s ease",
+                    cursor: "default",
+                  }}
+                >
+                  <div style={{
+                    fontFamily: "'Orbitron', 'Rajdhani', sans-serif",
+                    fontSize: "clamp(30px, 4vw, 46px)",
+                    fontWeight: 700,
+                    color: "#f0ecd0",
+                    lineHeight: 1,
+                  }}>
+                    {pad(b.value)}
+                  </div>
+                </div>
+                <div style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "3px",
+                  color: "rgba(26,26,10,0.3)",
+                  marginTop: "12px",
+                  fontFamily: "'Inter', sans-serif",
+                }}>
+                  {b.label}
+                </div>
+              </div>
+              {i < blocks.length - 1 && (
+                <span style={{
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontSize: "clamp(26px, 3.5vw, 38px)",
+                  fontWeight: 700,
+                  color: "rgba(26,26,10,0.25)",
+                  padding: "0 10px",
+                  marginBottom: "28px",
+                  animation: "colonPulse 1s ease-in-out infinite",
+                }}>:</span>
+              )}
             </div>
           ))}
         </div>
 
         {/* Email form */}
-        <div className="animate-[fadeUp_0.8s_0.8s_ease_forwards] opacity-0" style={{ animationFillMode: 'forwards' }}>
+        <div style={{
+          animation: "countdownSlideUp 0.8s 0.65s ease forwards",
+          opacity: 0,
+        }}>
           {submitted ? (
-            <p className="text-[#acd663] font-bold text-base mb-4">You're on the list! We'll notify you at launch.</p>
+            <div style={{
+              background: "linear-gradient(135deg, rgba(172,214,99,0.2) 0%, rgba(172,214,99,0.08) 100%)",
+              border: "1px solid rgba(172,214,99,0.4)",
+              borderRadius: "16px",
+              padding: "20px 32px",
+              maxWidth: "480px",
+              margin: "0 auto 16px",
+            }}>
+              <p style={{ color: "#5a7a20", fontWeight: 700, fontSize: "15px", margin: 0 }}>
+                🎉 You're on the list! We'll notify you at launch.
+              </p>
+            </div>
           ) : (
             <form
               onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}
-              className="flex gap-2 max-w-sm mx-auto mb-4"
+              className="countdown-form"
+              style={{
+                display: "flex",
+                gap: "0",
+                maxWidth: "480px",
+                margin: "0 auto 16px",
+                background: "rgba(26,26,10,0.85)",
+                border: "1px solid rgba(172,214,99,0.2)",
+                borderRadius: "14px",
+                overflow: "hidden",
+                transition: "border-color 0.3s ease",
+              }}
             >
-              <input
-                type="email"
-                required
-                placeholder="your@email.com"
-                className="flex-1 px-4 py-3 rounded-xl border border-foreground/10 bg-white/70 text-sm placeholder:text-foreground/30 focus:outline-none focus:border-[#acd663]/40 transition-colors"
-              />
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                flex: 1,
+                padding: "0 16px",
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(240,236,208,0.35)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <rect width="20" height="16" x="2" y="4" rx="2" />
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                </svg>
+                <input
+                  type="email"
+                  required
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: "16px 12px",
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    color: "#f0ecd0",
+                    fontSize: "14px",
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                />
+              </div>
               <button
                 type="submit"
-                className="px-5 py-3 rounded-xl bg-[#acd663] text-black font-bold text-sm hover:bg-[#96ba50] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#acd663]/30 transition-all duration-300"
+                className="countdown-btn"
+                style={{
+                  padding: "16px 28px",
+                  background: "#acd663",
+                  border: "none",
+                  color: "#1a1a0a",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  fontFamily: "'Inter', sans-serif",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "all 0.3s ease",
+                  whiteSpace: "nowrap",
+                }}
               >
                 Notify Me
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
               </button>
             </form>
           )}
-          <p className="text-foreground/35 text-sm">Be the first to know when we go live.</p>
+          <p style={{ color: "rgba(26,26,10,0.35)", fontSize: "13px", marginTop: "8px" }}>
+            No spam, ever. We'll only email you before launch.
+          </p>
         </div>
+
+        {/* Footer */}
+        <p style={{
+          color: "rgba(26,26,10,0.2)",
+          fontSize: "12px",
+          marginTop: "56px",
+          animation: "countdownSlideUp 0.8s 0.8s ease forwards",
+          opacity: 0,
+        }}>
+          © 2026 MindUp. All rights reserved.
+        </p>
       </div>
+
+      {/* Scoped animations & hover styles */}
+      <style>{`
+        @keyframes countdownSlideDown {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes countdownSlideUp {
+          from { opacity: 0; transform: translateY(24px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes colonPulse {
+          0%, 100% { opacity: 0.25; }
+          50% { opacity: 0.7; }
+        }
+        .countdown-block:hover {
+          transform: translateY(-4px);
+          border-color: rgba(172,214,99,0.5) !important;
+          box-shadow: 0 8px 32px rgba(172,214,99,0.15);
+        }
+        .countdown-form:focus-within {
+          border-color: rgba(172,214,99,0.45) !important;
+          box-shadow: 0 0 20px rgba(172,214,99,0.08);
+        }
+        .countdown-btn:hover {
+          background: #96ba50 !important;
+          box-shadow: 0 4px 20px rgba(172,214,99,0.3);
+          transform: translateY(-1px);
+        }
+        .countdown-page input::placeholder {
+          color: rgba(240,236,208,0.3) !important;
+        }
+        @media (max-width: 480px) {
+          .countdown-block {
+            min-width: 60px !important;
+            padding: 14px 6px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };
