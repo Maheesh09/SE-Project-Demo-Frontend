@@ -14,6 +14,8 @@ import AnimatedList from "@/components/AnimatedList";
 import chatbotOwl from "@/assets/chatbot-owl.png";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, Area } from "recharts";
 import { cn } from "@/lib/utils";
+import { useProfile } from "@/hooks/useProfile";
+
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -276,6 +278,8 @@ const SectionHeader = ({ title, linkTo, linkLabel = "View All", delay = 0 }: {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const displayName = profile?.full_name?.split(" ")[0] ?? profile?.username ?? "Student";
 
   const leaderboardItems = leaderboard.map((entry) => (
     <div className="flex items-center gap-3 px-2 py-1" key={entry.rank}>
@@ -302,7 +306,7 @@ const Dashboard = () => {
       {/* ── Header ── */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-7">
         <div>
-          <BlurText text={`${getGreeting()}, User`} delay={40} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground" />
+          <BlurText text={`${getGreeting()}, ${displayName}`} delay={40} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground" />
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Calendar className="w-3.5 h-3.5" />

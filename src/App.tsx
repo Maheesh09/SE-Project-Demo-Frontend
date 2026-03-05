@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ClerkProvider, SignIn, SignUp, SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
+import { ClerkProvider, SignIn, SignUp, useAuth } from "@clerk/clerk-react";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import CoursesPage from "./pages/CoursesPage";
@@ -21,8 +21,8 @@ import NotFound from "./pages/NotFound";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
-
 import QuizPlayPage from "./pages/QuizPlayPage";
+import { useProfile } from "./hooks/useProfile";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -32,26 +32,61 @@ if (!PUBLISHABLE_KEY) {
 
 const queryClient = new QueryClient();
 
-// Wraps routes that require Clerk authentication
+/**
+ * ProtectedRoute — checks:
+ * 1. User is signed in (Clerk)
+ * 2. Backend profile is completed; if not → redirect to /complete-profile
+ */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, isLoaded } = useUser();
+  const { isSignedIn, isLoaded: authLoaded } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile();
 
-  if (!isLoaded) return null; // you might want a genuine loading spinner here later
+  // While Clerk auth or backend profile is loading, show a spinner
+  if (!authLoaded || profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <span className="w-10 h-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+      </div>
+    );
+  }
 
-  // If signed in, but no grade is set in metadata, force profile completion
-  if (user && !user.unsafeMetadata?.grade) {
+  // Not signed in → redirect to login
+  if (!isSignedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Signed in but profile not completed (or null due to error) → force profile completion
+  if (!profile || !profile.profile_completed) {
     return <Navigate to="/complete-profile" replace />;
   }
 
-  return (
-    <>
-      <SignedIn>{children}</SignedIn>
-      <SignedOut>
-        <Navigate to="/login" replace />
-      </SignedOut>
-    </>
-  );
+  return <>{children}</>;
 };
+
+/**
+ * CompleteProfileRoute — guards the /complete-profile page:
+ * - Not signed in → /login
+ * - Profile already completed → /dashboard
+ * - Otherwise → show CompleteProfilePage
+ */
+const CompleteProfileRoute = () => {
+  const { isSignedIn, isLoaded: authLoaded } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile();
+
+  if (!authLoaded || profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <span className="w-10 h-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isSignedIn) return <Navigate to="/login" replace />;
+  if (profile?.profile_completed) return <Navigate to="/dashboard" replace />;
+
+  return <CompleteProfilePage />;
+};
+
 
 const App = () => (
   <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
@@ -81,7 +116,7 @@ const App = () => (
               }
             />
 
-            <Route path="/complete-profile" element={<><SignedIn><CompleteProfilePage /></SignedIn><SignedOut><Navigate to="/login" replace /></SignedOut></>} />
+            <Route path="/complete-profile" element={<CompleteProfileRoute />} />
 
             {/* Admin routes */}
             <Route path="/admin/login" element={<AdminLoginPage />} />

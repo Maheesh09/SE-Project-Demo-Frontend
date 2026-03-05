@@ -5,6 +5,9 @@ import { Zap, Target, Play, BookOpen } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import BlurText from "@/components/BlurText";
 import { toast } from "sonner";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { api } from "@/lib/api";
+import { useProfile } from "@/hooks/useProfile";
 
 interface Topic {
   id: number;
@@ -13,20 +16,23 @@ interface Topic {
 
 const QuizzesPage = () => {
   const navigate = useNavigate();
+  const { getToken } = useAuth();
+  const { user } = useUser();
+  const { profile } = useProfile();
   const [loadingMode, setLoadingMode] = useState<"term" | "topic" | null>(null);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [chosenTopic, setChosenTopic] = useState<number | "">("");
 
+  // Use the first selected subject's id (from profile), or fall back to 1
+  const subjectId = 1; // will be replaced with dynamic subject selection later
+
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/v1/quiz/topics?subject_id=1");
-        if (res.ok) {
-          const data = await res.json();
-          setTopics(data);
-          if (data.length > 0) {
-            setChosenTopic(data[0].id);
-          }
+        const data = await api.getTopics(subjectId);
+        setTopics(data);
+        if (data.length > 0) {
+          setChosenTopic(data[0].id);
         }
       } catch (err) {
         console.error("Failed to fetch topics:", err);
@@ -43,26 +49,18 @@ const QuizzesPage = () => {
 
     setLoadingMode(mode);
     try {
-      // For Demo: Use mock Subject 1, Student 1.
+      const token = await getToken();
+      if (!token) { toast.error("Not authenticated."); return; }
+
       const payload = {
-        student_id: 1,
-        subject_id: 1,
+        student_id: profile?.id,
+        subject_id: subjectId,
         mode,
-        ...(mode === "topic" && { topic_id: chosenTopic })
+        ...(mode === "topic" && { topic_id: Number(chosenTopic) })
       };
 
-      const res = await fetch("http://127.0.0.1:8000/api/v1/quiz/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || "Failed to start quiz.");
-      }
-
-      const quizData = await res.json();
+      const email = user?.primaryEmailAddress?.emailAddress || "";
+      const quizData = await api.startQuiz(token, payload, user?.id, email);
       navigate("/quiz/play", { state: { quizData } });
 
     } catch (err: any) {
@@ -72,6 +70,7 @@ const QuizzesPage = () => {
       setLoadingMode(null);
     }
   };
+
 
   return (
     <AppLayout>

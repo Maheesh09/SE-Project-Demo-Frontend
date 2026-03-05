@@ -154,7 +154,7 @@ const CoursesPage = () => {
                         </p>
                       </div>
                       <button
-                        onClick={() => navigate("/subject/" + course.title.toLowerCase().replace(/\s+/g, '-'))}
+                        onClick={() => navigate("/subject/" + course.name.toLowerCase().replace(/\s+/g, '-'))}
                         disabled={course.status === "locked"}
                         className={cn(
                           "w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center transition-all shadow-sm",

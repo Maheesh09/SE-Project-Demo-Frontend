@@ -3,10 +3,14 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, ChevronLeft, ChevronRight, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
+import { useAuth, useUser } from "@clerk/clerk-react";
 
 export default function QuizPlayPage() {
     const location = useLocation();
     const navigate = useNavigate();
+    const { getToken } = useAuth();
+    const { user } = useUser();
 
     const quizData = location.state?.quizData;
     const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
@@ -83,27 +87,27 @@ export default function QuizPlayPage() {
         if (isSubmitting) return;
         setIsSubmitting(true);
         try {
+            const token = await getToken();
+            if (!token) throw new Error("Not authenticated");
+
             // Build answers payload for questions that have selections
             const payloadAnswers = Object.entries(answers).map(([qId, oId]) => ({
                 question_id: parseInt(qId),
                 selected_option_id: oId
             }));
 
-            const res = await fetch("http://127.0.0.1:8000/api/v1/quiz/submit", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ session_id, answers: payloadAnswers })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setResult(data);
-            } else {
-                alert("Submission failed!");
-                setIsSubmitting(false);
-            }
-        } catch (err) {
+            const email = user?.primaryEmailAddress?.emailAddress || "";
+            const data = await api.submitQuiz(
+                token,
+                { session_id, answers: payloadAnswers },
+                user?.id,
+                email
+            ) as any;
+
+            setResult(data);
+        } catch (err: any) {
             console.error(err);
-            alert("Network error.");
+            alert("Submission failed: " + (err.message || "Network error."));
             setIsSubmitting(false);
         }
     };
