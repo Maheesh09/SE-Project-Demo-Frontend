@@ -12,14 +12,34 @@ const AdminLoginPage = () => {
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const [loading, setLoading] = useState(false);
+
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Simple hardcoded login for admin
-        if (username === "admin" && password === "admin123") {
-            localStorage.setItem("admin-token", "true");
-            navigate("/admin/dashboard");
-        } else {
-            setError("Invalid admin username or password.");
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/v1/admin/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // If backend provides a token, use that. Otherwise use "true".
+                localStorage.setItem("admin-token", data.admin?.token || "true");
+                navigate("/admin/dashboard");
+            } else {
+                setError(data.detail || data.message || "Invalid admin username or password.");
+            }
+        } catch (err) {
+            console.error(err);
+            setError("Could not connect to the server. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -67,8 +87,8 @@ const AdminLoginPage = () => {
                             className="bg-background/50"
                         />
                     </div>
-                    <Button type="submit" className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">
-                        Sign In
+                    <Button type="submit" disabled={loading} className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">
+                        {loading ? "Signing In..." : "Sign In"}
                     </Button>
                 </form>
             </div>
