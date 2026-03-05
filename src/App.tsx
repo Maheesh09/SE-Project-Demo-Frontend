@@ -18,6 +18,9 @@ import SubjectQuizzesPage from "./pages/SubjectQuizzesPage";
 import Countdown from "./pages/Countdown";
 import CompleteProfilePage from "./pages/CompleteProfilePage";
 import NotFound from "./pages/NotFound";
+import AdminLoginPage from "./pages/AdminLoginPage";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -77,6 +80,10 @@ const App = () => (
             />
 
             <Route path="/complete-profile" element={<><SignedIn><CompleteProfilePage /></SignedIn><SignedOut><Navigate to="/login" replace /></SignedOut></>} />
+
+            {/* Admin routes */}
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
 
             {/* Protected dashboard routes */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
