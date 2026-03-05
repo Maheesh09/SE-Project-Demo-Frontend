@@ -116,6 +116,31 @@ export interface StudentCountOut {
     count: number;
 }
 
+export interface SubjectStat {
+    subject_id: number;
+    subject_name: string;
+    total_quizzes: number;
+    average_score: number;
+    total_xp: number;
+}
+
+export interface RecentQuiz {
+    subject_name: string;
+    score_percentage: number;
+    xp_earned: number;
+    total_correct: number;
+    total_questions: number;
+    completed_at: string;
+}
+
+export interface DashboardStats {
+    total_xp: number;
+    total_quizzes: number;
+    average_score: number | null;
+    subject_stats: SubjectStat[];
+    recent_quizzes: RecentQuiz[];
+}
+
 // ─── API Methods ──────────────────────────────────────────────────────────────
 
 export const api = {
@@ -209,6 +234,10 @@ export const api = {
             xClerkUserId,
             xEmail,
         }),
+
+    // ── Dashboard Stats ──
+    getDashboardStats: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<DashboardStats>("/api/v1/me/dashboard-stats", token, { xClerkUserId, xEmail }),
 
     // ── Admin ──
     getStudentCount: (adminApiKey: string) =>
