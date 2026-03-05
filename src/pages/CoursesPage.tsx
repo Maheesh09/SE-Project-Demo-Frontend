@@ -162,7 +162,7 @@ const CoursesPage = () => {
                         {/* Quick Actions */}
                         <div className="mt-auto flex gap-2">
                           <button
-                            onClick={() => navigate(`/subject/${subject.name.toLowerCase().replace(/\s+/g, '-')}`)}
+                            onClick={() => navigate(`/subject/${subject.id}`)}
                             className="flex-1 py-2.5 gradient-primary text-primary-foreground font-bold rounded-xl text-sm hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2"
                           >
                             <BookOpen className="w-4 h-4" /> Explore
