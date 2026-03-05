@@ -456,7 +456,7 @@ const Dashboard = () => {
                     enableMagnetism
                     particleCount={5}
                     className="rounded-xl overflow-hidden cursor-pointer"
-                    onClick={() => navigate(`/subject/${subject.name.toLowerCase().replace(/\s+/g, '-')}`)}
+                    onClick={() => navigate(`/subject/${subject.id}`)}
                   >
                     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.05 }} className="p-4">
                       <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${color.gradient} flex items-center justify-center mb-3 shadow-sm`}>
