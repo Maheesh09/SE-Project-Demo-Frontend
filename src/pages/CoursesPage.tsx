@@ -1,34 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, BookOpen, Clock, TrendingUp, Award, Flame, ChevronRight, CheckCircle2, PlayCircle, Lock } from "lucide-react";
+import { Star, BookOpen, Clock, TrendingUp, Award, Flame, ChevronRight, CheckCircle2, PlayCircle, Lock, GraduationCap, Brain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import BlurText from "@/components/BlurText";
 import { cn } from "@/lib/utils";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { api, type Subject } from "@/lib/api";
 
-const allCourses = [
-  { id: "c1", name: "Science", description: "Physics, Chemistry, and Biology fundamentals for curious minds.", status: "in-progress", progress: 72, completed: 17, total: 24, xp: 340, timeLeft: "2h 30m", nextLesson: "Newton's Laws of Motion", color: "from-[#b2c59d] to-[#9cb282]" },
-  { id: "c2", name: "English", description: "Classic and modern literature analysis, critical thinking, and essay writing.", status: "in-progress", progress: 90, completed: 18, total: 20, xp: 520, timeLeft: "45m", nextLesson: "Shakespeare's Sonnets", color: "from-[#eed4b5] to-[#d6bc99]" },
-  { id: "c3", name: "Maths", description: "Algebra, Calculus, and Geometry fundamentals for building strong math skills.", status: "in-progress", progress: 45, completed: 8, total: 18, xp: 210, timeLeft: "4h 10m", nextLesson: "Quadratic Equations", color: "from-[#eed4b5] to-[#d6bc99]" },
-  { id: "c4", name: "Civics", description: "Understanding government, rights, duties, and the democratic process.", status: "completed", progress: 100, completed: 30, total: 30, xp: 150, timeLeft: "0m", nextLesson: "Final Exam Review", color: "from-[#b2c59d] to-[#b08a68]" },
-  { id: "c5", name: "History", description: "Exploring ancient civilizations, world wars, and cultural evolution.", status: "in-progress", progress: 55, completed: 11, total: 20, xp: 280, timeLeft: "3h 20m", nextLesson: "World War II Overview", color: "from-[#b2c59d] to-[#9cb282]" },
-  { id: "c6", name: "Health Sci", description: "Nutrition, anatomy, wellness, and preventive healthcare knowledge.", status: "locked", progress: 0, completed: 0, total: 20, xp: 0, timeLeft: "5h 00m", nextLesson: "Digestive System", color: "from-muted-foreground/30 to-muted-foreground/10" },
+// ─── Subject color palette ────────────────────────────────────────────────────
+
+const SUBJECT_COLORS = [
+  { gradient: "from-[#b2c59d] to-[#9cb282]" },
+  { gradient: "from-[#eed4b5] to-[#d6bc99]" },
+  { gradient: "from-[#bac8e0] to-[#99aec4]" },
+  { gradient: "from-[#d4b8e0] to-[#bb9cce]" },
+  { gradient: "from-[#e0c5b5] to-[#c8a996]" },
+  { gradient: "from-[#b5dce0] to-[#96c4c8]" },
 ];
 
-const totalXP = allCourses.reduce((s, c) => s + c.xp, 0);
-const avgProgress = Math.round(allCourses.reduce((s, c) => s + c.progress, 0) / allCourses.length);
-const completedLessons = allCourses.reduce((s, c) => s + c.completed, 0);
-const totalLessons = allCourses.reduce((s, c) => s + c.total, 0);
+const getSubjectColor = (index: number) => SUBJECT_COLORS[index % SUBJECT_COLORS.length];
 
 const CoursesPage = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"all" | "in-progress" | "completed">("in-progress");
+  const { profile } = useProfile();
+  const { getToken } = useAuth();
+  const { user } = useUser();
 
-  const filteredCourses = allCourses.filter(c => {
-    if (activeTab === "all") return true;
-    if (activeTab === "in-progress") return c.status === "in-progress" || c.status === "locked";
-    return c.status === "completed";
-  });
+  const [mySubjects, setMySubjects] = useState<Subject[]>([]);
+  const [subjectsLoading, setSubjectsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"all" | "enrolled">("enrolled");
+
+  // ── Fetch enrolled subjects ──
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const email = user?.primaryEmailAddress?.emailAddress || "";
+        const subs = await api.getMySubjects(token, user?.id, email);
+        if (!cancelled) setMySubjects(subs);
+      } catch (err) {
+        console.error("Failed to fetch subjects:", err);
+      } finally {
+        if (!cancelled) setSubjectsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [getToken, user]);
 
   return (
     <AppLayout>
@@ -36,11 +57,18 @@ const CoursesPage = () => {
       {/* ── Page Header ── */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
-          <BlurText text="My Courses" delay={50} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground mb-1" />
-          <p className="text-sm text-muted-foreground">Pick up where you left off or start something new.</p>
+          <BlurText text="My Subjects" delay={50} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground mb-1" />
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-sm text-muted-foreground">Your enrolled subjects</p>
+            {profile?.grade && (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary flex items-center gap-1">
+                <GraduationCap className="w-3 h-3" /> {profile.grade.name}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex bg-card border border-border/50 p-1.5 rounded-xl shadow-sm w-fit">
-          {(["all", "in-progress", "completed"] as const).map((tab) => (
+          {(["enrolled", "all"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -49,7 +77,7 @@ const CoursesPage = () => {
                 activeTab === tab ? "bg-primary/10 text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {tab.replace("-", " ")}
+              {tab === "enrolled" ? "My Subjects" : "All"}
             </button>
           ))}
         </div>
@@ -58,9 +86,9 @@ const CoursesPage = () => {
       {/* ── Stats Row ── */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
-          { icon: Star, label: "Total XP Earned", value: `${totalXP.toLocaleString()}`, color: "text-xp", bg: "bg-xp/10" },
-          { icon: TrendingUp, label: "Avg Progress", value: `${avgProgress}%`, color: "text-primary", bg: "bg-primary/10" },
-          { icon: CheckCircle2, label: "Lessons Done", value: `${completedLessons}`, color: "text-success", bg: "bg-success/10" },
+          { icon: Star, label: "Total XP Earned", value: "1,500", color: "text-xp", bg: "bg-xp/10" },
+          { icon: TrendingUp, label: "Avg Progress", value: `${mySubjects.length > 0 ? "65" : "0"}%`, color: "text-primary", bg: "bg-primary/10" },
+          { icon: CheckCircle2, label: "Subjects Enrolled", value: subjectsLoading ? "…" : `${mySubjects.length}`, color: "text-success", bg: "bg-success/10" },
           { icon: Flame, label: "Active Streak", value: "7 Days", color: "text-streak", bg: "bg-streak/10" },
         ].map((stat, i) => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.05 }} className="bg-card rounded-2xl p-5 flex items-center gap-4 border border-border/50 shadow-sm">
@@ -77,116 +105,82 @@ const CoursesPage = () => {
 
       <div className="flex flex-col lg:flex-row gap-8">
 
-        {/* ── Main Course Grid ── */}
+        {/* ── Main Subject Grid ── */}
         <div className="flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <AnimatePresence mode="popLayout">
-              {filteredCourses.map((course, i) => (
-                <motion.div
-                  key={course.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  transition={{ duration: 0.25, delay: i * 0.05 }}
-                  className={cn(
-                    "flex flex-col bg-card border rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group",
-                    course.status === "locked" ? "border-border/40 opacity-75" : "border-border/60 hover:border-primary/40"
-                  )}
-                >
-                  {/* Decorative Header */}
-                  <div className={cn("h-24 bg-gradient-to-br relative p-5 flex items-start justify-between", course.color)}>
-                    {course.status === "locked" && (
-                      <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] z-0" />
-                    )}
-                    <div className="relative z-10">
-                      <h3 className="text-xl font-display font-bold text-white drop-shadow-sm mb-1">{course.name}</h3>
-                      <p className="text-xs font-medium text-white/90 drop-shadow-sm flex items-center gap-1.5">
-                        <BookOpen className="w-3.5 h-3.5" />
-                        {course.completed} / {course.total} Lessons
-                      </p>
-                    </div>
-                    {course.status === "completed" && (
-                      <div className="relative z-10 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shadow-sm text-white">
-                        <Award className="w-5 h-5" />
+          {subjectsLoading ? (
+            <div className="flex items-center justify-center py-24">
+              <span className="w-10 h-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+            </div>
+          ) : mySubjects.length === 0 ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-border/50 rounded-3xl bg-muted/10">
+              <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                <BookOpen className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-display font-bold text-foreground mb-1">No subjects enrolled</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mb-6">
+                You haven't enrolled in any subjects yet. Go to settings to add subjects for your grade.
+              </p>
+              <button
+                onClick={() => navigate("/settings")}
+                className="px-6 py-2.5 bg-background border border-border rounded-xl text-sm font-bold text-foreground hover:bg-muted transition-colors shadow-sm"
+              >
+                Go to Settings
+              </button>
+            </motion.div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <AnimatePresence mode="popLayout">
+                {mySubjects.map((subject, i) => {
+                  const color = getSubjectColor(i);
+                  return (
+                    <motion.div
+                      key={subject.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      transition={{ duration: 0.25, delay: i * 0.05 }}
+                      className="flex flex-col bg-card border border-border/60 hover:border-primary/40 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group"
+                    >
+                      {/* Decorative Header */}
+                      <div className={cn("h-24 bg-gradient-to-br relative p-5 flex items-start justify-between", color.gradient)}>
+                        <div className="relative z-10">
+                          <h3 className="text-xl font-display font-bold text-white drop-shadow-sm mb-1">{subject.name}</h3>
+                          <p className="text-xs font-medium text-white/90 drop-shadow-sm flex items-center gap-1.5">
+                            <GraduationCap className="w-3.5 h-3.5" />
+                            {profile?.grade?.name ?? "—"}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    {course.status === "locked" && (
-                      <div className="relative z-10 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center shadow-sm text-white">
-                        <Lock className="w-4 h-4" />
-                      </div>
-                    )}
-                  </div>
 
-                  {/* Body */}
-                  <div className="p-5 flex-1 flex flex-col">
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-6 line-clamp-2 min-h-[40px]">
-                      {course.description}
-                    </p>
-
-                    {/* Progress Track */}
-                    <div className="mb-5 mt-auto">
-                      <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider mb-2">
-                        <span className={course.progress === 100 ? "text-success" : "text-muted-foreground"}>
-                          {course.progress === 100 ? "Completed" : `${course.progress}% done`}
-                        </span>
-                        <span className="flex items-center gap-1 text-xp"><Star className="w-3.5 h-3.5" /> {course.xp} XP</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-muted overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${course.progress}%` }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                          className={cn("h-full rounded-full transition-colors", course.progress === 100 ? "bg-success" : "gradient-primary")}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Up Next & CTA */}
-                    <div className="bg-muted/40 rounded-2xl p-4 flex items-center justify-between">
-                      <div className="flex-1 min-w-0 pr-4">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                          {course.status === "completed" ? "Review" : "Up Next"}
+                      {/* Body */}
+                      <div className="p-5 flex-1 flex flex-col">
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-6 min-h-[40px]">
+                          Study and practice {subject.name} with quizzes, resources, and more.
                         </p>
-                        <p className="text-sm font-semibold text-foreground truncate">{course.nextLesson}</p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                          <Clock className="w-3.5 h-3.5" /> {course.timeLeft} video
-                        </p>
+
+                        {/* Quick Actions */}
+                        <div className="mt-auto flex gap-2">
+                          <button
+                            onClick={() => navigate(`/subject/${subject.name.toLowerCase().replace(/\s+/g, '-')}`)}
+                            className="flex-1 py-2.5 gradient-primary text-primary-foreground font-bold rounded-xl text-sm hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2"
+                          >
+                            <BookOpen className="w-4 h-4" /> Explore
+                          </button>
+                          <button
+                            onClick={() => navigate("/quizzes", { state: { preselectedSubjectId: subject.id } })}
+                            className="flex-1 py-2.5 gradient-accent text-accent-foreground font-bold rounded-xl text-sm hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2"
+                          >
+                            <Brain className="w-4 h-4" /> Quiz
+                          </button>
+                        </div>
                       </div>
-                      <button
-                        onClick={() => navigate("/subject/" + course.name.toLowerCase().replace(/\s+/g, '-'))}
-                        disabled={course.status === "locked"}
-                        className={cn(
-                          "w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center transition-all shadow-sm",
-                          course.status === "completed" ? "bg-success text-white hover:opacity-90" :
-                            course.status === "locked" ? "bg-muted text-muted-foreground opacity-50 cursor-not-allowed" :
-                              "gradient-primary text-white hover:opacity-90 group-hover:scale-105"
-                        )}
-                      >
-                        <PlayCircle className={cn("w-6 h-6", course.status === "locked" && "hidden")} />
-                        {course.status === "locked" && <Lock className="w-5 h-5" />}
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-            {filteredCourses.length === 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-1 md:col-span-2 py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-border/50 rounded-3xl bg-muted/10">
-                <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-                  <BookOpen className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg font-display font-bold text-foreground mb-1">No courses found</h3>
-                <p className="text-sm text-muted-foreground max-w-sm mb-6">You haven't added or completed any courses in this category yet. Start learning to see them here.</p>
-                <button
-                  onClick={() => setActiveTab("all")}
-                  className="px-6 py-2.5 bg-background border border-border rounded-xl text-sm font-bold text-foreground hover:bg-muted transition-colors shadow-sm"
-                >
-                  Explore All Subjects
-                </button>
-              </motion.div>
-            )}
-          </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
 
         {/* ── Sidebar (Achievements & Tips) ── */}
@@ -198,7 +192,7 @@ const CoursesPage = () => {
             <Award className="w-8 h-8 text-accent mb-3 relative z-10" />
             <h3 className="text-lg font-display font-bold text-foreground mb-1 relative z-10">MindUp Pro</h3>
             <p className="text-sm text-foreground/80 mb-4 relative z-10 leading-relaxed">
-              Unlock the Health Science module, custom quizzes, and advanced analytics.
+              Unlock all courses, custom quizzes, and advanced analytics.
             </p>
             <button className="w-full py-2.5 bg-background text-foreground text-sm font-bold rounded-xl shadow border border-border/50 hover:bg-muted transition-colors relative z-10">
               Upgrade to Pro
@@ -211,7 +205,7 @@ const CoursesPage = () => {
             </h3>
             <div className="space-y-4">
               {[
-                { icon: Star, label: "English Master", sub: "90% progress", color: "text-xp", bg: "bg-xp/10" },
+                { icon: Star, label: "Quick Learner", sub: "Enrolled in 3+ subjects", color: "text-xp", bg: "bg-xp/10" },
                 { icon: Flame, label: "7-Day Streak", sub: "Kept studying daily", color: "text-streak", bg: "bg-streak/10" },
                 { icon: BookOpen, label: "Bookworm", sub: "Read 50+ chapters", color: "text-primary", bg: "bg-primary/10" },
               ].map((badge) => (

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Star, Zap, BookOpen, TrendingUp, Brain, BarChart3, ArrowRight,
   Bell, Calendar, Trophy, CheckCircle2, AlertCircle, X, Check,
-  Clock, Target, Flame,
+  Clock, Target, Flame, GraduationCap,
 } from "lucide-react";
 import BlurText from "@/components/BlurText";
 import { Link, useNavigate } from "react-router-dom";
@@ -15,18 +15,11 @@ import chatbotOwl from "@/assets/chatbot-owl.png";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, Area } from "recharts";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { api, type Subject } from "@/lib/api";
 
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const subjectScores = [
-  { subject: "Science", score: 72 },
-  { subject: "English", score: 90 },
-  { subject: "Maths", score: 45 },
-  { subject: "Civics", score: 30 },
-  { subject: "History", score: 55 },
-  { subject: "Health", score: 65 },
-];
+// ─── Static Data (for sections not yet driven by backend) ─────────────────────
 
 const weeklyXP = [
   { day: "Mon", xp: 80 },
@@ -38,15 +31,6 @@ const weeklyXP = [
   { day: "Sun", xp: 50 },
 ];
 
-const courses = [
-  { name: "Science", progress: 72, completed: 17, total: 24, xp: 340 },
-  { name: "English", progress: 90, completed: 18, total: 20, xp: 520 },
-  { name: "Maths", progress: 45, completed: 8, total: 18, xp: 210 },
-  { name: "Civics", progress: 30, completed: 9, total: 30, xp: 150 },
-  { name: "History", progress: 55, completed: 11, total: 20, xp: 280 },
-  { name: "Health Sci", progress: 65, completed: 13, total: 20, xp: 310 },
-];
-
 const leaderboard = [
   { rank: 1, name: "Amal P.", xp: 5800, level: 24, streak: 30 },
   { rank: 2, name: "You", xp: 4600, level: 20, streak: 7, isYou: true },
@@ -54,6 +38,19 @@ const leaderboard = [
   { rank: 4, name: "Nimal S.", xp: 3100, level: 14, streak: 6 },
   { rank: 5, name: "Kavya R.", xp: 2850, level: 13, streak: 4 },
 ];
+
+// ─── Subject color palette ────────────────────────────────────────────────────
+
+const SUBJECT_COLORS = [
+  { gradient: "from-[#b2c59d] to-[#9cb282]", bg: "bg-emerald-100", text: "text-emerald-700" },
+  { gradient: "from-[#eed4b5] to-[#d6bc99]", bg: "bg-amber-100", text: "text-amber-700" },
+  { gradient: "from-[#bac8e0] to-[#99aec4]", bg: "bg-blue-100", text: "text-blue-700" },
+  { gradient: "from-[#d4b8e0] to-[#bb9cce]", bg: "bg-purple-100", text: "text-purple-700" },
+  { gradient: "from-[#e0c5b5] to-[#c8a996]", bg: "bg-orange-100", text: "text-orange-700" },
+  { gradient: "from-[#b5dce0] to-[#96c4c8]", bg: "bg-teal-100", text: "text-teal-700" },
+];
+
+const getSubjectColor = (index: number) => SUBJECT_COLORS[index % SUBJECT_COLORS.length];
 
 // ─── Notifications ────────────────────────────────────────────────────────────
 
@@ -279,7 +276,37 @@ const SectionHeader = ({ title, linkTo, linkLabel = "View All", delay = 0 }: {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const { getToken } = useAuth();
+  const { user } = useUser();
   const displayName = profile?.full_name?.split(" ")[0] ?? profile?.username ?? "Student";
+
+  // ── Fetch user's enrolled subjects from the API ──
+  const [mySubjects, setMySubjects] = useState<Subject[]>([]);
+  const [subjectsLoading, setSubjectsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const email = user?.primaryEmailAddress?.emailAddress || "";
+        const subs = await api.getMySubjects(token, user?.id, email);
+        if (!cancelled) setMySubjects(subs);
+      } catch (err) {
+        console.error("Failed to fetch subjects:", err);
+      } finally {
+        if (!cancelled) setSubjectsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [getToken, user]);
+
+  // Build subject scores for chart from enrolled subjects
+  const subjectScores = mySubjects.map((s, i) => ({
+    subject: s.name.length > 8 ? s.name.slice(0, 7) + "…" : s.name,
+    score: Math.floor(Math.random() * 60) + 30, // placeholder until backend tracks per-subject
+  }));
 
   const leaderboardItems = leaderboard.map((entry) => (
     <div className="flex items-center gap-3 px-2 py-1" key={entry.rank}>
@@ -330,11 +357,54 @@ const Dashboard = () => {
         </div>
       </motion.div>
 
+      {/* ── Grade Badge ── */}
+      {profile?.grade && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="mb-7"
+        >
+          <div className="glass rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center shadow-md">
+                <GraduationCap className="w-7 h-7 text-primary-foreground" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Your Grade</p>
+                <h3 className="text-xl font-display font-black text-foreground">{profile.grade.name}</h3>
+                {profile.district && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {!subjectsLoading && mySubjects.length > 0 && mySubjects.map((s, i) => {
+                const color = getSubjectColor(i);
+                return (
+                  <span
+                    key={s.id}
+                    className={`px-3 py-1.5 rounded-full text-[11px] font-bold ${color.bg} ${color.text}`}
+                  >
+                    {s.name}
+                  </span>
+                );
+              })}
+              {subjectsLoading && (
+                <span className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* ── KPI row ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
         <StatCard icon={Star} label="Total XP" value="2,450" subtitle="+120 this week" subtitleTrend="up" colorClass="text-xp" delay={0} />
         <StatCard icon={Zap} label="Day Streak" value="7" subtitle="Best: 14 days" subtitleTrend="neutral" colorClass="text-streak" delay={0.07} />
-        <StatCard icon={BookOpen} label="Courses Active" value="6" subtitle="2 completed" subtitleTrend="up" colorClass="text-primary" delay={0.14} />
+        <StatCard icon={BookOpen} label="Subjects" value={subjectsLoading ? "…" : String(mySubjects.length)} subtitle={profile?.grade?.name ?? "—"} subtitleTrend="neutral" colorClass="text-primary" delay={0.14} />
         <StatCard icon={TrendingUp} label="Avg Quiz Score" value="87%" subtitle="+5% this week" subtitleTrend="up" colorClass="text-success" delay={0.21} />
       </div>
 
@@ -406,9 +476,11 @@ const Dashboard = () => {
               <Brain className="w-5 h-5 text-primary-foreground" />
             </div>
             <h2 className="text-base font-display font-bold text-foreground mb-1">Quizzes</h2>
-            <p className="text-xs text-muted-foreground leading-relaxed">Test your knowledge and earn XP rewards</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">Select a subject and test your knowledge</p>
             <div className="mt-auto pt-4 flex gap-2 flex-wrap">
-              <span className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-semibold">6 available</span>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-semibold">
+                {subjectsLoading ? "…" : `${mySubjects.length} subjects`}
+              </span>
               <span className="text-xs px-2.5 py-1 rounded-full bg-accent/10 text-accent font-semibold">+50–120 XP</span>
             </div>
           </div>
@@ -425,7 +497,7 @@ const Dashboard = () => {
             <h2 className="text-base font-display font-bold text-foreground mb-2">Analytics</h2>
             <div className="h-[68px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={subjectScores} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                <BarChart data={subjectScores.length > 0 ? subjectScores : [{ subject: "—", score: 0 }]} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                   <XAxis dataKey="subject" tick={{ fontSize: 8, fill: "hsl(28 20% 50%)" }} />
                   <YAxis hide />
                   <Tooltip contentStyle={{ background: "hsl(38 62% 92%)", border: "1px solid hsl(38 30% 82%)", borderRadius: "8px", fontSize: "11px" }} cursor={{ fill: "hsl(38 30% 82% / 0.4)" }} />
@@ -452,29 +524,59 @@ const Dashboard = () => {
       {/* ── Divider ── */}
       <div className="border-t border-border/40 mb-7" />
 
-      {/* ── Courses + Leaderboard ── */}
+      {/* ── My Subjects + Leaderboard ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <div className="lg:col-span-2">
-          <SectionHeader title="My Courses" linkTo="/courses" delay={0.35} />
+          <SectionHeader title="My Subjects" linkTo="/courses" delay={0.35} />
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }} className="glass rounded-2xl p-4">
-            <BentoCardGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {courses.map((course, i) => (
-                <MagicCard key={course.name} glowColor="178,197,157" enableTilt enableMagnetism particleCount={5} className="rounded-xl overflow-hidden cursor-pointer" onClick={() => navigate("/subject/" + course.name.toLowerCase().replace(/\s+/g, '-'))}>
-                  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.05 }} className="p-4">
-                    <h3 className="text-sm font-display font-bold text-foreground mb-0.5">{course.name}</h3>
-                    <p className="text-[10px] text-muted-foreground mb-2.5">{course.completed}/{course.total} lessons</p>
-                    <div className="h-1.5 rounded-full bg-border overflow-hidden">
-                      <motion.div initial={{ width: 0 }} animate={{ width: `${course.progress}%` }} transition={{ delay: 0.55 + i * 0.05, duration: 1, ease: "easeOut" }} className="h-full rounded-full gradient-primary" />
-                    </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <span className="text-[10px] font-semibold text-muted-foreground">{course.progress}%</span>
-                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-xp"><Star className="w-3 h-3 fill-current opacity-70" />{course.xp}</span>
-                    </div>
-                  </motion.div>
-                </MagicCard>
-              ))}
-            </BentoCardGrid>
+            {subjectsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <span className="w-8 h-8 rounded-full border-3 border-primary/30 border-t-primary animate-spin" />
+              </div>
+            ) : mySubjects.length === 0 ? (
+              <div className="py-12 text-center">
+                <BookOpen className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">No subjects enrolled yet.</p>
+                <button onClick={() => navigate("/settings")} className="mt-3 text-xs font-bold text-primary hover:text-primary/80">
+                  Go to Settings to add subjects
+                </button>
+              </div>
+            ) : (
+              <BentoCardGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {mySubjects.map((subject, i) => {
+                  const color = getSubjectColor(i);
+                  return (
+                    <MagicCard
+                      key={subject.id}
+                      glowColor="178,197,157"
+                      enableTilt
+                      enableMagnetism
+                      particleCount={5}
+                      className="rounded-xl overflow-hidden cursor-pointer"
+                      onClick={() => navigate(`/subject/${subject.name.toLowerCase().replace(/\s+/g, '-')}`)}
+                    >
+                      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.05 }} className="p-4">
+                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${color.gradient} flex items-center justify-center mb-3 shadow-sm`}>
+                          <BookOpen className="w-4 h-4 text-white" />
+                        </div>
+                        <h3 className="text-sm font-display font-bold text-foreground mb-0.5">{subject.name}</h3>
+                        <p className="text-[10px] text-muted-foreground">{profile?.grade?.name ?? "—"}</p>
+                        <div className="mt-3 flex items-center justify-between">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); navigate("/quizzes", { state: { preselectedSubjectId: subject.id } }); }}
+                            className="text-[10px] font-bold text-primary hover:text-primary/80 flex items-center gap-1"
+                          >
+                            <Brain className="w-3 h-3" /> Start Quiz
+                          </button>
+                          <span className="flex items-center gap-0.5 text-[10px] font-semibold text-xp"><Star className="w-3 h-3 fill-current opacity-70" />+XP</span>
+                        </div>
+                      </motion.div>
+                    </MagicCard>
+                  );
+                })}
+              </BentoCardGrid>
+            )}
           </motion.div>
         </div>
 

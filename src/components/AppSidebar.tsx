@@ -8,6 +8,7 @@ import mindupLogo from "@/assets/mindup-logo.png";
 import { useState, useEffect } from "react";
 import ProfileModal from "./ProfileModal";
 import { useUser } from "@clerk/clerk-react";
+import { useProfile } from "@/hooks/useProfile";
 
 const mainNav = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -67,6 +68,7 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user } = useUser();
+  const { profile } = useProfile();
 
   // Close sidebar on route change for mobile
   useEffect(() => {
@@ -115,7 +117,7 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-sidebar-accent-foreground truncate">{displayName}</p>
-              <p className="text-[11px] text-sidebar-foreground/70">Level 12 · Colombo</p>
+              <p className="text-[11px] text-sidebar-foreground/70">{profile?.grade?.name ?? "—"}{profile?.district ? ` · ${profile.district.name}` : ""}</p>
             </div>
             <div className="w-2 h-2 rounded-full bg-success animate-pulse flex-shrink-0" title="Online" />
           </div>
