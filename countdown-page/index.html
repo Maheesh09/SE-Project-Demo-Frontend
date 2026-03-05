@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MINDUP | Coming Soon</title>
+  <meta name="description" content="MINDUP is launching soon. A gamified self-learning platform. Level Up Your Mind." />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #f7f5df;
+      color: #141414;
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero background (same as landing page) ── */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('hero-bg.jpg');
+      background-size: cover;
+      background-position: left center;
+      transform: scaleX(-1);
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to left, #f7f5df 15%, rgba(247,245,223,0.9) 45%, rgba(247,245,223,0.5) 100%);
+    }
+
+    /* ── Twinkling stars (same as landing page) ── */
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(20,20,20,0.5);
+      border-radius: 50%;
+      animation: twinkle var(--duration, 3s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    /* ── Container ── */
+    .container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 2rem 1.5rem;
+      max-width: 720px;
+      width: 100%;
+    }
+
+
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* ── Logo section ── */
+    .logo-section {
+      margin-bottom: 2rem;
+      animation: fadeUp 0.8s 0.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    .logo {
+      height: 64px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* ── Heading (Orbitron, uppercase like landing) ── */
+    .heading {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      line-height: 1.1;
+      color: #141414;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.75rem;
+      animation: fadeUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    .heading .accent {
+      color: #acd663;
+    }
+    /* ── Subtext (Rajdhani like landing) ── */
+    .subtext {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: rgba(20,20,20,0.7);
+      font-weight: 500;
+      line-height: 1.6;
+      max-width: 480px;
+      margin: 0 auto 2.5rem;
+      animation: fadeUp 0.8s 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Countdown ── */
+    .countdown {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.8s 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+
+    .countdown-card {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px;
+      padding: 20px 8px 16px;
+      min-width: 88px;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: default;
+    }
+    .countdown-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(172,214,99,0.35);
+      box-shadow: 0 12px 36px rgba(172,214,99,0.12), 0 0 0 1px rgba(172,214,99,0.1);
+    }
+
+    .countdown-num {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1;
+      color: #141414;
+      margin-bottom: 6px;
+    }
+
+    .countdown-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: rgba(20,20,20,0.6);
+    }
+
+    .countdown-sep {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700;
+      color: rgba(172,214,99,0.5);
+      padding: 0 2px;
+      margin-bottom: 16px;
+      animation: colonPulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes colonPulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    /* ── Email form (pill style like landing buttons) ── */
+    .form-wrap {
+      animation: fadeUp 0.8s 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+
+    .email-form {
+      display: flex;
+      max-width: 440px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 9999px;
+      overflow: hidden;
+      transition: all 0.35s ease;
+    }
+    .email-form:focus-within {
+      border-color: rgba(172,214,99,0.5);
+      box-shadow: 0 0 0 3px rgba(172,214,99,0.08), 0 4px 20px rgba(0,0,0,0.04);
+    }
+
+    .email-input {
+      flex: 1;
+      padding: 14px 24px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #141414;
+      font-size: 15px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+    }
+    .email-input::placeholder {
+      color: rgba(20,20,20,0.55);
+    }
+
+    .submit-btn {
+      padding: 14px 28px;
+      background: #acd663;
+      border: none;
+      color: #000;
+      font-weight: 700;
+      font-size: 14px;
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+    .submit-btn:hover {
+      background: #96ba50;
+      box-shadow: 0 4px 20px rgba(172,214,99,0.35);
+      transform: translateY(-1px);
+    }
+    .submit-btn:active { transform: translateY(0) scale(0.98); }
+
+    /* ── Success ── */
+    .success-card {
+      background: rgba(172,214,99,0.1);
+      border: 1px solid rgba(172,214,99,0.25);
+      border-radius: 16px;
+      padding: 18px 28px;
+      max-width: 440px;
+      margin: 0 auto;
+      animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .success-card p {
+      color: #5a7a20;
+      font-weight: 700;
+      font-size: 15px;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+
+    /* ── Helper note ── */
+    .form-note {
+      color: rgba(20,20,20,0.55);
+      font-size: 13px;
+      margin-top: 12px;
+      font-weight: 500;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      color: rgba(20,20,20,0.45);
+      font-size: 12px;
+      margin-top: 3.5rem;
+      font-weight: 500;
+      animation: fadeUp 0.8s 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 560px) {
+      .nav-pill { max-width: 280px; padding: 6px 14px; }
+      .nav-link { display: none; }
+      .countdown { gap: 6px; }
+      .countdown-card { min-width: 68px; padding: 14px 4px 12px; border-radius: 12px; }
+      .countdown-num { font-size: 1.5rem; }
+      .countdown-sep { font-size: 1rem; padding: 0; margin-bottom: 12px; }
+      .countdown-label { font-size: 0.55rem; letter-spacing: 1.5px; }
+      .email-form { border-radius: 16px; flex-direction: column; }
+      .submit-btn { border-radius: 12px; justify-content: center; margin: 4px; }
+      .email-input { padding: 12px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero background (same as landing page) -->
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+
+  <!-- Stars (same as landing page) -->
+  <div id="stars" style="position:fixed;inset:0;z-index:1;pointer-events:none;"></div>
+
+
+
+  <!-- Main content -->
+  <div class="container">
+
+    <!-- Heading (Orbitron, uppercase, just like landing "Level Up Your Mind") -->
+    <h1 class="heading">
+      Something <span class="accent">Amazing</span><br>Is Coming
+    </h1>
+
+    <!-- Subtext -->
+    <p class="subtext">
+      We're building a smarter way to learn. Be the first to
+      experience MindUp when we launch.
+    </p>
+
+    <!-- Countdown -->
+    <div class="countdown" id="countdown">
+      <div class="countdown-card">
+        <div class="countdown-num" id="days">00</div>
+        <div class="countdown-label">Days</div>
+      </div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-card">
+        <div class="countdown-num" id="hours">00</div>
+        <div class="countdown-label">Hours</div>
+      </div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-card">
+        <div class="countdown-num" id="minutes">00</div>
+        <div class="countdown-label">Minutes</div>
+      </div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-card">
+        <div class="countdown-num" id="seconds">00</div>
+        <div class="countdown-label">Seconds</div>
+      </div>
+    </div>
+
+    <!-- Email form -->
+    <div class="form-wrap">
+      <div id="successMsg" class="success-card" style="display:none;">
+        <p>🎉 You're on the list! We'll notify you at launch.</p>
+      </div>
+
+      <form class="email-form" id="emailForm">
+        <input type="email" class="email-input" placeholder="Enter your email" required />
+        <button type="submit" class="submit-btn">
+          Notify Me
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </button>
+      </form>
+
+      <p class="form-note">No spam, ever. We'll only email you before launch.</p>
+    </div>
+
+    <!-- Footer -->
+    <p class="footer">© 2026 MINDUP. All rights reserved.</p>
+
+  </div>
+
+  <script>
+    // Generate twinkling stars (same as landing page)
+    (function() {
+      const container = document.getElementById('stars');
+      for (let i = 0; i < 60; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.setProperty('--delay', (Math.random() * 6) + 's');
+        star.style.setProperty('--duration', (2.5 + Math.random() * 5) + 's');
+        if (Math.random() > 0.7) star.style.width = star.style.height = '3px';
+        container.appendChild(star);
+      }
+    })();
+
+    // Countdown
+    const launchDate = new Date('2026-05-01T00:00:00').getTime();
+
+    function updateCountdown() {
+      const diff = launchDate - Date.now();
+      if (diff <= 0) {
+        document.getElementById('days').textContent = '00';
+        document.getElementById('hours').textContent = '00';
+        document.getElementById('minutes').textContent = '00';
+        document.getElementById('seconds').textContent = '00';
+        return;
+      }
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      document.getElementById('days').textContent = String(d).padStart(2, '0');
+      document.getElementById('hours').textContent = String(h).padStart(2, '0');
+      document.getElementById('minutes').textContent = String(m).padStart(2, '0');
+      document.getElementById('seconds').textContent = String(s).padStart(2, '0');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Email form
+    document.getElementById('emailForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      this.style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
+    });
+  </script>
+
+</body>
+</html>
