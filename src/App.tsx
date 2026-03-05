@@ -22,6 +22,8 @@ import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 
+import QuizPlayPage from "./pages/QuizPlayPage";
+
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY) {
@@ -89,6 +91,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/courses" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
             <Route path="/quizzes" element={<ProtectedRoute><QuizzesPage /></ProtectedRoute>} />
+            <Route path="/quiz/play" element={<ProtectedRoute><QuizPlayPage /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
             <Route path="/chatbot" element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />

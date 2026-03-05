@@ -1,9 +1,78 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Zap, Target, Play, BookOpen } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import BlurText from "@/components/BlurText";
+import { toast } from "sonner";
+
+interface Topic {
+  id: number;
+  name: string;
+}
 
 const QuizzesPage = () => {
+  const navigate = useNavigate();
+  const [loadingMode, setLoadingMode] = useState<"term" | "topic" | null>(null);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [chosenTopic, setChosenTopic] = useState<number | "">("");
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/v1/quiz/topics?subject_id=1");
+        if (res.ok) {
+          const data = await res.json();
+          setTopics(data);
+          if (data.length > 0) {
+            setChosenTopic(data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch topics:", err);
+      }
+    };
+    fetchTopics();
+  }, []);
+
+  const startQuiz = async (mode: "term" | "topic") => {
+    if (mode === "topic" && !chosenTopic) {
+      toast.error("Please select a topic first.");
+      return;
+    }
+
+    setLoadingMode(mode);
+    try {
+      // For Demo: Use mock Subject 1, Student 1.
+      const payload = {
+        student_id: 1,
+        subject_id: 1,
+        mode,
+        ...(mode === "topic" && { topic_id: chosenTopic })
+      };
+
+      const res = await fetch("http://127.0.0.1:8000/api/v1/quiz/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || "Failed to start quiz.");
+      }
+
+      const quizData = await res.json();
+      navigate("/quiz/play", { state: { quizData } });
+
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to generate quiz. Is the backend running?");
+    } finally {
+      setLoadingMode(null);
+    }
+  };
+
   return (
     <AppLayout>
       {/* Header */}
@@ -45,9 +114,11 @@ const QuizzesPage = () => {
             </p>
 
             <button
-              className="w-full text-center bg-primary text-primary-foreground hover:bg-primary/90 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-300 shadow-sm flex items-center justify-center gap-2 mt-auto cursor-pointer"
+              disabled={loadingMode !== null}
+              onClick={() => startQuiz("term")}
+              className={`w-full text-center bg-primary text-primary-foreground hover:bg-primary/90 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-300 shadow-sm flex items-center justify-center gap-2 mt-auto cursor-pointer ${loadingMode === "term" ? "opacity-70 cursor-not-allowed" : ""}`}
             >
-              <Play className="w-4 h-4" /> Start Term Quiz
+              <Play className="w-4 h-4" /> {loadingMode === "term" ? "Generating..." : "Start Term Quiz"}
             </button>
           </motion.div>
         </div>
@@ -66,14 +137,34 @@ const QuizzesPage = () => {
 
             <h2 className="font-display font-bold text-2xl text-foreground mb-4">Topic Mode</h2>
 
-            <p className="text-sm text-muted-foreground mb-8 leading-relaxed flex-grow">
+            <p className="text-sm text-muted-foreground mb-4 leading-relaxed flex-grow">
               Perfect for targeted revision. All questions are strictly restricted to your selected topic to ensure focused practice. The difficulty scales automatically within this topic, ensuring exposure to new content without sudden difficulty spikes.
             </p>
 
-            <button
-              className="w-full text-center bg-accent text-accent-foreground hover:bg-accent/90 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-300 shadow-sm flex items-center justify-center gap-2 mt-auto cursor-pointer"
+            <select
+              title="topic-selection"
+              value={chosenTopic}
+              onChange={(e) => setChosenTopic(Number(e.target.value))}
+              disabled={loadingMode !== null || topics.length === 0}
+              className="w-full bg-background border border-border/50 text-foreground text-sm rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-accent/50 outline-none transition-all"
             >
-              <Play className="w-4 h-4" /> Start Topic Quiz
+              {topics.length === 0 ? (
+                <option value="">No topics available</option>
+              ) : (
+                topics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))
+              )}
+            </select>
+
+            <button
+              disabled={loadingMode !== null}
+              onClick={() => startQuiz("topic")}
+              className={`w-full text-center bg-accent text-accent-foreground hover:bg-accent/90 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-300 shadow-sm flex items-center justify-center gap-2 mt-auto cursor-pointer ${loadingMode === "topic" ? "opacity-70 cursor-not-allowed" : ""}`}
+            >
+              <Play className="w-4 h-4" /> {loadingMode === "topic" ? "Generating..." : "Start Topic Quiz"}
             </button>
           </motion.div>
         </div>
