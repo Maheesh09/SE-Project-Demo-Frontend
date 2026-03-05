@@ -1,4 +1,4 @@
-# MindUp – Student Education Platform
+# MindUp – Level Up Mind
 
 ## Project Info
 
@@ -92,6 +92,4 @@ npm update
 
 ---
 
-If you want, I can also **create a fully polished, ready-to-paste README.md** with badges, screenshots of the dashboard, quizzes, and analytics sections for your GitHub repo — it will look professional and match your MindUp project perfectly.  
 
-Do you want me to do that?
