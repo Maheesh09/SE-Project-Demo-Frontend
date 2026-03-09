@@ -32,9 +32,9 @@ const StatCard = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.4 }}
+      transition={{ delay, duration: 0.2 }}
       className="glass glass-hover rounded-2xl p-4 sm:p-5 flex flex-col gap-4 border border-border/40"
     >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">

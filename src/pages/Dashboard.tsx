@@ -361,7 +361,7 @@ const Dashboard = () => {
       </div>
 
       {/* ── Quick action bento ── */}
-      <SectionHeader title="Quick Actions" delay={0.3} />
+      <SectionHeader title="Quick Actions" delay={0.1} />
       <BentoCardGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
 
         <MagicCard onClick={() => navigate("/quizzes")} enableTilt enableMagnetism enableStars glowColor="178,197,157">
@@ -429,8 +429,8 @@ const Dashboard = () => {
 
       {/* ── My Subjects ── */}
       <div>
-        <SectionHeader title="My Subjects" linkTo="/courses" delay={0.35} />
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }} className="glass rounded-2xl p-4">
+        <SectionHeader title="My Subjects" linkTo="/courses" delay={0.12} />
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14, duration: 0.25 }} className="glass rounded-2xl p-4">
           {subjectsLoading ? (
             <div className="flex items-center justify-center py-12">
               <span className="w-8 h-8 rounded-full border-3 border-primary/30 border-t-primary animate-spin" />
@@ -458,7 +458,7 @@ const Dashboard = () => {
                     className="rounded-xl overflow-hidden cursor-pointer"
                     onClick={() => navigate(`/subject/${subject.id}`)}
                   >
-                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.05 }} className="p-4">
+                    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.02 * i, duration: 0.2 }} className="p-4">
                       <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${color.gradient} flex items-center justify-center mb-3 shadow-sm`}>
                         <BookOpen className="w-4 h-4 text-white" />
                       </div>
