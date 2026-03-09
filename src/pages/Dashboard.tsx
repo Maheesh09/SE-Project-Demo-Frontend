@@ -86,7 +86,7 @@ const LiveClock = () => {
 const SectionHeader = ({ title, linkTo, linkLabel = "View All", delay = 0 }: {
   title: string; linkTo?: string; linkLabel?: string; delay?: number;
 }) => (
-  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
+  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.2 }}
     className="flex items-center justify-between mb-4">
     <h2 className="text-base font-display font-bold text-foreground">{title}</h2>
     {linkTo && (
@@ -171,9 +171,9 @@ const Dashboard = () => {
     <AppLayout>
 
       {/* ── Header ── */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-7">
+      <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-7">
         <div>
-          <BlurText text={`${getGreeting()}, ${displayName}`} delay={40} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground" />
+          <BlurText text={`${getGreeting()}, ${displayName}`} delay={20} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground" />
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Calendar className="w-3.5 h-3.5" />
@@ -195,9 +195,9 @@ const Dashboard = () => {
       {/* ── Grade Badge ── */}
       {profile?.grade && (
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
+          transition={{ delay: 0.03, duration: 0.2 }}
           className="mb-7"
         >
           <div className="glass rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -253,7 +253,7 @@ const Dashboard = () => {
           subtitle={stats?.total_quizzes === 0 ? "Start your first quiz!" : `Across ${stats?.subject_stats?.length ?? 0} subjects`}
           subtitleTrend="neutral"
           colorClass="text-streak"
-          delay={0.07}
+          delay={0.03}
         />
         <StatCard
           icon={BookOpen}
@@ -262,7 +262,7 @@ const Dashboard = () => {
           subtitle={profile?.grade?.name ?? "—"}
           subtitleTrend="neutral"
           colorClass="text-primary"
-          delay={0.14}
+          delay={0.06}
         />
         <StatCard
           icon={TrendingUp}
@@ -271,7 +271,7 @@ const Dashboard = () => {
           subtitle={stats?.average_score == null ? "No quizzes yet" : "Across all subjects"}
           subtitleTrend="neutral"
           colorClass="text-success"
-          delay={0.21}
+          delay={0.09}
         />
       </div>
 
@@ -279,7 +279,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-7">
 
         {/* Subject Performance chart (real data) */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.25 }}
           className="lg:col-span-2 glass rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -317,7 +317,7 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Recent Quiz Results (real data) */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.25 }}
           className="glass rounded-2xl p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-4">
             <Trophy className="w-4 h-4 text-accent" />
