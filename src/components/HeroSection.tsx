@@ -1,78 +1,71 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Star, Zap, Flame, Trophy, Sparkles } from "lucide-react";
+import { Star, Sparkles } from "lucide-react";
 
 const FOX_IMG = "/fox/mascot.png";
 
-// ─── Orbiting reward badges ─────────────────────────────────────────────────
+// ─── Orbiting orbs ──────────────────────────────────────────────────────────
 
-const orbitItems = [
-  { icon: Star, text: "+250 XP", color: "#acd663", bg: "#acd663" },
-  { icon: Flame, text: "7-day streak", color: "#f59e0b", bg: "#f59e0b" },
-  { icon: Trophy, text: "#3 Rank", color: "#d4a87a", bg: "#d4a87a" },
-  { icon: Zap, text: "Quiz Passed!", color: "#acd663", bg: "#acd663" },
+const orbs = [
+  { size: 18, color: "#acd663", glow: "rgba(172,214,99,0.5)", blur: 8 },
+  { size: 10, color: "#d4a87a", glow: "rgba(212,168,122,0.4)", blur: 6 },
+  { size: 14, color: "#acd663", glow: "rgba(172,214,99,0.45)", blur: 7 },
+  { size: 8, color: "#b08a68", glow: "rgba(176,138,104,0.35)", blur: 5 },
+  { size: 22, color: "#acd663", glow: "rgba(172,214,99,0.4)", blur: 10 },
+  { size: 6, color: "#d4a87a", glow: "rgba(212,168,122,0.3)", blur: 4 },
+  { size: 12, color: "#f7f5df", glow: "rgba(247,245,223,0.5)", blur: 6 },
 ];
 
-const OrbitingBadges = () => {
-  // Each badge is placed at 90° intervals, then the whole ring rotates
-  // The badge itself counter-rotates so it stays upright
-  return (
-    <div className="absolute inset-0 pointer-events-none z-20">
-      {/* Orbit ring - rotates continuously */}
-      <div
-        className="absolute left-1/2 top-1/2 hero-orbit-ring"
-        style={{
-          width: "clamp(300px, 80vw, 460px)",
-          height: "clamp(300px, 80vw, 460px)",
-          marginLeft: "calc(clamp(300px, 80vw, 460px) / -2)",
-          marginTop: "calc(clamp(300px, 80vw, 460px) / -2)",
-        }}
-      >
-        {/* Subtle orbit path */}
-        <div className="absolute inset-2 rounded-full border border-dashed border-[#acd663]/10" />
-
-        {orbitItems.map((item, i) => {
-          const angle = (360 / orbitItems.length) * i;
-          return (
-            <div
-              key={item.text}
-              className="absolute left-1/2 top-1/2"
+const OrbitingOrbs = () => (
+  <div className="absolute inset-0 pointer-events-none z-20">
+    {/* Orbit ring */}
+    <div
+      className="absolute left-1/2 top-1/2 hero-orbit-ring"
+      style={{
+        width: "clamp(300px, 80vw, 460px)",
+        height: "clamp(300px, 80vw, 460px)",
+        marginLeft: "calc(clamp(300px, 80vw, 460px) / -2)",
+        marginTop: "calc(clamp(300px, 80vw, 460px) / -2)",
+      }}
+    >
+      {orbs.map((orb, i) => {
+        const angle = (360 / orbs.length) * i;
+        return (
+          <div
+            key={i}
+            className="absolute left-1/2 top-1/2"
+            style={{
+              transform: `rotate(${angle}deg) translateX(calc(clamp(300px, 80vw, 460px) / 2))`,
+              marginLeft: `${-orb.size / 2}px`,
+              marginTop: `${-orb.size / 2}px`,
+            }}
+          >
+            <motion.div
+              className="rounded-full"
               style={{
-                transform: `rotate(${angle}deg) translateX(calc(clamp(300px, 80vw, 460px) / 2)) rotate(-${angle}deg)`,
-                marginLeft: "-60px",
-                marginTop: "-18px",
+                width: orb.size,
+                height: orb.size,
+                background: orb.color,
+                boxShadow: `0 0 ${orb.blur}px ${orb.glow}, 0 0 ${orb.blur * 2}px ${orb.glow}`,
               }}
-            >
-              {/* Counter-rotate to stay upright */}
-              <div className="hero-orbit-badge-counter">
-                <motion.div
-                  className="flex items-center gap-1.5 bg-white rounded-full pl-2 pr-3 py-1.5 shadow-lg border border-black/[0.04] pointer-events-auto cursor-default whitespace-nowrap"
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.5 + i * 0.2, duration: 0.5, ease: "backOut" }}
-                  whileHover={{ scale: 1.15 }}
-                >
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${item.bg}20` }}
-                  >
-                    <item.icon size={12} color={item.color} strokeWidth={2.5} />
-                  </div>
-                  <span className="text-[11px] font-bold text-gray-800">{item.text}</span>
-                </motion.div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: [0, 0.9, 0.6, 0.9], scale: 1 }}
+              transition={{
+                opacity: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1.2 + i * 0.15 },
+                scale: { duration: 0.5, delay: 1.2 + i * 0.15, ease: "backOut" },
+              }}
+            />
+          </div>
+        );
+      })}
     </div>
-  );
-};
+  </div>
+);
 
 // ─── Speech bubble ───────────────────────────────────────────────────────────
 
 const SpeechBubble = () => {
-  const fullText = "Ready to level up? 🚀";
+  const fullText = "Ready to level up?";
   const [text, setText] = useState("");
 
   useEffect(() => {
@@ -303,7 +296,7 @@ const HeroSection = () => {
               <SpeechBubble />
 
               {/* Orbiting reward badges */}
-              <OrbitingBadges />
+              <OrbitingOrbs />
             </div>
           </div>
 
