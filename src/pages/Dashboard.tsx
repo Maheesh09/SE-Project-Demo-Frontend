@@ -10,7 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import StatCard from "@/components/StatCard";
 import { BentoCardGrid, MagicCard } from "@/components/MagicCard";
-import chatbotOwl from "@/assets/chatbot-owl.png";
+const foxMascot = "/fox/mascot.png";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
@@ -413,7 +413,7 @@ const Dashboard = () => {
 
         <MagicCard onClick={() => navigate("/chatbot")} enableTilt enableMagnetism enableStars glowColor="176,138,104">
           <div className="flex flex-col items-center justify-center h-full bg-card p-5 rounded-xl border border-transparent hover:border-border/50 text-center transition-colors">
-            <img src={chatbotOwl} alt="AI Tutor" className="w-16 h-16 object-contain mb-3 drop-shadow-sm" />
+            <img src={foxMascot} alt="AI Tutor" className="w-16 h-16 object-contain mb-3 drop-shadow-sm" />
             <h2 className="text-base font-display font-bold text-foreground mb-1">AI Tutor</h2>
             <p className="text-xs text-muted-foreground leading-relaxed">Ask anything about your studies</p>
             <div className="mt-3 flex items-center gap-1.5 bg-background/80 px-3 py-1.5 rounded-full border border-border/50">

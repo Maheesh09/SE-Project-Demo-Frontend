@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, Sparkles, BookOpen, Brain, Clock, ChevronRight } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import BlurText from "@/components/BlurText";
-import chatbotOwl from "@/assets/chatbot-owl.png";
+const chatbotOwl = "/fox/mascot.png";
 import { cn } from "@/lib/utils";
 
 interface Message {
