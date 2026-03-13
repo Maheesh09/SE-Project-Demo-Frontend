@@ -3,6 +3,7 @@ import {
   LayoutDashboard, BookOpen, Brain, Trophy,
   BarChart3, MessageCircle, Settings, Zap, LogOut, ChevronRight, X
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import mindupLogo from "@/assets/mindup-logo.png";
 import { useState, useEffect } from "react";
@@ -46,17 +47,39 @@ const NavSection = ({
           key={item.to}
           to={item.to}
           className={cn(
-            "group flex items-center justify-between gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+            "group relative flex items-center justify-between gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200",
             isActive
-              ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm font-semibold"
-              : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+              ? "text-white font-semibold"
+              : "text-sidebar-foreground hover:bg-black/[0.06] hover:text-sidebar-accent-foreground"
           )}
         >
-          <div className="flex items-center gap-3">
-            <item.icon className={cn("w-4.5 h-4.5 flex-shrink-0", isActive ? "opacity-100" : "opacity-70 group-hover:opacity-100")} />
+          {/* Animated active background */}
+          <AnimatePresence>
+            {isActive && (
+              <motion.div
+                layoutId="sidebar-active"
+                className="absolute inset-0 rounded-xl bg-foreground/85 shadow-md"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+              />
+            )}
+          </AnimatePresence>
+          <div className="relative z-10 flex items-center gap-3">
+            <item.icon className={cn("w-4.5 h-4.5 flex-shrink-0 transition-opacity duration-200", isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100")} />
             <span>{item.label}</span>
           </div>
-          {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
+          {isActive && (
+            <motion.div
+              initial={{ opacity: 0, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="relative z-10"
+            >
+              <ChevronRight className="w-3.5 h-3.5 opacity-70" />
+            </motion.div>
+          )}
         </NavLink>
       );
     })}
