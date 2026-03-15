@@ -36,53 +36,75 @@ const NavSection = ({
   items: { to: string; icon: React.ElementType; label: string }[];
   pathname: string;
 }) => (
-  <div className="mb-5">
-    <p className="px-4 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/50 select-none">
+  <div className="mb-4">
+    <p className="px-4 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/40 select-none">
       {label}
     </p>
-    {items.map((item) => {
-      const isActive = pathname === item.to;
-      return (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          className={cn(
-            "group relative flex items-center justify-between gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200",
-            isActive
-              ? "text-white font-semibold"
-              : "text-sidebar-foreground hover:bg-black/[0.06] hover:text-sidebar-accent-foreground"
-          )}
-        >
-          {/* Animated active background */}
-          <AnimatePresence>
-            {isActive && (
-              <motion.div
-                layoutId="sidebar-active"
-                className="absolute inset-0 rounded-xl bg-foreground/85 shadow-md"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ type: "spring", stiffness: 350, damping: 30 }}
-              />
-            )}
-          </AnimatePresence>
-          <div className="relative z-10 flex items-center gap-3">
-            <item.icon className={cn("w-4.5 h-4.5 flex-shrink-0 transition-opacity duration-200", isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100")} />
-            <span>{item.label}</span>
-          </div>
-          {isActive && (
-            <motion.div
-              initial={{ opacity: 0, x: -4 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="relative z-10"
+    <div className="space-y-1 px-2">
+      {items.map((item) => {
+        const isActive = pathname === item.to;
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className="group relative block rounded-xl overflow-hidden"
+          >
+            {/* Animated active pill */}
+            <AnimatePresence>
+              {isActive && (
+                <motion.div
+                  layoutId="sidebar-active"
+                  className="absolute inset-0 rounded-xl bg-white shadow-lg shadow-black/10"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                />
+              )}
+            </AnimatePresence>
+
+            <div
+              className={cn(
+                "relative z-10 flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200",
+                isActive
+                  ? ""
+                  : "hover:bg-white/15"
+              )}
             >
-              <ChevronRight className="w-3.5 h-3.5 opacity-70" />
-            </motion.div>
-          )}
-        </NavLink>
-      );
-    })}
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
+                  isActive
+                    ? "bg-[#acd663]/15"
+                    : "bg-white/10 group-hover:bg-white/20"
+                )}>
+                  <item.icon className={cn(
+                    "w-[18px] h-[18px] flex-shrink-0 transition-colors duration-200",
+                    isActive ? "text-[#7a9e2e]" : "text-white/70 group-hover:text-white"
+                  )} />
+                </div>
+                <span className={cn(
+                  "text-sm font-semibold transition-colors duration-200",
+                  isActive ? "text-gray-800" : "text-white/80 group-hover:text-white"
+                )}>
+                  {item.label}
+                </span>
+              </div>
+
+              {isActive && (
+                <motion.div
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.05, duration: 0.2 }}
+                >
+                  <div className="w-1.5 h-5 rounded-full bg-[#acd663]" />
+                </motion.div>
+              )}
+            </div>
+          </NavLink>
+        );
+      })}
+    </div>
   </div>
 );
 
