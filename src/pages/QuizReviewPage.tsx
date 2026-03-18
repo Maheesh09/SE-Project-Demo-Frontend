@@ -42,7 +42,42 @@ interface ReviewData {
     quizMeta?: { subjectId: number; mode: "term" | "topic"; topicId: number | null };
 }
 
+// ─── Difficulty badge colours ─────────────────────────────────────────────────
+const difficultyStyle: Record<string, string> = {
+    easy: "bg-emerald-100 text-emerald-700",
+    medium: "bg-amber-100 text-amber-700",
+    hard: "bg-rose-100 text-rose-700",
+};
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+/** Convert a QuizSessionReview (from API) into the unified ReviewData shape */
+function reviewFromApi(data: QuizSessionReview): ReviewData {
+    // Build answers map: question_id → selected_option_id
+    const answers: Record<number, number> = {};
+    for (const r of data.results) {
+        if (r.selected_option_id != null) {
+            answers[r.question_id] = r.selected_option_id;
+        }
+    }
+
+    return {
+        result: {
+            score_percentage: data.score_percentage,
+            total_correct: data.total_correct,
+            total_questions: data.total_questions,
+            xp_earned: data.xp_earned,
+            results: data.results.map((r) => ({
+                question_id: r.question_id,
+                is_correct: r.is_correct,
+                correct_option_id: r.correct_option_id,
+                selected_option_id: r.selected_option_id,
+            })),
+        },
+        questions: data.questions as QuizQuestion[],
+        answers,
+    };
+}
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
