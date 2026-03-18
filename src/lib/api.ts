@@ -125,7 +125,10 @@ export interface SubjectStat {
 }
 
 export interface RecentQuiz {
+    attempt_id: number;
+    session_id: number;
     subject_name: string;
+    subject_id: number;
     score_percentage: number;
     xp_earned: number;
     total_correct: number;
@@ -139,6 +142,37 @@ export interface DashboardStats {
     average_score: number | null;
     subject_stats: SubjectStat[];
     recent_quizzes: RecentQuiz[];
+}
+
+export interface ReviewOption {
+    id: number;
+    option_text: string;
+    is_correct: boolean;
+}
+
+export interface ReviewQuestion {
+    id: number;
+    question_text: string;
+    difficulty: string;
+    xp_value: number;
+    options: ReviewOption[];
+}
+
+export interface ReviewAnswer {
+    question_id: number;
+    selected_option_id: number | null;
+    is_correct: boolean;
+    correct_option_id: number;
+}
+
+export interface QuizSessionReview {
+    session_id: number;
+    score_percentage: number;
+    total_correct: number;
+    total_questions: number;
+    xp_earned: number;
+    questions: ReviewQuestion[];
+    results: ReviewAnswer[];
 }
 
 // ─── API Methods ──────────────────────────────────────────────────────────────
@@ -238,6 +272,10 @@ export const api = {
     // ── Dashboard Stats ──
     getDashboardStats: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<DashboardStats>("/api/v1/me/dashboard-stats", token, { xClerkUserId, xEmail }),
+
+    // ── Quiz Session Review (for past quiz lookup from dashboard) ──
+    getQuizSessionReview: (token: string, sessionId: number, xClerkUserId?: string, xEmail?: string) =>
+        request<QuizSessionReview>(`/api/v1/quiz/session/${sessionId}/review`, token, { xClerkUserId, xEmail }),
 
     // ── Admin ──
     getStudentCount: (adminApiKey: string) =>

@@ -322,6 +322,7 @@ const Dashboard = () => {
           <div className="flex items-center gap-2 mb-4">
             <Trophy className="w-4 h-4 text-accent" />
             <h3 className="text-sm font-display font-bold text-foreground">Recent Quizzes</h3>
+            <span className="ml-auto text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Click to review</span>
           </div>
 
           {statsLoading ? (
@@ -338,7 +339,11 @@ const Dashboard = () => {
           ) : (
             <div className="flex flex-col gap-3">
               {stats.recent_quizzes.map((q, i) => (
-                <div key={i} className="flex items-center gap-2.5">
+                <button
+                  key={i}
+                  onClick={() => navigate(`/quiz/review?session_id=${q.session_id}`)}
+                  className="flex items-center gap-2.5 w-full text-left rounded-xl px-2 py-1.5 -mx-2 hover:bg-muted/40 transition-colors cursor-pointer group"
+                >
                   <div className={cn(
                     "w-4.5 h-4.5 rounded-full flex items-center justify-center flex-shrink-0",
                     q.score_percentage >= 70 ? "bg-success" : q.score_percentage >= 40 ? "bg-amber-400" : "bg-destructive"
@@ -346,14 +351,14 @@ const Dashboard = () => {
                     <Check className="w-2.5 h-2.5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-foreground truncate">{q.subject_name}</p>
+                    <p className="text-xs font-medium text-foreground truncate group-hover:text-primary transition-colors">{q.subject_name}</p>
                     <p className="text-[10px] text-muted-foreground">{q.total_correct}/{q.total_questions} correct</p>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <span className="text-xs font-bold text-foreground">{Math.round(q.score_percentage)}%</span>
                     <p className="text-[10px] font-semibold text-xp">+{q.xp_earned} XP</p>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
