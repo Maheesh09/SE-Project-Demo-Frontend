@@ -5,17 +5,23 @@ import { Trophy, ChevronLeft, ChevronRight, Timer, CheckCircle2, XCircle } from 
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useAuth, useUser } from "@clerk/clerk-react";
+import { useProfile } from "@/hooks/useProfile";
 
 export default function QuizPlayPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const { getToken } = useAuth();
     const { user } = useUser();
+    const { profile } = useProfile();
 
     const quizData = location.state?.quizData;
+    const quizMeta = location.state?.quizMeta as
+        | { subjectId: number; mode: "term" | "topic"; topicId: number | null }
+        | undefined;
     const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
     const [answers, setAnswers] = useState<Record<number, number>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isStartingNext, setIsStartingNext] = useState(false);
 
     // Result object from backend after submission
     const [result, setResult] = useState<any>(null);
@@ -57,26 +63,30 @@ export default function QuizPlayPage() {
 
     const { session_id, questions, total_questions } = quizData;
 
-    const handleSubmit = async () => {
-        if (isSubmitting) return;
+    const submitCurrentQuiz = async () => {
+        const token = await getToken();
+        if (!token) throw new Error("Not authenticated");
+
+        // Build answers payload – only for questions that received a selection
+        const payloadAnswers = Object.entries(answers).map(([qId, oId]) => ({
+            question_id: parseInt(qId),
+            selected_option_id: oId
+        }));
+
+        const email = user?.primaryEmailAddress?.emailAddress || "";
+        return await api.submitQuiz(
+            token,
+            { session_id, answers: payloadAnswers },
+            user?.id,
+            email
+        ) as any;
+    };
+
+    const handleFinishQuiz = async () => {
+        if (isSubmitting || isStartingNext) return;
         setIsSubmitting(true);
         try {
-            const token = await getToken();
-            if (!token) throw new Error("Not authenticated");
-
-            // Build answers payload – only for questions that received a selection
-            const payloadAnswers = Object.entries(answers).map(([qId, oId]) => ({
-                question_id: parseInt(qId),
-                selected_option_id: oId
-            }));
-
-            const email = user?.primaryEmailAddress?.emailAddress || "";
-            const data = await api.submitQuiz(
-                token,
-                { session_id, answers: payloadAnswers },
-                user?.id,
-                email
-            ) as any;
+            const data = await submitCurrentQuiz();
 
             // Navigate to the dedicated review page, carrying all data as router state
             navigate("/quiz/review", {
@@ -84,6 +94,7 @@ export default function QuizPlayPage() {
                     result: data,
                     questions,
                     answers,
+                    quizMeta,
                 },
                 replace: true,   // so Back button goes to /quizzes, not back here
             });
@@ -94,11 +105,54 @@ export default function QuizPlayPage() {
         }
     };
 
+    const handleNextQuiz = async () => {
+        if (isSubmitting || isStartingNext) return;
+        if (!quizMeta?.subjectId) {
+            navigate("/quizzes");
+            return;
+        }
+        if (!profile?.id) {
+            navigate("/quizzes");
+            return;
+        }
+        setIsStartingNext(true);
+        try {
+            // First submit this quiz so the attempt is saved
+            await submitCurrentQuiz();
+
+            const token = await getToken();
+            if (!token) throw new Error("Not authenticated");
+            const email = user?.primaryEmailAddress?.emailAddress || "";
+
+            const nextQuizData = await api.startQuiz(
+                token,
+                {
+                    student_id: profile.id,
+                    subject_id: quizMeta.subjectId,
+                    mode: quizMeta.mode,
+                    ...(quizMeta.mode === "topic" && quizMeta.topicId ? { topic_id: quizMeta.topicId } : {}),
+                },
+                user?.id,
+                email
+            ) as any;
+
+            navigate("/quiz/play", {
+                state: { quizData: nextQuizData, quizMeta },
+                replace: true,
+            });
+        } catch (err: any) {
+            console.error(err);
+            alert("Failed to start next quiz: " + (err.message || "Network error."));
+        } finally {
+            setIsStartingNext(false);
+        }
+    };
+
     const handleNext = () => {
         if (currentQuestionIdx < total_questions - 1) {
             setCurrentQuestionIdx(prev => prev + 1);
         } else {
-            handleSubmit();
+            handleFinishQuiz();
         }
     };
 
@@ -335,14 +389,27 @@ export default function QuizPlayPage() {
                                     <ChevronLeft className="w-5 h-5 mr-1" /> Back
                                 </Button>
 
-                                <Button
-                                    onClick={handleNext}
-                                    disabled={isSubmitting}
-                                    className={`px-8 py-6 rounded-xl text-base font-bold shadow-md transition-all ${selectedOption || currentQuestionIdx < total_questions - 1 ? "bg-primary hover:bg-primary/90 text-white translate-y-0" : "bg-muted text-muted-foreground translate-y-1 opacity-60"
-                                        }`}
-                                >
-                                    {isSubmitting ? "Submitting..." : (currentQuestionIdx === total_questions - 1 ? "Finish Quiz" : "Next")} {currentQuestionIdx !== total_questions - 1 && <ChevronRight className="w-5 h-5 ml-1" />}
-                                </Button>
+                                <div className="flex items-center gap-3">
+                                    {currentQuestionIdx === total_questions - 1 && (
+                                        <Button
+                                            onClick={handleNextQuiz}
+                                            variant="outline"
+                                            disabled={isSubmitting || isStartingNext}
+                                            className="px-6 py-6 rounded-xl text-base font-bold shadow-sm"
+                                        >
+                                            {isStartingNext ? "Starting..." : "Next quiz"}
+                                        </Button>
+                                    )}
+
+                                    <Button
+                                        onClick={handleNext}
+                                        disabled={isSubmitting || isStartingNext}
+                                        className={`px-8 py-6 rounded-xl text-base font-bold shadow-md transition-all ${selectedOption || currentQuestionIdx < total_questions - 1 ? "bg-primary hover:bg-primary/90 text-white translate-y-0" : "bg-muted text-muted-foreground translate-y-1 opacity-60"
+                                            }`}
+                                    >
+                                        {isSubmitting ? "Submitting..." : (currentQuestionIdx === total_questions - 1 ? "Finish Quiz" : "Next")} {currentQuestionIdx !== total_questions - 1 && <ChevronRight className="w-5 h-5 ml-1" />}
+                                    </Button>
+                                </div>
                             </div>
                         </motion.div>
                     </AnimatePresence>
