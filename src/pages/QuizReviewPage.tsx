@@ -19,6 +19,8 @@ interface QuizQuestion {
     question_text: string;
     difficulty: string;
     xp_value: number;
+    topic_id: number;
+    topic_name: string;
     options: QuestionOption[];
 }
 
@@ -317,6 +319,10 @@ export default function QuizReviewPage() {
                                             <span className="text-xs font-semibold text-[#6b5744]">Q{idx + 1}</span>
                                             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${difficultyStyle[q.difficulty] ?? "bg-gray-100 text-gray-600"}`}>
                                                 {q.difficulty}
+                                            </span>
+                                            {/* Topic Badge - Highlighted if correct answer was missed */}
+                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${!isCorrect ? "bg-rose-200 text-rose-800 border-rose-300 border shadow-sm" : "bg-[#ede8e1] text-[#6b5744]"}`}>
+                                                {q.topic_name}
                                             </span>
                                             <span className="text-xs text-amber-600 font-semibold">{q.xp_value} XP</span>
                                         </div>
