@@ -132,14 +132,8 @@ const SubjectPage = () => {
                             </span>
                             <div className="flex gap-2">
                                 {/* View — opens in new tab */}
-                                <button
-                                    onClick={() => openPdf(book)}
-                                    disabled={!book.view_url && !book.file_url}
-                                    title="Open in new tab"
-                                    className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                >
-                                    <ExternalLink className="w-4 h-4" />
-                                </button>
+
+
                                 {/* Download */}
                                 {book.file_url && (
                                     <a
