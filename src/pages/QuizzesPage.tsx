@@ -126,7 +126,16 @@ const QuizzesPage = () => {
 
       const email = user?.primaryEmailAddress?.emailAddress || "";
       const quizData = await api.startQuiz(token, payload, user?.id, email);
-      navigate("/quiz/play", { state: { quizData } });
+      navigate("/quiz/play", {
+        state: {
+          quizData,
+          quizMeta: {
+            subjectId: selectedSubjectId,
+            mode,
+            topicId: mode === "topic" ? Number(chosenTopic) : null,
+          },
+        },
+      });
 
     } catch (err: any) {
       console.error(err);
