@@ -117,15 +117,15 @@ const EventsSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-5 gap-8 max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-5 gap-8 max-w-6xl mx-auto items-stretch">
           {/* Leaderboard Table */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 flex flex-col">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               viewport={{ once: true }}
-              className="bg-white/60 backdrop-blur-sm rounded-2xl border border-border/60 overflow-hidden"
+              className="bg-white/60 backdrop-blur-sm rounded-2xl border border-border/60 overflow-hidden flex-1"
             >
               {/* Table header */}
               <div className="grid grid-cols-12 gap-2 px-5 py-3 bg-white/40 border-b border-border/40 text-xs font-bold text-foreground/55 uppercase tracking-wider">
@@ -203,13 +203,13 @@ const EventsSection = () => {
           </div>
 
           {/* Merch Rewards Hype Panel */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 flex flex-col">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               viewport={{ once: true }}
-              className="bg-gradient-to-br from-[#acd663]/10 via-white/60 to-yellow-50/60 backdrop-blur-sm rounded-2xl border border-[#acd663]/20 p-6 relative overflow-hidden h-full"
+              className="bg-gradient-to-br from-[#acd663]/10 via-white/60 to-yellow-50/60 backdrop-blur-sm rounded-2xl border border-[#acd663]/20 p-6 relative overflow-hidden flex-1 flex flex-col"
             >
               {/* Sparkle decoration */}
               <motion.div
@@ -238,7 +238,7 @@ const EventsSection = () => {
               </motion.p>
 
               {/* Merch Items */}
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3 mb-6 flex-1">
                 {merchItems.map((item, i) => (
                   <motion.div
                     key={item.label}
