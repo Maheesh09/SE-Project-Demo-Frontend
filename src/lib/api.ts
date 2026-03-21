@@ -155,6 +155,8 @@ export interface ReviewQuestion {
     question_text: string;
     difficulty: string;
     xp_value: number;
+    topic_id: number;
+    topic_name: string;
     options: ReviewOption[];
 }
 
