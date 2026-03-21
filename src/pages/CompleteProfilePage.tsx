@@ -19,11 +19,11 @@ const fieldStyle: React.CSSProperties = {
     padding: "12px 16px 12px 44px",
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,0.6)",
-    background: "rgba(255,255,255,0.55)",
+    background: "rgba(255,255,255,0.72)",
     backdropFilter: "blur(8px)",
     WebkitBackdropFilter: "blur(8px)",
     fontSize: "14px",
-    color: "#444",
+    color: "#1a2e18",
     outline: "none",
     transition: "all 0.2s ease",
 };
@@ -45,7 +45,7 @@ const labelStyle: React.CSSProperties = {
     fontWeight: 700,
     letterSpacing: "0.08em",
     textTransform: "uppercase" as const,
-    color: "#5a7a58",
+    color: "#2d4a2a",
     marginBottom: "6px",
 };
 
@@ -228,7 +228,7 @@ const CompleteProfilePage = () => {
                             <span className="font-bold text-base" style={{ color: "#3d5c3a" }}>MindUp</span>
                         </div>
                         <h2 className="text-2xl font-black mb-1" style={{ color: "#2e3e2a" }}>Complete Student Profile</h2>
-                        <p className="text-sm" style={{ color: "#7a9070" }}>Setup your final details to access the dashboard</p>
+                        <p className="text-sm" style={{ color: "#3d5a38" }}>Setup your final details to access the dashboard</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -237,7 +237,7 @@ const CompleteProfilePage = () => {
                             <div>
                                 <label style={labelStyle}><UserSquare2 size={13} /> Username</label>
                                 <div className="relative">
-                                    <UserSquare2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <UserSquare2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" />
                                     <input
                                         type="text"
                                         value={username}
@@ -250,7 +250,7 @@ const CompleteProfilePage = () => {
                             <div>
                                 <label style={labelStyle}><User size={13} /> Full Name</label>
                                 <div className="relative">
-                                    <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" />
                                     <input
                                         type="text"
                                         value={fullName}
@@ -266,7 +266,7 @@ const CompleteProfilePage = () => {
                         <div>
                             <label style={labelStyle}><Mail size={13} /> Email</label>
                             <div className="relative">
-                                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" />
                                 <input type="email" value={email} readOnly style={{ ...fieldStyle, opacity: 0.7, cursor: "not-allowed" }} />
                             </div>
                         </div>
@@ -292,11 +292,11 @@ const CompleteProfilePage = () => {
                         <div>
                             <label style={labelStyle}><GraduationCap size={13} /> Grade</label>
                             <div className="relative">
-                                <GraduationCap size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                <GraduationCap size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" />
                                 <select
                                     value={gradeId}
                                     onChange={e => setGradeId(Number(e.target.value))}
-                                    style={{ ...selectStyle, color: gradeId ? "#444" : "#aaa" }}
+                                    style={{ ...selectStyle, color: gradeId ? "#1a2e18" : "#5a6e58" }}
                                     disabled={metaLoading}
                                 >
                                     <option value="" disabled>{metaLoading ? "Loading grades..." : "Select your grade"}</option>
@@ -312,11 +312,11 @@ const CompleteProfilePage = () => {
                             <div>
                                 <label style={labelStyle}><Globe size={13} /> Province</label>
                                 <div className="relative">
-                                    <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                    <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" />
                                     <select
                                         value={provinceId}
                                         onChange={e => setProvinceId(Number(e.target.value))}
-                                        style={{ ...selectStyle, color: provinceId ? "#444" : "#aaa" }}
+                                        style={{ ...selectStyle, color: provinceId ? "#1a2e18" : "#5a6e58" }}
                                         disabled={metaLoading}
                                     >
                                         <option value="" disabled>{metaLoading ? "Loading..." : "Province"}</option>
@@ -329,12 +329,12 @@ const CompleteProfilePage = () => {
                             <div>
                                 <label style={labelStyle}><MapPin size={13} /> District</label>
                                 <div className="relative">
-                                    <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                    <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" />
                                     <select
                                         value={districtId}
                                         onChange={e => setDistrictId(Number(e.target.value))}
                                         disabled={!provinceId || metaLoading}
-                                        style={{ ...selectStyle, color: districtId ? "#444" : "#aaa", opacity: !provinceId ? 0.5 : 1 }}
+                                        style={{ ...selectStyle, color: districtId ? "#1a2e18" : "#5a6e58", opacity: !provinceId ? 0.5 : 1 }}
                                     >
                                         <option value="" disabled>District</option>
                                         {districts.map(d => (

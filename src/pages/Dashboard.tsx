@@ -10,7 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import StatCard from "@/components/StatCard";
 import { BentoCardGrid, MagicCard } from "@/components/MagicCard";
-import chatbotOwl from "@/assets/chatbot-owl.png";
+const foxMascot = "/fox/mascot.png";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
@@ -307,10 +307,10 @@ const Dashboard = () => {
           ) : (
             <ResponsiveContainer width="100%" height={120}>
               <BarChart data={subjectScores} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-                <XAxis dataKey="subject" tick={{ fontSize: 10, fill: "hsl(28 20% 50%)" }} />
-                <YAxis tick={{ fontSize: 10, fill: "hsl(28 20% 50%)" }} domain={[0, 100]} />
-                <Tooltip contentStyle={{ background: "hsl(38 62% 92%)", border: "1px solid hsl(38 30% 82%)", borderRadius: "8px", fontSize: "11px" }} cursor={{ fill: "hsl(38 30% 82% / 0.4)" }} />
-                <Bar dataKey="score" fill="hsl(88 29% 65%)" radius={[3, 3, 0, 0]} />
+                <XAxis dataKey="subject" tick={{ fontSize: 10, fill: "hsl(28 15% 45%)" }} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(28 15% 45%)" }} domain={[0, 100]} />
+                <Tooltip contentStyle={{ background: "hsl(48 40% 97%)", border: "1px solid hsl(48 25% 85%)", borderRadius: "8px", fontSize: "11px" }} cursor={{ fill: "hsl(48 25% 85% / 0.4)" }} />
+                <Bar dataKey="score" fill="#acd663" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -369,7 +369,7 @@ const Dashboard = () => {
       <SectionHeader title="Quick Actions" delay={0.3} />
       <BentoCardGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
 
-        <MagicCard onClick={() => navigate("/quizzes")} enableTilt enableMagnetism enableStars glowColor="178,197,157">
+        <MagicCard onClick={() => navigate("/quizzes")} enableTilt enableMagnetism enableStars glowColor="172,214,99">
           <div className="flex flex-col h-full bg-card p-5 rounded-xl border border-transparent hover:border-border/50 transition-colors">
             <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center mb-4 shadow-sm">
               <Brain className="w-5 h-5 text-primary-foreground" />
@@ -401,10 +401,10 @@ const Dashboard = () => {
               {subjectScores.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={subjectScores} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                    <XAxis dataKey="subject" tick={{ fontSize: 8, fill: "hsl(28 20% 50%)" }} />
+                    <XAxis dataKey="subject" tick={{ fontSize: 8, fill: "hsl(28 15% 45%)" }} />
                     <YAxis hide />
-                    <Tooltip contentStyle={{ background: "hsl(38 62% 92%)", border: "1px solid hsl(38 30% 82%)", borderRadius: "8px", fontSize: "11px" }} cursor={{ fill: "hsl(38 30% 82% / 0.4)" }} />
-                    <Bar dataKey="score" fill="hsl(88 29% 65%)" radius={[3, 3, 0, 0]} />
+                    <Tooltip contentStyle={{ background: "hsl(48 40% 97%)", border: "1px solid hsl(48 25% 85%)", borderRadius: "8px", fontSize: "11px" }} cursor={{ fill: "hsl(48 25% 85% / 0.4)" }} />
+                    <Bar dataKey="score" fill="#acd663" radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -418,7 +418,7 @@ const Dashboard = () => {
 
         <MagicCard onClick={() => navigate("/chatbot")} enableTilt enableMagnetism enableStars glowColor="176,138,104">
           <div className="flex flex-col items-center justify-center h-full bg-card p-5 rounded-xl border border-transparent hover:border-border/50 text-center transition-colors">
-            <img src={chatbotOwl} alt="AI Tutor" className="w-16 h-16 object-contain mb-3 drop-shadow-sm" />
+            <img src={foxMascot} alt="AI Tutor" className="w-16 h-16 object-contain mb-3 drop-shadow-sm" />
             <h2 className="text-base font-display font-bold text-foreground mb-1">AI Tutor</h2>
             <p className="text-xs text-muted-foreground leading-relaxed">Ask anything about your studies</p>
             <div className="mt-3 flex items-center gap-1.5 bg-background/80 px-3 py-1.5 rounded-full border border-border/50">
@@ -456,7 +456,7 @@ const Dashboard = () => {
                 return (
                   <MagicCard
                     key={subject.id}
-                    glowColor="178,197,157"
+                    glowColor="172,214,99"
                     enableTilt
                     enableMagnetism
                     particleCount={5}
