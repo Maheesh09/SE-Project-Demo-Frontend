@@ -88,10 +88,27 @@ export default function QuizPlayPage() {
         try {
             const data = await submitCurrentQuiz();
 
+            // Transform answer_results from backend into the "results" shape
+            // that QuizReviewPage expects.
+            const transformedResults = (data.answer_results || []).map((ar: any) => ({
+                question_id: ar.question_id,
+                is_correct: ar.is_correct,
+                correct_option_id: ar.correct_option_id,
+                selected_option_id: ar.selected_option_id ?? answers[ar.question_id] ?? null,
+            }));
+
+            const reviewResult = {
+                score_percentage: data.score_percentage,
+                total_correct: data.total_correct,
+                total_questions: data.total_questions,
+                xp_earned: data.xp_earned,
+                results: transformedResults,
+            };
+
             // Navigate to the dedicated review page, carrying all data as router state
             navigate("/quiz/review", {
                 state: {
-                    result: data,
+                    result: reviewResult,
                     questions,
                     answers,
                     quizMeta,
