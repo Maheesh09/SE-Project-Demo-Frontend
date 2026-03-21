@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api";
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 const ADMIN_API_KEY = import.meta.env.VITE_ADMIN_API_KEY ?? "change-me";
 
 interface Option {
@@ -19,31 +20,53 @@ interface Option {
     is_correct: boolean;
 }
 
-const SUBJECTS = [
-    { id: 1, name: "Science" },
-    { id: 2, name: "English" },
-    { id: 3, name: "Maths" },
-    { id: 4, name: "Civics" },
-    { id: 5, name: "History" },
-    { id: 6, name: "Health" },
-];
+interface SubjectItem {
+    id: number;
+    name: string;
+}
 
-const TOPICS = [
-    { id: 1, name: "Forces & Motion" },
-    { id: 2, name: "Grammar Basics" },
-    { id: 3, name: "Algebra" },
-    { id: 4, name: "Government Structure" },
-    { id: 5, name: "Ancient Civilizations" },
-    { id: 6, name: "Nutrition" },
-];
+interface TopicItem {
+    id: number;
+    name: string;
+}
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
 
+    // ── Dynamic subjects & topics from database ──
+    const [subjects, setSubjects] = useState<SubjectItem[]>([]);
+    const [topics, setTopics] = useState<TopicItem[]>([]);
+    const [subjectsLoading, setSubjectsLoading] = useState(true);
+    const [topicsLoading, setTopicsLoading] = useState(false);
+
     // ── Student count from Supabase students table ──
     const [studentCount, setStudentCount] = useState<number | null>(null);
     const [countLoading, setCountLoading] = useState(true);
+
+    // Fetch subjects from the database on mount
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/subjects/available?grade_id=1`);
+                if (res.ok) {
+                    const data: SubjectItem[] = await res.json();
+                    if (!cancelled) {
+                        setSubjects(data);
+                        if (data.length > 0) {
+                            setSubjectId(data[0].id.toString());
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch subjects:", err);
+            } finally {
+                if (!cancelled) setSubjectsLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -61,12 +84,37 @@ const AdminDashboard = () => {
     }, []);
 
     // Form State
-    const [subjectId, setSubjectId] = useState<string>("1");
-    const [topicId, setTopicId] = useState<string>("1");
+    const [subjectId, setSubjectId] = useState<string>("");
+    const [topicId, setTopicId] = useState<string>("");
     const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
     const [questionText, setQuestionText] = useState("");
     const [explanation, setExplanation] = useState("");
     const [xpValue, setXpValue] = useState<string>("10");
+
+    // Fetch topics whenever the selected subject changes
+    useEffect(() => {
+        if (!subjectId) return;
+        let cancelled = false;
+        setTopicsLoading(true);
+        setTopicId(""); // reset topic selection
+        (async () => {
+            try {
+                const data = await api.getTopics(parseInt(subjectId));
+                if (!cancelled) {
+                    setTopics(data);
+                    if (data.length > 0) {
+                        setTopicId(data[0].id.toString());
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch topics:", err);
+                if (!cancelled) setTopics([]);
+            } finally {
+                if (!cancelled) setTopicsLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [subjectId]);
 
     const [options, setOptions] = useState<Option[]>([
         { id: "1", option_text: "", is_correct: true },
@@ -129,7 +177,7 @@ const AdminDashboard = () => {
             difficulty,
             question_text: questionText,
             explanation: explanation.trim() || null,
-            xp_value: xpValue ? parseInt(xpValue) : null,
+            xp_value: xpValue && parseInt(xpValue) > 0 ? parseInt(xpValue) : null,
             created_by: 1, // Default admin user ID
             options: options.map(o => ({
                 option_text: o.option_text,
@@ -138,8 +186,7 @@ const AdminDashboard = () => {
         };
 
         try {
-            // Attempt backend API call (if backend is running at localhost:8000)
-            const response = await fetch("http://127.0.0.1:8000/api/v1/admin/questions/", {
+            const response = await fetch(`${API_BASE}/api/v1/admin/questions/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -159,15 +206,11 @@ const AdminDashboard = () => {
             } else {
                 const errData = await response.json();
                 console.error("Backend Error:", errData);
-                // Fallback or generic error based on backend status
                 toast.error(`Failed to add: ${errData?.detail || "Unknown error from server"}`);
             }
         } catch (error) {
             console.error("Fetch Error:", error);
-            // If backend is not running, we show a mock success for UI presentation purposes
-            toast.success("Mock: Question successfully added! (Backend unreachable)");
-            setQuestionText("");
-            setExplanation("");
+            toast.error("Could not reach the backend server. Please ensure it is running.");
         } finally {
             setLoading(false);
         }
@@ -270,24 +313,24 @@ const AdminDashboard = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div className="space-y-2">
                                     <Label>Subject</Label>
-                                    <Select value={subjectId} onValueChange={setSubjectId}>
+                                    <Select value={subjectId} onValueChange={setSubjectId} disabled={subjectsLoading}>
                                         <SelectTrigger className="bg-background/50 border-border/50">
-                                            <SelectValue placeholder="Select subject" />
+                                            <SelectValue placeholder={subjectsLoading ? "Loading subjects…" : "Select subject"} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {SUBJECTS.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}
+                                            {subjects.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label>Topic</Label>
-                                    <Select value={topicId} onValueChange={setTopicId}>
+                                    <Select value={topicId} onValueChange={setTopicId} disabled={topicsLoading || topics.length === 0}>
                                         <SelectTrigger className="bg-background/50 border-border/50">
-                                            <SelectValue placeholder="Select topic" />
+                                            <SelectValue placeholder={topicsLoading ? "Loading topics…" : topics.length === 0 ? "No topics for this subject" : "Select topic"} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {TOPICS.map(t => <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>)}
+                                            {topics.map(t => <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
