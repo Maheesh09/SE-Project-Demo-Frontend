@@ -1,40 +1,43 @@
 import { useState } from "react";
 import AppSidebar from "./AppSidebar";
 import { Menu } from "lucide-react";
+import mindupLogo from "@/assets/mindup-logo.png";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-background flex flex-col md:block">
-      {/* Subtle static background pattern instead of the glowing animation */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background pointer-events-none" />
+    <div className="min-h-screen relative bg-background">
+      <AppSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Mobile Top Navigation */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b border-border/10 bg-background/80 backdrop-blur-md relative z-30">
+      <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border/60 bg-background/95 backdrop-blur-md sticky top-0 z-30">
         <div className="flex items-center gap-2">
-          <span className="font-display font-bold text-xl tracking-tight text-foreground">MindUp</span>
+          <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
+            <img src={mindupLogo} alt="MindUp" className="w-5 h-5 object-contain rounded" />
+          </div>
+          <span className="font-display font-bold text-lg tracking-tight text-foreground">MindUp</span>
         </div>
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="p-2 -mr-2 text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+          className="p-2 -mr-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
           aria-label="Open menu"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="w-5 h-5" />
         </button>
       </div>
 
-      <AppSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-
       {/* Main Content Area */}
-      <main className="md:ml-64 p-4 sm:p-6 md:p-8 relative z-10 pointer-events-auto overflow-x-hidden md:overflow-visible min-h-screen">
-        {children}
+      <main className="md:ml-72 min-h-screen">
+        <div className="p-4 sm:p-6 md:p-8 max-w-[1400px]">
+          {children}
+        </div>
       </main>
 
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden transition-opacity"
+          className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
