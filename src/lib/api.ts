@@ -177,6 +177,18 @@ export interface QuizSessionReview {
     results: ReviewAnswer[];
 }
 
+export interface DistrictLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+export interface DistrictLeaderboard {
+    district_id: number;
+    district_name: string;
+    entries: DistrictLeaderboardEntry[];
+}
 // ─── API Methods ──────────────────────────────────────────────────────────────
 
 export const api = {
@@ -278,6 +290,14 @@ export const api = {
     // ── Quiz Session Review (for past quiz lookup from dashboard) ──
     getQuizSessionReview: (token: string, sessionId: number, xClerkUserId?: string, xEmail?: string) =>
         request<QuizSessionReview>(`/api/v1/quiz/session/${sessionId}/review`, token, { xClerkUserId, xEmail }),
+
+    // ── District Leaderboard ──
+    getDistrictLeaderboard: (token: string, districtId?: number, xClerkUserId?: string, xEmail?: string) =>
+        request<DistrictLeaderboard>(
+            `/api/v1/me/district-leaderboard${districtId ? `?district_id=${districtId}` : ""}`,
+            token,
+            { xClerkUserId, xEmail }
+        ),
 
     // ── Admin ──
     getStudentCount: (adminApiKey: string) =>
