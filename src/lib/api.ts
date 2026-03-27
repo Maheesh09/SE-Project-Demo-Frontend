@@ -189,6 +189,40 @@ export interface DistrictLeaderboard {
     district_name: string;
     entries: DistrictLeaderboardEntry[];
 }
+// ─── Chat / RAG Types ────────────────────────────────────────────────────────
+
+export interface ChatRequest {
+    question: string;
+    subject?: string;
+    topic_id?: number;
+    session_id?: string;
+}
+
+export interface ChatSource {
+    source_file: string;
+    subject: string;
+    page_start: string;
+    page_end: string;
+    distance: number;
+}
+
+export interface ChatResponse {
+    answer: string;
+    sources: ChatSource[];
+    matched: boolean;
+    session_id: string;
+}
+
+export interface ChatSubject {
+    id: number;
+    name: string;
+}
+
+export interface ChatTopic {
+    id: number;
+    name: string;
+}
+
 // ─── API Methods ──────────────────────────────────────────────────────────────
 
 export const api = {
@@ -298,6 +332,21 @@ export const api = {
             token,
             { xClerkUserId, xEmail }
         ),
+
+    // ── Chat / RAG ──
+    getChatSubjects: () =>
+        request<ChatSubject[]>("/api/v1/chat/subjects", null),
+
+    getChatTopics: (subjectId: number) =>
+        request<ChatTopic[]>(`/api/v1/chat/subjects/${subjectId}/topics`, null),
+
+    askChat: (token: string, payload: ChatRequest, xClerkUserId?: string, xEmail?: string) =>
+        request<ChatResponse>("/api/v1/chat/ask", token, {
+            method: "POST",
+            body: JSON.stringify(payload),
+            xClerkUserId,
+            xEmail,
+        }),
 
     // ── Admin ──
     getStudentCount: (adminApiKey: string) =>
