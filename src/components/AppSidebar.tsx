@@ -167,20 +167,6 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
             <div className="w-2 h-2 rounded-full bg-success animate-pulse flex-shrink-0" title="Online" />
           </div>
 
-          {/* XP progress */}
-          <div className="mt-3 pt-3 border-t border-sidebar-border/20">
-            <div className="flex justify-between text-[10px] text-sidebar-foreground/70 mb-1.5 font-medium">
-              <span>2,450 / 3,000 XP</span>
-              <span className="text-sidebar-accent-foreground font-bold">82%</span>
-            </div>
-            <div className="h-1.5 rounded-full bg-sidebar-border/40 overflow-hidden">
-              <div className="h-full rounded-full gradient-primary transition-all duration-700" style={{ width: "82%" }} />
-            </div>
-            <div className="mt-2 flex items-center gap-1.5 text-[11px] text-streak font-semibold">
-              <Zap className="w-3 h-3" />
-              <span>7-day streak</span>
-            </div>
-          </div>
         </div>
 
         {/* Navigation */}

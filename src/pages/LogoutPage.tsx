@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { LogOut, ArrowLeft, ShieldCheck } from "lucide-react";
+import { LogOut, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useClerk, useUser } from "@clerk/clerk-react";
 import AppLayout from "@/components/AppLayout";
@@ -49,12 +49,6 @@ const LogoutPage = () => {
                         Are you sure you want to sign out of MindUp?<br />
                         Your progress and streak are safely saved.
                     </p>
-
-                    {/* Safety note */}
-                    <div className="flex items-center gap-2.5 bg-success/8 border border-success/20 rounded-xl px-4 py-3 mb-7">
-                        <ShieldCheck className="w-4 h-4 text-success flex-shrink-0" />
-                        <p className="text-xs text-success font-medium">Your 7-day streak and 2,450 XP are saved to your account</p>
-                    </div>
 
                     <div className="flex flex-col gap-3">
                         <button
