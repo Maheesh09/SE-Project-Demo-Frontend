@@ -1,15 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, BookOpen, Brain, Clock, ChevronRight } from "lucide-react";
+import { Send, Sparkles, BookOpen, Brain, Clock, ChevronRight, AlertCircle } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import BlurText from "@/components/BlurText";
-const chatbotOwl = "/fox/mascot.png";
 import { cn } from "@/lib/utils";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { api, type ChatSource } from "@/lib/api";
+
+const chatbotOwl = "/fox/mascot.png";
 
 interface Message {
   id: string;
   role: "bot" | "user";
   text: string;
+  sources?: ChatSource[];
+  matched?: boolean;
 }
 
 const suggestedPrompts = [
@@ -20,11 +25,14 @@ const suggestedPrompts = [
 ];
 
 const ChatbotPage = () => {
+  const { getToken } = useAuth();
+  const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([
     { id: "msg-1", role: "bot", text: "Hi there! I'm your MindUp AI tutor. How can I help you master your subjects today?" },
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
@@ -34,39 +42,49 @@ const ChatbotPage = () => {
 
   const handleSend = async (textOverride?: string) => {
     const textToSend = textOverride || input;
-    if (!textToSend.trim()) return;
+    if (!textToSend.trim() || isTyping) return;
 
     const userMsg: Message = { id: Date.now().toString(), role: "user", text: textToSend };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
 
-    // Simulate thinking and finding a real answer
-    setTimeout(() => {
-      setIsTyping(false);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("Not authenticated");
 
-      let botResponse = "That's an interesting question! Once I'm connected to my main server, I can give you a deeper breakdown.";
-      const lower = textToSend.toLowerCase();
+      const email = user?.primaryEmailAddress?.emailAddress || "";
+      const res = await api.askChat(
+        token,
+        { question: textToSend, session_id: sessionId },
+        user?.id,
+        email
+      );
 
-      if (lower.includes("newton") || lower.includes("laws")) {
-        botResponse = "Newton's First Law (Inertia): An object at rest stays at rest, and an object in motion stays in motion unless acted upon by a force.\n\nNewton's Second Law (F=ma): Force equals mass times acceleration.\n\nNewton's Third Law: For every action, there is an equal and opposite reaction.\n\nWould you like a quick quiz on this?";
-      } else if (lower.includes("cold war") || lower.includes("history")) {
-        botResponse = "The Cold War (1947–1991) was a period of geopolitical tension between the United States and the Soviet Union, along with their respective allies. It was 'cold' because there was no large-scale direct fighting directly between the two superpowers, but they supported major regional conflicts known as proxy wars. Key events include the Space Race, the Cuban Missile Crisis, and the fall of the Berlin Wall.";
-      } else if (lower.includes("algebra") || lower.includes("math")) {
-        botResponse = "Sure! Algebra is all about finding the unknown or putting real-life variables into equations. For example, if you have the equation '2x + 4 = 10', you want to isolate 'x'. First, subtract 4 from both sides to get '2x = 6'. Then divide by 2 to get 'x = 3'. Let me know if you have a specific problem to solve!";
-      } else if (lower.includes("schedule") || lower.includes("plan")) {
-        botResponse = "Here is a quick study schedule for you based on spacing out subjects:\n\n• 4:30 PM - Science (30 mins)\n• 5:00 PM - Short Break (10 mins)\n• 5:10 PM - Maths (45 mins)\n• 5:55 PM - Dinner / Break\n• 7:00 PM - English Literature (30 mins)\n\nTry sticking to this for a week and see how it feels!";
-      }
+      setSessionId(res.session_id);
 
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           role: "bot",
-          text: botResponse,
+          text: res.answer,
+          sources: res.sources,
+          matched: res.matched,
         },
       ]);
-    }, 1200);
+    } catch (err: any) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "bot",
+          text: err.message || "Something went wrong. Please try again.",
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (
@@ -101,7 +119,8 @@ const ChatbotPage = () => {
                 <button
                   key={i}
                   onClick={() => handleSend(p.label)}
-                  className="group flex flex-col items-start gap-1 p-3.5 rounded-xl bg-card border border-border/30 hover:border-primary/40 hover:bg-primary/[0.03] transition-all text-left w-full h-auto"
+                  disabled={isTyping}
+                  className="group flex flex-col items-start gap-1 p-3.5 rounded-xl bg-card border border-border/30 hover:border-primary/40 hover:bg-primary/[0.03] transition-all text-left w-full h-auto disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center justify-between w-full mb-1">
                     <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
@@ -117,7 +136,7 @@ const ChatbotPage = () => {
 
             <div className="pt-4 mt-auto border-t border-border/40">
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Tip:</strong> You can ask the AI to generate a quiz on any topic to test your knowledge.
+                <strong className="text-foreground">Tip:</strong> Ask questions about your school subjects and get answers from your textbooks.
               </p>
             </div>
           </div>
@@ -144,15 +163,40 @@ const ChatbotPage = () => {
                       </div>
                     )}
 
-                    <div
-                      className={cn(
-                        "relative max-w-[75%] px-5 py-3.5 text-sm leading-relaxed shadow-sm",
-                        isUser
-                          ? "gradient-primary text-primary-foreground rounded-2xl rounded-br-sm font-medium"
-                          : "bg-card border border-border/50 text-foreground rounded-2xl rounded-bl-sm"
+                    <div className={cn("relative max-w-[75%]", isUser ? "" : "")}>
+                      <div
+                        className={cn(
+                          "px-5 py-3.5 text-sm leading-relaxed shadow-sm whitespace-pre-wrap",
+                          isUser
+                            ? "gradient-primary text-primary-foreground rounded-2xl rounded-br-sm font-medium"
+                            : "bg-card border border-border/50 text-foreground rounded-2xl rounded-bl-sm"
+                        )}
+                      >
+                        {msg.text}
+                      </div>
+
+                      {/* Source citations */}
+                      {!isUser && msg.sources && msg.sources.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {msg.sources.map((src, i) => (
+                            <span
+                              key={i}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 text-[10px] font-semibold text-primary"
+                            >
+                              <BookOpen className="w-2.5 h-2.5" />
+                              {src.subject} · p.{src.page_start}–{src.page_end}
+                            </span>
+                          ))}
+                        </div>
                       )}
-                    >
-                      {msg.text}
+
+                      {/* Not matched warning */}
+                      {!isUser && msg.matched === false && (
+                        <div className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                          <AlertCircle className="w-3 h-3" />
+                          <span>Answer not found in textbooks — this is a general response</span>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 );
