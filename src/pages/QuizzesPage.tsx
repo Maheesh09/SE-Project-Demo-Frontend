@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Target, Play, BookOpen, ChevronLeft, GraduationCap, ArrowRight } from "lucide-react";
+import { Zap, Target, Play, BookOpen, ChevronLeft, GraduationCap, ArrowRight, CheckCircle2 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import BlurText from "@/components/BlurText";
 import { toast } from "sonner";
@@ -35,21 +35,17 @@ const QuizzesPage = () => {
   const { user } = useUser();
   const { profile } = useProfile();
 
-  // ── Subject selection state ──
   const [mySubjects, setMySubjects] = useState<Subject[]>([]);
   const [subjectsLoading, setSubjectsLoading] = useState(true);
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
 
-  // ── Quiz state ──
   const [loadingMode, setLoadingMode] = useState<"term" | "topic" | null>(null);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [chosenTopic, setChosenTopic] = useState<number | "">(0);
   const [topicsLoading, setTopicsLoading] = useState(false);
 
-  // Check if a subject was preselected via navigation state (e.g. from Dashboard "Start Quiz")
   const preselectedSubjectId = (location.state as any)?.preselectedSubjectId;
 
-  // ── Fetch enrolled subjects ──
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -60,7 +56,6 @@ const QuizzesPage = () => {
         const subs = await api.getMySubjects(token, user?.id, email);
         if (!cancelled) {
           setMySubjects(subs);
-          // Auto-select preselected subject or first subject
           if (preselectedSubjectId && subs.some(s => s.id === preselectedSubjectId)) {
             setSelectedSubjectId(preselectedSubjectId);
           }
@@ -75,7 +70,6 @@ const QuizzesPage = () => {
     return () => { cancelled = true; };
   }, [getToken, user]);
 
-  // ── Fetch topics when subject is selected ──
   useEffect(() => {
     if (!selectedSubjectId) {
       setTopics([]);
@@ -149,18 +143,14 @@ const QuizzesPage = () => {
   return (
     <AppLayout>
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-3">
-            <BlurText
-              text="Adaptive Quizzes"
-              delay={50}
-              animateBy="words"
-              direction="top"
-              className="text-3xl font-display font-bold text-foreground"
-            />
-          </div>
-        </div>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-7">
+        <BlurText
+          text="Adaptive Quizzes"
+          delay={50}
+          animateBy="words"
+          direction="top"
+          className="text-3xl font-display font-bold text-foreground"
+        />
         <p className="text-muted-foreground text-sm max-w-2xl mt-2 leading-relaxed">
           Select a subject, choose your quiz mode, and let our adaptive engine challenge you with
           questions tailored to your performance level.
@@ -172,24 +162,24 @@ const QuizzesPage = () => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="mb-8"
+        className="mb-7"
       >
-        <div className="flex items-center gap-2 mb-4">
-          <div className="flex items-center justify-center w-7 h-7 rounded-full gradient-primary text-primary-foreground text-xs font-black">1</div>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-7 h-7 rounded-full gradient-primary text-primary-foreground text-xs font-black flex items-center justify-center shadow-sm">1</div>
           <h2 className="text-lg font-display font-bold text-foreground">Choose Your Subject</h2>
           {profile?.grade && (
-            <span className="ml-2 text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary flex items-center gap-1">
+            <span className="ml-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
               <GraduationCap className="w-3 h-3" /> {profile.grade.name}
             </span>
           )}
         </div>
 
         {subjectsLoading ? (
-          <div className="flex items-center justify-center py-12 bg-card border border-border/50 rounded-2xl">
+          <div className="flex items-center justify-center py-12 bg-card border border-border/60 rounded-2xl">
             <span className="w-8 h-8 rounded-full border-3 border-primary/30 border-t-primary animate-spin" />
           </div>
         ) : mySubjects.length === 0 ? (
-          <div className="py-12 text-center bg-card border border-border/50 rounded-2xl">
+          <div className="py-12 text-center bg-card border border-border/60 rounded-2xl">
             <BookOpen className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
             <p className="text-sm text-muted-foreground mb-2">No subjects enrolled yet.</p>
             <p className="text-xs text-muted-foreground">
@@ -209,14 +199,14 @@ const QuizzesPage = () => {
                   transition={{ delay: 0.1 + i * 0.04 }}
                   onClick={() => setSelectedSubjectId(isSelected ? null : subject.id)}
                   className={cn(
-                    "relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-200 group",
+                    "relative flex flex-col items-center gap-2.5 p-4 rounded-2xl border-2 transition-all duration-200 group",
                     isSelected
-                      ? `${color.bg} ${color.border} shadow-md ring-2 ${color.ring} ring-offset-2`
-                      : "bg-card border-border/50 hover:border-border hover:shadow-sm"
+                      ? `${color.bg} ${color.border} shadow-md ring-2 ${color.ring} ring-offset-2 ring-offset-background`
+                      : "bg-card border-border/60 hover:border-border hover:shadow-sm hover:bg-muted/20"
                   )}
                 >
                   <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm transition-all",
+                    "w-11 h-11 rounded-xl flex items-center justify-center shadow-sm transition-all",
                     isSelected
                       ? `bg-gradient-to-br ${color.gradient} text-white`
                       : "bg-muted text-muted-foreground group-hover:bg-muted/80"
@@ -224,7 +214,7 @@ const QuizzesPage = () => {
                     <BookOpen className="w-5 h-5" />
                   </div>
                   <span className={cn(
-                    "text-sm font-bold transition-colors text-center leading-tight",
+                    "text-xs font-bold transition-colors text-center leading-tight",
                     isSelected ? color.text : "text-foreground"
                   )}>
                     {subject.name}
@@ -233,9 +223,9 @@ const QuizzesPage = () => {
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className={cn("absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black bg-gradient-to-br", color.gradient)}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-sm"
                     >
-                      ✓
+                      <CheckCircle2 className="w-3.5 h-3.5 text-primary-foreground" />
                     </motion.div>
                   )}
                 </motion.button>
@@ -245,7 +235,7 @@ const QuizzesPage = () => {
         )}
       </motion.div>
 
-      {/* ── Step 2: Quiz Mode (shown only when subject selected) ── */}
+      {/* ── Step 2: Quiz Mode ── */}
       <AnimatePresence>
         {selectedSubjectId && (
           <motion.div
@@ -255,8 +245,8 @@ const QuizzesPage = () => {
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex items-center justify-center w-7 h-7 rounded-full gradient-accent text-accent-foreground text-xs font-black">2</div>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-7 h-7 rounded-full gradient-accent text-accent-foreground text-xs font-black flex items-center justify-center shadow-sm">2</div>
               <h2 className="text-lg font-display font-bold text-foreground">
                 Choose Quiz Mode
                 {selectedSubject && (
@@ -265,36 +255,40 @@ const QuizzesPage = () => {
               </h2>
               <button
                 onClick={() => setSelectedSubjectId(null)}
-                className="ml-auto text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                className="ml-auto text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors bg-muted/50 hover:bg-muted px-3 py-1.5 rounded-lg"
               >
                 <ChevronLeft className="w-3.5 h-3.5" /> Change subject
               </button>
             </div>
 
             {/* Mode Selection */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-7">
               {/* Term Mode */}
-              <div className="bg-card border border-border/50 rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300">
+              <div className="bg-card border border-border/60 rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div className="h-1.5 gradient-primary w-full" />
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.1, duration: 0.4 }}
-                  className="p-8 h-full flex flex-col"
+                  className="p-7 flex flex-col h-full"
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                    <Zap className="w-7 h-7 text-primary" />
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-5">
+                    <Zap className="w-6 h-6 text-primary" />
                   </div>
 
-                  <h2 className="font-display font-bold text-2xl text-foreground mb-4">Term Mode</h2>
+                  <h2 className="font-display font-bold text-xl text-foreground mb-3">Term Mode</h2>
 
-                  <p className="text-sm text-muted-foreground mb-8 leading-relaxed flex-grow">
+                  <p className="text-sm text-muted-foreground mb-7 leading-relaxed flex-grow">
                     Focuses on overall term material. The system consults your historical statistics to identify weak topics based on lower accuracy percentages, and prioritizes those areas when selecting questions. This personalizes your quiz toward areas needing the most improvement.
                   </p>
 
                   <button
                     disabled={loadingMode !== null}
                     onClick={() => startQuiz("term")}
-                    className={`w-full text-center bg-primary text-primary-foreground hover:bg-primary/90 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-300 shadow-sm flex items-center justify-center gap-2 mt-auto cursor-pointer ${loadingMode === "term" ? "opacity-70 cursor-not-allowed" : ""}`}
+                    className={cn(
+                      "w-full py-3.5 gradient-primary text-primary-foreground rounded-xl text-sm font-bold uppercase tracking-wide transition-all shadow-sm flex items-center justify-center gap-2 mt-auto",
+                      loadingMode === "term" ? "opacity-70 cursor-not-allowed" : "hover:opacity-90 hover:shadow-md"
+                    )}
                   >
                     <Play className="w-4 h-4" /> {loadingMode === "term" ? "Generating..." : "Start Term Quiz"}
                   </button>
@@ -302,27 +296,28 @@ const QuizzesPage = () => {
               </div>
 
               {/* Topic Mode */}
-              <div className="bg-card border border-border/50 rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300">
+              <div className="bg-card border border-border/60 rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div className="h-1.5 gradient-accent w-full" />
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.2, duration: 0.4 }}
-                  className="p-8 h-full flex flex-col"
+                  className="p-7 flex flex-col h-full"
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6">
-                    <Target className="w-7 h-7 text-accent" />
+                  <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-5">
+                    <Target className="w-6 h-6 text-accent" />
                   </div>
 
-                  <h2 className="font-display font-bold text-2xl text-foreground mb-4">Topic Mode</h2>
+                  <h2 className="font-display font-bold text-xl text-foreground mb-3">Topic Mode</h2>
 
                   <p className="text-sm text-muted-foreground mb-4 leading-relaxed flex-grow">
                     Perfect for targeted revision. All questions are strictly restricted to your selected topic to ensure focused practice. The difficulty scales automatically within this topic.
                   </p>
 
                   {topicsLoading ? (
-                    <div className="flex items-center justify-center py-3 mb-4">
+                    <div className="flex items-center gap-2 py-3 mb-4">
                       <span className="w-5 h-5 rounded-full border-2 border-accent/30 border-t-accent animate-spin" />
-                      <span className="ml-2 text-xs text-muted-foreground">Loading topics…</span>
+                      <span className="text-xs text-muted-foreground">Loading topics…</span>
                     </div>
                   ) : (
                     <select
@@ -330,7 +325,7 @@ const QuizzesPage = () => {
                       value={chosenTopic}
                       onChange={(e) => setChosenTopic(Number(e.target.value))}
                       disabled={loadingMode !== null || topics.length === 0}
-                      className="w-full bg-background border border-border/50 text-foreground text-sm rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-accent/50 outline-none transition-all"
+                      className="w-full bg-background border border-border/60 text-foreground text-sm rounded-xl px-4 py-3 mb-5 focus:ring-2 focus:ring-accent/40 focus:border-accent outline-none transition-all cursor-pointer"
                     >
                       {topics.length === 0 ? (
                         <option value="">No topics available</option>
@@ -347,7 +342,10 @@ const QuizzesPage = () => {
                   <button
                     disabled={loadingMode !== null}
                     onClick={() => startQuiz("topic")}
-                    className={`w-full text-center bg-accent text-accent-foreground hover:bg-accent/90 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-300 shadow-sm flex items-center justify-center gap-2 mt-auto cursor-pointer ${loadingMode === "topic" ? "opacity-70 cursor-not-allowed" : ""}`}
+                    className={cn(
+                      "w-full py-3.5 gradient-accent text-accent-foreground rounded-xl text-sm font-bold uppercase tracking-wide transition-all shadow-sm flex items-center justify-center gap-2 mt-auto",
+                      loadingMode === "topic" ? "opacity-70 cursor-not-allowed" : "hover:opacity-90 hover:shadow-md"
+                    )}
                   >
                     <Play className="w-4 h-4" /> {loadingMode === "topic" ? "Generating..." : "Start Topic Quiz"}
                   </button>
@@ -360,14 +358,14 @@ const QuizzesPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-card border border-border/50 rounded-3xl p-6 md:p-8"
+              className="bg-card border border-border/60 rounded-2xl p-6"
             >
-              <div className="flex flex-col md:flex-row gap-6 md:items-center">
-                <div className="w-12 h-12 rounded-2xl bg-muted border border-border/50 flex items-center justify-center flex-shrink-0">
-                  <BookOpen className="w-6 h-6 text-foreground" />
+              <div className="flex flex-col md:flex-row gap-4 md:items-start">
+                <div className="w-11 h-11 rounded-2xl bg-muted border border-border/60 flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">How it works</h3>
+                  <h3 className="text-base font-bold text-foreground mb-2">How it works</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Our intelligent engine adjusts to you. If you're a beginner (fewer than five quizzes in a subject),
                     you'll receive a balanced and protective mix of questions (e.g., 8 easy, 4 medium, 3 hard) to avoid
@@ -387,9 +385,9 @@ const QuizzesPage = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-card border border-border/50 rounded-3xl p-8 text-center"
+          className="bg-card border border-border/60 rounded-2xl p-10 text-center"
         >
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-primary/8 border border-primary/20 flex items-center justify-center mx-auto mb-4">
             <ArrowRight className="w-8 h-8 text-primary animate-pulse" />
           </div>
           <h3 className="text-lg font-display font-bold text-foreground mb-2">Select a subject above to begin</h3>
