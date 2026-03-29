@@ -1,15 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, BookOpen, Brain, Clock, ChevronRight } from "lucide-react";
+import { Send, Sparkles, BookOpen, Brain, Clock, ChevronRight, AlertCircle, Filter, RotateCcw, ChevronDown } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import BlurText from "@/components/BlurText";
-const chatbotOwl = "/fox/mascot.png";
 import { cn } from "@/lib/utils";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { api, type ChatSource, type ChatSubject, type ChatTopic } from "@/lib/api";
+
+const chatbotOwl = "/fox/mascot.png";
 
 interface Message {
   id: string;
   role: "bot" | "user";
   text: string;
+  sources?: ChatSource[];
+  matched?: boolean;
 }
 
 const suggestedPrompts = [
@@ -19,83 +24,226 @@ const suggestedPrompts = [
   { icon: Clock, label: "Make a study schedule", subject: "Planning", color: "text-streak", bg: "bg-streak/10", border: "border-streak/20" },
 ];
 
+const INITIAL_MESSAGE: Message = {
+  id: "msg-1",
+  role: "bot",
+  text: "Hi there! I'm your MindUp AI tutor. How can I help you master your subjects today?",
+};
+
 const ChatbotPage = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: "msg-1", role: "bot", text: "Hi there! I'm your MindUp AI tutor. How can I help you master your subjects today?" },
-  ]);
+  const { getToken } = useAuth();
+  const { user } = useUser();
+  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Subject / topic filtering
+  const [subjects, setSubjects] = useState<ChatSubject[]>([]);
+  const [topics, setTopics] = useState<ChatTopic[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<ChatSubject | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<ChatTopic | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  // Fetch available subjects on mount
+  useEffect(() => {
+    api.getChatSubjects().then(setSubjects).catch(() => {});
+  }, []);
+
+  // Fetch topics when subject changes
+  useEffect(() => {
+    setTopics([]);
+    setSelectedTopic(null);
+    if (selectedSubject) {
+      api.getChatTopics(selectedSubject.id).then(setTopics).catch(() => {});
+    }
+  }, [selectedSubject]);
 
   // Auto-scroll to bottom
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
+  // Focus input on mount
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const handleNewChat = () => {
+    setMessages([INITIAL_MESSAGE]);
+    setSessionId(undefined);
+    inputRef.current?.focus();
+  };
+
   const handleSend = async (textOverride?: string) => {
     const textToSend = textOverride || input;
-    if (!textToSend.trim()) return;
+    if (!textToSend.trim() || isTyping) return;
 
     const userMsg: Message = { id: Date.now().toString(), role: "user", text: textToSend };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
 
-    // Simulate thinking and finding a real answer
-    setTimeout(() => {
-      setIsTyping(false);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("Not authenticated");
 
-      let botResponse = "That's an interesting question! Once I'm connected to my main server, I can give you a deeper breakdown.";
-      const lower = textToSend.toLowerCase();
+      const email = user?.primaryEmailAddress?.emailAddress || "";
+      const res = await api.askChat(
+        token,
+        {
+          question: textToSend,
+          session_id: sessionId,
+          subject: selectedSubject?.name,
+          topic_id: selectedTopic?.id,
+        },
+        user?.id,
+        email
+      );
 
-      if (lower.includes("newton") || lower.includes("laws")) {
-        botResponse = "Newton's First Law (Inertia): An object at rest stays at rest, and an object in motion stays in motion unless acted upon by a force.\n\nNewton's Second Law (F=ma): Force equals mass times acceleration.\n\nNewton's Third Law: For every action, there is an equal and opposite reaction.\n\nWould you like a quick quiz on this?";
-      } else if (lower.includes("cold war") || lower.includes("history")) {
-        botResponse = "The Cold War (1947–1991) was a period of geopolitical tension between the United States and the Soviet Union, along with their respective allies. It was 'cold' because there was no large-scale direct fighting directly between the two superpowers, but they supported major regional conflicts known as proxy wars. Key events include the Space Race, the Cuban Missile Crisis, and the fall of the Berlin Wall.";
-      } else if (lower.includes("algebra") || lower.includes("math")) {
-        botResponse = "Sure! Algebra is all about finding the unknown or putting real-life variables into equations. For example, if you have the equation '2x + 4 = 10', you want to isolate 'x'. First, subtract 4 from both sides to get '2x = 6'. Then divide by 2 to get 'x = 3'. Let me know if you have a specific problem to solve!";
-      } else if (lower.includes("schedule") || lower.includes("plan")) {
-        botResponse = "Here is a quick study schedule for you based on spacing out subjects:\n\n• 4:30 PM - Science (30 mins)\n• 5:00 PM - Short Break (10 mins)\n• 5:10 PM - Maths (45 mins)\n• 5:55 PM - Dinner / Break\n• 7:00 PM - English Literature (30 mins)\n\nTry sticking to this for a week and see how it feels!";
-      }
+      setSessionId(res.session_id);
 
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           role: "bot",
-          text: botResponse,
+          text: res.answer,
+          sources: res.sources,
+          matched: res.matched,
         },
       ]);
-    }, 1200);
+    } catch (err: any) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "bot",
+          text: err.message || "Something went wrong. Please try again.",
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+      inputRef.current?.focus();
+    }
   };
 
   return (
     <AppLayout>
 
       {/* ── Header ── */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-card border border-border/60 flex items-center justify-center shadow-sm">
-          <img src={chatbotOwl} alt="AI Chatbot" className="w-8 h-8 object-contain drop-shadow-sm" />
-        </div>
-        <div>
-          <BlurText text="MindUp AI Tutor" delay={40} animateBy="words" direction="top" className="text-2xl sm:text-3xl font-display font-bold text-foreground" />
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            <span className="text-sm font-semibold text-success">Online &amp; Ready to help</span>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between gap-4 mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-card border border-border/50 flex items-center justify-center shadow-sm">
+            <img src={chatbotOwl} alt="AI Chatbot" className="w-10 h-10 object-contain drop-shadow-sm" />
+          </div>
+          <div>
+            <BlurText text="MindUp AI Tutor" delay={40} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground" />
+            <div className="flex items-center gap-2 mt-1">
+              <span className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
+              <span className="text-sm font-semibold text-success tracking-wide">Online & Ready to help</span>
+            </div>
           </div>
         </div>
+
+        {/* New chat button */}
+        <button
+          onClick={handleNewChat}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border/50 text-sm font-semibold text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all"
+        >
+          <RotateCcw className="w-4 h-4" />
+          <span className="hidden sm:inline">New Chat</span>
+        </button>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 h-[calc(100vh-210px)] min-h-[500px]">
 
-        {/* ── Left Sidebar (Suggestions) ── */}
+        {/* ── Left Sidebar ── */}
         <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="hidden lg:flex flex-col gap-4">
-          <div className="bg-card border border-border/60 rounded-2xl p-4 h-full flex flex-col shadow-sm">
-            <div className="flex items-center gap-2 mb-5 pb-3 border-b border-border/40">
-              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-              </div>
-              <h2 className="text-sm font-display font-bold text-foreground">Suggested Prompts</h2>
+          <div className="glass rounded-2xl p-5 border border-border/40 h-full flex flex-col">
+
+            {/* Subject / Topic Filter */}
+            <div className="mb-5">
+              <button
+                onClick={() => setFilterOpen(!filterOpen)}
+                className="flex items-center justify-between w-full text-foreground mb-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-primary" />
+                  <h2 className="text-sm font-display font-bold uppercase tracking-wider">Filter by Subject</h2>
+                </div>
+                <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", filterOpen && "rotate-180")} />
+              </button>
+
+              <AnimatePresence>
+                {filterOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-2 pb-3">
+                      {/* Subject selector */}
+                      <select
+                        value={selectedSubject?.id ?? ""}
+                        onChange={(e) => {
+                          const id = Number(e.target.value);
+                          setSelectedSubject(subjects.find((s) => s.id === id) ?? null);
+                        }}
+                        className="w-full px-3 py-2 rounded-lg bg-card border border-border/50 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      >
+                        <option value="">All subjects</option>
+                        {subjects.map((s) => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </select>
+
+                      {/* Topic selector */}
+                      {selectedSubject && topics.length > 0 && (
+                        <select
+                          value={selectedTopic?.id ?? ""}
+                          onChange={(e) => {
+                            const id = Number(e.target.value);
+                            setSelectedTopic(topics.find((t) => t.id === id) ?? null);
+                          }}
+                          className="w-full px-3 py-2 rounded-lg bg-card border border-border/50 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        >
+                          <option value="">All topics</option>
+                          {topics.map((t) => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </select>
+                      )}
+
+                      {/* Active filter badge */}
+                      {selectedSubject && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 text-[11px] font-semibold text-primary">
+                          <Filter className="w-3 h-3" />
+                          {selectedSubject.name}{selectedTopic ? ` › ${selectedTopic.name}` : ""}
+                          <button
+                            onClick={() => { setSelectedSubject(null); setSelectedTopic(null); }}
+                            className="ml-auto text-primary/60 hover:text-primary"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-border/40 mb-5" />
+
+            {/* Suggested Prompts */}
+            <div className="flex items-center gap-2 mb-4 text-foreground">
+              <Sparkles className="w-4.5 h-4.5 text-primary" />
+              <h2 className="text-sm font-display font-bold uppercase tracking-wider">Suggested</h2>
             </div>
 
             <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
@@ -103,7 +251,8 @@ const ChatbotPage = () => {
                 <button
                   key={i}
                   onClick={() => handleSend(p.label)}
-                  className="group flex flex-col items-start gap-1.5 p-3 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all text-left"
+                  disabled={isTyping}
+                  className="group flex flex-col items-start gap-1 p-3.5 rounded-xl bg-card border border-border/30 hover:border-primary/40 hover:bg-primary/[0.03] transition-all text-left w-full h-auto disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className={cn("flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border", p.bg, p.color, p.border)}>
@@ -119,7 +268,7 @@ const ChatbotPage = () => {
 
             <div className="pt-4 mt-auto border-t border-border/40">
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Tip:</strong> You can ask the AI to generate a quiz on any topic to test your knowledge.
+                <strong className="text-foreground">Tip:</strong> Select a subject above to get more accurate answers from your textbooks.
               </p>
             </div>
           </div>
@@ -127,6 +276,22 @@ const ChatbotPage = () => {
 
         {/* ── Chat Container ── */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-3 bg-card border border-border/60 rounded-2xl flex flex-col shadow-sm overflow-hidden h-full">
+
+          {/* Active filter bar (inside chat) */}
+          {selectedSubject && (
+            <div className="px-6 py-2.5 bg-primary/5 border-b border-border/40 flex items-center gap-2">
+              <Filter className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-semibold text-primary">
+                Filtering: {selectedSubject.name}{selectedTopic ? ` › ${selectedTopic.name}` : ""}
+              </span>
+              <button
+                onClick={() => { setSelectedSubject(null); setSelectedTopic(null); }}
+                className="ml-auto text-xs text-primary/60 hover:text-primary font-medium"
+              >
+                Clear
+              </button>
+            </div>
+          )}
 
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-5 space-y-5">
@@ -146,15 +311,40 @@ const ChatbotPage = () => {
                       </div>
                     )}
 
-                    <div
-                      className={cn(
-                        "relative max-w-[75%] px-4 py-3 text-sm leading-relaxed shadow-sm whitespace-pre-wrap",
-                        isUser
-                          ? "gradient-primary text-primary-foreground rounded-2xl rounded-br-sm font-medium"
-                          : "bg-muted/40 border border-border/50 text-foreground rounded-2xl rounded-bl-sm"
+                    <div className={cn("relative max-w-[75%]")}>
+                      <div
+                        className={cn(
+                          "px-5 py-3.5 text-sm leading-relaxed shadow-sm whitespace-pre-wrap",
+                          isUser
+                            ? "gradient-primary text-primary-foreground rounded-2xl rounded-br-sm font-medium"
+                            : "bg-card border border-border/50 text-foreground rounded-2xl rounded-bl-sm"
+                        )}
+                      >
+                        {msg.text}
+                      </div>
+
+                      {/* Source citations */}
+                      {!isUser && msg.sources && msg.sources.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {msg.sources.map((src, i) => (
+                            <span
+                              key={i}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 text-[10px] font-semibold text-primary"
+                            >
+                              <BookOpen className="w-2.5 h-2.5" />
+                              {src.subject} · p.{src.page_start}–{src.page_end}
+                            </span>
+                          ))}
+                        </div>
                       )}
-                    >
-                      {msg.text}
+
+                      {/* Not matched warning */}
+                      {!isUser && msg.matched === false && (
+                        <div className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                          <AlertCircle className="w-3 h-3" />
+                          <span>Answer not found in textbooks — this is a general response</span>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 );
@@ -184,11 +374,12 @@ const ChatbotPage = () => {
               className="flex items-center gap-3 bg-card border border-border/60 hover:border-primary/40 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 rounded-2xl px-4 py-2.5 transition-all shadow-sm"
             >
               <input
+                ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask your tutor anything..."
-                className="flex-1 bg-transparent border-none text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 py-1"
+                placeholder={selectedSubject ? `Ask about ${selectedSubject.name}...` : "Ask your tutor anything..."}
+                className="flex-1 bg-transparent border-none text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 px-3 py-2"
               />
               <button
                 type="submit"
