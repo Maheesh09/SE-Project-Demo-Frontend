@@ -213,6 +213,40 @@ export interface NationalLeaderboardEntry {
 export interface NationalLeaderboard {
     entries: NationalLeaderboardEntry[];
 }
+// ─── Chat / RAG Types ────────────────────────────────────────────────────────
+
+export interface ChatRequest {
+    question: string;
+    subject?: string;
+    topic_id?: number;
+    session_id?: string;
+}
+
+export interface ChatSource {
+    source_file: string;
+    subject: string;
+    page_start: string;
+    page_end: string;
+    distance: number;
+}
+
+export interface ChatResponse {
+    answer: string;
+    sources: ChatSource[];
+    matched: boolean;
+    session_id: string;
+}
+
+export interface ChatSubject {
+    id: number;
+    name: string;
+}
+
+export interface ChatTopic {
+    id: number;
+    name: string;
+}
+
 // ─── API Methods ──────────────────────────────────────────────────────────────
 
 export const api = {
