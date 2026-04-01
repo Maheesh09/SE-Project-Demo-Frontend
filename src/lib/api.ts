@@ -189,6 +189,30 @@ export interface DistrictLeaderboard {
     district_name: string;
     entries: DistrictLeaderboardEntry[];
 }
+
+export interface ProvinceLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+export interface ProvinceLeaderboard {
+    province_id: number;
+    province_name: string;
+    entries: ProvinceLeaderboardEntry[];
+}
+
+export interface NationalLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+export interface NationalLeaderboard {
+    entries: NationalLeaderboardEntry[];
+}
 // ─── API Methods ──────────────────────────────────────────────────────────────
 
 export const api = {
@@ -295,6 +319,20 @@ export const api = {
     getDistrictLeaderboard: (token: string, districtId?: number, xClerkUserId?: string, xEmail?: string) =>
         request<DistrictLeaderboard>(
             `/api/v1/me/district-leaderboard${districtId ? `?district_id=${districtId}` : ""}`,
+            token,
+            { xClerkUserId, xEmail }
+        ),
+
+    getProvinceLeaderboard: (token: string, provinceId?: number, xClerkUserId?: string, xEmail?: string) =>
+        request<ProvinceLeaderboard>(
+            `/api/v1/me/province-leaderboard${provinceId ? `?province_id=${provinceId}` : ""}`,
+            token,
+            { xClerkUserId, xEmail }
+        ),
+
+    getNationalLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<NationalLeaderboard>(
+            "/api/v1/me/national-leaderboard",
             token,
             { xClerkUserId, xEmail }
         ),
