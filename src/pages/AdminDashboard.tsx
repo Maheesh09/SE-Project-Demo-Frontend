@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BrainCircuit, Plus, Trash2, Check, ExternalLink, LogOut, Loader2, Save, Users, List, ChevronRight } from "lucide-react";
+import { BrainCircuit, Plus, Trash2, Check, ExternalLink, LogOut, Loader2, Users, List, ChevronRight, FileText, ToggleLeft, ToggleRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
-import { api, type QuestionResponse } from "@/lib/api";
+import { api, type QuestionResponse, type AdminResource } from "@/lib/api";
 
 const ADMIN_API_KEY = import.meta.env.VITE_ADMIN_API_KEY ?? "change-me";
 
@@ -139,7 +139,43 @@ const AdminDashboard = () => {
     ]);
 
     const adminDisplayName = localStorage.getItem("admin-display-name") || "Admin";
-    const [view, setView] = useState<"create" | "bank">("create");
+    const [view, setView] = useState<"create" | "bank" | "resources">("create");
+
+    // ── Resources state ──
+    const [resources, setResources] = useState<AdminResource[]>([]);
+    const [resourcesLoading, setResourcesLoading] = useState(false);
+
+    const fetchResources = async () => {
+        setResourcesLoading(true);
+        try {
+            const data = await api.adminListResources(ADMIN_API_KEY);
+            setResources(data);
+        } catch (err) {
+            console.error("Failed to fetch resources:", err);
+        } finally {
+            setResourcesLoading(false);
+        }
+    };
+
+    const handleToggleResource = async (id: number) => {
+        try {
+            await api.adminToggleResource(ADMIN_API_KEY, id);
+            toast.success("Resource toggled");
+            fetchResources();
+        } catch (err) {
+            toast.error("Failed to toggle resource");
+        }
+    };
+
+    const handleDeleteResource = async (id: number) => {
+        try {
+            await api.adminDeleteResource(ADMIN_API_KEY, id);
+            toast.success("Resource deleted");
+            fetchResources();
+        } catch (err) {
+            toast.error("Failed to delete resource");
+        }
+    };
 
     const handleLogout = () => {
         localStorage.removeItem("admin-token");
@@ -299,6 +335,19 @@ const AdminDashboard = () => {
                             </span>
                         )}
                     </Button>
+                    <Button
+                        variant={view === "resources" ? "secondary" : "ghost"}
+                        className={`w-full justify-start gap-3 ${view === "resources" ? "bg-primary/10 text-primary hover:bg-primary/20" : "text-muted-foreground hover:text-foreground"}`}
+                        onClick={() => { setView("resources"); fetchResources(); }}
+                    >
+                        <FileText className="w-4 h-4" />
+                        Resources
+                        {!resourcesLoading && resources.length > 0 && (
+                            <span className="ml-auto text-[10px] font-bold bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
+                                {resources.length}
+                            </span>
+                        )}
+                    </Button>
                 </nav>
 
                 <div className="mt-8 pt-6 border-t border-border/50">
@@ -313,7 +362,77 @@ const AdminDashboard = () => {
             <main className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto z-10">
                 <div className="max-w-4xl mx-auto">
 
-                {view === "bank" ? (
+                {view === "resources" ? (
+                    <>
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+                            <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">Resources</h1>
+                            <p className="text-muted-foreground mt-1 text-sm">Manage textbooks, past papers, and learning materials.</p>
+                        </motion.div>
+
+                        {resourcesLoading ? (
+                            <div className="flex items-center justify-center py-16">
+                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                            </div>
+                        ) : resources.length === 0 ? (
+                            <div className="text-center py-16">
+                                <FileText className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                                <p className="text-muted-foreground">No resources found.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {resources.map((r, i) => (
+                                    <motion.div
+                                        key={r.id}
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.03 }}
+                                        className="glass rounded-xl p-4 border border-border/60"
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <FileText className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-foreground">{r.title}</p>
+                                                {r.description && (
+                                                    <p className="text-xs text-muted-foreground mt-0.5">{r.description}</p>
+                                                )}
+                                                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                                                        {r.type.replace("_", " ")}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground">ID: {r.id}</span>
+                                                    <span className="text-[10px] text-muted-foreground">Subject: {r.subject_id}</span>
+                                                    {!r.is_active && (
+                                                        <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">Inactive</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                    onClick={() => handleToggleResource(r.id)}
+                                                    title={r.is_active ? "Deactivate" : "Activate"}
+                                                >
+                                                    {r.is_active ? <ToggleRight className="w-4 h-4 text-success" /> : <ToggleLeft className="w-4 h-4" />}
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                    onClick={() => handleDeleteResource(r.id)}
+                                                    title="Delete resource"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                ) : view === "bank" ? (
                     <>
                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
                             <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">Question Bank</h1>

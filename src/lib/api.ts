@@ -331,6 +331,37 @@ export interface QuestionResponse {
     options: OptionResponse[];
 }
 
+// ─── Admin Resource Types ─────────────────────────────────────────────────────
+
+export interface ResourceCreatePayload {
+    subject_id: number;
+    type: "textbook" | "past_paper" | "notes" | "answers" | "other";
+    title: string;
+    description?: string | null;
+    file_url?: string | null;
+    storage_path?: string | null;
+}
+
+export interface ResourceUpdatePayload {
+    title?: string;
+    description?: string | null;
+    type?: "textbook" | "past_paper" | "notes" | "answers" | "other";
+    file_url?: string | null;
+    storage_path?: string | null;
+}
+
+export interface AdminResource {
+    id: number;
+    subject_id: number;
+    type: string;
+    title: string;
+    description: string | null;
+    is_active: boolean;
+    view_url: string | null;
+    file_url: string | null;
+    storage_path: string | null;
+}
+
 // ─── Chat / RAG Types ────────────────────────────────────────────────────────
 
 export interface ChatRequest {
@@ -538,4 +569,38 @@ export const api = {
 
     getQuestion: (questionId: number) =>
         request<QuestionResponse>(`/api/v1/admin/questions/${questionId}`, null),
+
+    // ── Admin Resources ──
+    adminListResources: (adminApiKey: string, subjectId?: number) =>
+        request<AdminResource[]>(
+            `/api/v1/admin/resources${subjectId ? `?subject_id=${subjectId}` : ""}`,
+            null,
+            { headers: { "X-Admin-Api-Key": adminApiKey } },
+        ),
+
+    adminCreateResource: (adminApiKey: string, payload: ResourceCreatePayload) =>
+        request<AdminResource>("/api/v1/admin/resources", null, {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers: { "X-Admin-Api-Key": adminApiKey },
+        }),
+
+    adminUpdateResource: (adminApiKey: string, resourceId: number, payload: ResourceUpdatePayload) =>
+        request<AdminResource>(`/api/v1/admin/resources/${resourceId}`, null, {
+            method: "PUT",
+            body: JSON.stringify(payload),
+            headers: { "X-Admin-Api-Key": adminApiKey },
+        }),
+
+    adminDeleteResource: (adminApiKey: string, resourceId: number) =>
+        request<{ detail: string }>(`/api/v1/admin/resources/${resourceId}`, null, {
+            method: "DELETE",
+            headers: { "X-Admin-Api-Key": adminApiKey },
+        }),
+
+    adminToggleResource: (adminApiKey: string, resourceId: number) =>
+        request<AdminResource>(`/api/v1/admin/resources/${resourceId}/toggle`, null, {
+            method: "PATCH",
+            headers: { "X-Admin-Api-Key": adminApiKey },
+        }),
 };
