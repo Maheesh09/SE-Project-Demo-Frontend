@@ -273,6 +273,25 @@ export interface LeaderboardEntry {
     is_current_user: boolean;
 }
 
+// ─── Admin Types ─────────────────────────────────────────────────────────────
+
+export interface AdminLoginPayload {
+    username: string;
+    password: string;
+}
+
+export interface AdminInfo {
+    username: string;
+    display_name: string | null;
+    token: string;
+}
+
+export interface AdminLoginResponse {
+    success: boolean;
+    message: string;
+    admin: AdminInfo | null;
+}
+
 // ─── Chat / RAG Types ────────────────────────────────────────────────────────
 
 export interface ChatRequest {
@@ -449,6 +468,12 @@ export const api = {
         request<LeaderboardEntry[]>("/api/v1/me/leaderboard", token, { xClerkUserId, xEmail }),
 
     // ── Admin ──
+    adminLogin: (payload: AdminLoginPayload) =>
+        request<AdminLoginResponse>("/api/v1/admin/login", null, {
+            method: "POST",
+            body: JSON.stringify(payload),
+        }),
+
     getStudentCount: (adminApiKey: string) =>
         request<StudentCountOut>("/api/v1/admin/stats/student-count", null, {
             headers: { "X-Admin-Api-Key": adminApiKey },

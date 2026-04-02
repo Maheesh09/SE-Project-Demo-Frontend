@@ -123,8 +123,11 @@ const AdminDashboard = () => {
         { id: "4", option_text: "", is_correct: false },
     ]);
 
+    const adminDisplayName = localStorage.getItem("admin-display-name") || "Admin";
+
     const handleLogout = () => {
         localStorage.removeItem("admin-token");
+        localStorage.removeItem("admin-display-name");
         navigate("/admin/login");
     };
 
@@ -229,7 +232,7 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                         <h2 className="font-display font-bold text-foreground leading-tight tracking-tight">MindUp</h2>
-                        <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Admin Portal</p>
+                        <p className="text-[10px] font-bold text-primary uppercase tracking-wider">{adminDisplayName}</p>
                     </div>
                 </div>
 
