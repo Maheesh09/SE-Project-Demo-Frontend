@@ -292,6 +292,45 @@ export interface AdminLoginResponse {
     admin: AdminInfo | null;
 }
 
+// ─── Admin Question Types ────────────────────────────────────────────────────
+
+export interface OptionCreate {
+    option_text: string;
+    is_correct: boolean;
+}
+
+export interface QuestionCreate {
+    subject_id: number;
+    topic_id: number;
+    difficulty: "easy" | "medium" | "hard";
+    question_text: string;
+    explanation?: string | null;
+    xp_value?: number | null;
+    created_by: number;
+    options: OptionCreate[];
+}
+
+export interface OptionResponse {
+    id: number;
+    option_text: string;
+    is_correct: boolean;
+}
+
+export interface QuestionResponse {
+    id: number;
+    subject_id: number;
+    topic_id: number;
+    difficulty: string;
+    type: string;
+    question_text: string;
+    explanation: string | null;
+    xp_value: number;
+    is_active: boolean;
+    created_by: number;
+    created_at: string;
+    options: OptionResponse[];
+}
+
 // ─── Chat / RAG Types ────────────────────────────────────────────────────────
 
 export interface ChatRequest {
@@ -478,4 +517,25 @@ export const api = {
         request<StudentCountOut>("/api/v1/admin/stats/student-count", null, {
             headers: { "X-Admin-Api-Key": adminApiKey },
         }),
+
+    createQuestion: (payload: QuestionCreate) =>
+        request<QuestionResponse>("/api/v1/admin/questions/", null, {
+            method: "POST",
+            body: JSON.stringify(payload),
+        }),
+
+    listQuestions: (params?: { subject_id?: number; topic_id?: number; difficulty?: string; is_active?: boolean; skip?: number; limit?: number }) => {
+        const qs = new URLSearchParams();
+        if (params?.subject_id != null) qs.set("subject_id", String(params.subject_id));
+        if (params?.topic_id != null) qs.set("topic_id", String(params.topic_id));
+        if (params?.difficulty) qs.set("difficulty", params.difficulty);
+        if (params?.is_active != null) qs.set("is_active", String(params.is_active));
+        if (params?.skip != null) qs.set("skip", String(params.skip));
+        if (params?.limit != null) qs.set("limit", String(params.limit));
+        const query = qs.toString();
+        return request<QuestionResponse[]>(`/api/v1/admin/questions/${query ? `?${query}` : ""}`, null);
+    },
+
+    getQuestion: (questionId: number) =>
+        request<QuestionResponse>(`/api/v1/admin/questions/${questionId}`, null),
 };
