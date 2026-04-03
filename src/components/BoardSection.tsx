@@ -66,7 +66,7 @@ const BoardSection = () => {
               transition={{ duration: 0.6, delay: 0.12 * i, ease: [0.22, 1, 0.36, 1] }}
               viewport={{ once: true, amount: 0.2 }}
               whileHover={{ y: -8, transition: { duration: 0.3 } }}
-              className={`relative rounded-2xl p-7 bg-white/60 backdrop-blur-sm border transition-all duration-400 cursor-default ${
+              className={`relative rounded-2xl p-7 bg-card/70 backdrop-blur-sm border transition-all duration-400 cursor-default ${
                 plan.popular
                   ? "border-[#acd663]/40 shadow-xl shadow-[#acd663]/10 scale-[1.02]"
                   : "border-border/50 hover:border-[#acd663]/30 hover:shadow-lg hover:shadow-[#acd663]/5"

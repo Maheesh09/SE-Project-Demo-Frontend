@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
+import ThemeToggle from "./ThemeToggle";
+import { useTheme } from "@/hooks/useTheme";
 
 const navLinks = [
   { label: "Home", href: "#home" },
@@ -13,6 +15,7 @@ const Navbar = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
+  const { isDark } = useTheme();
 
   useEffect(() => {
     const onScroll = () => {
@@ -25,18 +28,39 @@ const Navbar = () => {
 
   const merged = scrollProgress > 0.8;
 
+  // Dark-mode aware navbar colors
+  const navBg = isDark
+    ? `rgba(20,20,25,${0.8 + scrollProgress * 0.15})`
+    : `rgba(255,255,255,${0.9 + scrollProgress * 0.1})`;
+  
+  const navBorder = isDark
+    ? `rgba(255,255,255,${scrollProgress * 0.06})`
+    : `rgba(0,0,0,${scrollProgress * 0.08})`;
+
+  const navShadow = isDark
+    ? `0 2px ${8 * scrollProgress}px rgba(0,0,0,${scrollProgress * 0.25})`
+    : `0 2px ${8 * scrollProgress}px rgba(0,0,0,${scrollProgress * 0.06})`;
+
+  const pillBg = isDark
+    ? (merged ? 'transparent' : 'rgba(255,255,255,0.04)')
+    : (merged ? 'transparent' : 'rgba(255,255,255,0.06)');
+  
+  const pillBorder = isDark
+    ? (merged ? '1px solid transparent' : '1px solid rgba(255,255,255,0.06)')
+    : (merged ? '1px solid transparent' : '1px solid rgba(255,255,255,0.1)');
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex flex-col items-center py-3 px-4">
       <div
         className="flex items-center justify-between rounded-full px-4 py-2 w-full"
         style={{
           maxWidth: `${1400 - scrollProgress * 700}px`,
-          backgroundColor: `rgba(255,255,255,${0.85 + scrollProgress * 0.15})`,
+          backgroundColor: navBg,
           backdropFilter: `blur(${scrollProgress * 20}px)`,
           WebkitBackdropFilter: `blur(${scrollProgress * 20}px)`,
-          border: `1px solid rgba(0,0,0,${scrollProgress * 0.08})`,
-          boxShadow: `0 2px ${8 * scrollProgress}px rgba(0,0,0,${scrollProgress * 0.06})`,
-          transition: 'max-width 1s cubic-bezier(0.16,1,0.3,1), background-color 0.6s ease, backdrop-filter 0.6s ease, border 0.6s ease',
+          border: `1px solid ${navBorder}`,
+          boxShadow: navShadow,
+          transition: 'max-width 1s cubic-bezier(0.16,1,0.3,1), background-color 0.25s ease, backdrop-filter 0.25s ease, border 0.25s ease, box-shadow 0.25s ease',
         }}
       >
         {/* Logo */}
@@ -47,8 +71,8 @@ const Navbar = () => {
         <div
           className="hidden md:flex items-center gap-1 rounded-full px-2 py-1 transition-all duration-700"
           style={{
-            backgroundColor: merged ? 'transparent' : 'rgba(255,255,255,0.06)',
-            border: merged ? '1px solid transparent' : '1px solid rgba(255,255,255,0.1)',
+            backgroundColor: pillBg,
+            border: pillBorder,
           }}
         >
           {navLinks.map((link) => (
@@ -60,6 +84,9 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+
+          {/* Theme Toggle */}
+          <ThemeToggle className="mx-1" />
 
           {/* Clerk Auth */}
           <SignedOut>
@@ -91,14 +118,17 @@ const Navbar = () => {
           </SignedIn>
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden text-foreground"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        {/* Mobile: theme toggle + hamburger */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <button
+            className="text-foreground"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}

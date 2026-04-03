@@ -13,7 +13,7 @@ const topRow = [...testimonials.slice(0, 3), ...testimonials.slice(0, 3), ...tes
 const bottomRow = [...testimonials.slice(3), ...testimonials.slice(3), ...testimonials.slice(3)];
 
 const Card = ({ item }: { item: (typeof testimonials)[0] }) => (
-  <div className="flex-shrink-0 w-60 rounded-xl p-5 bg-white/60 border border-border/40 hover:border-[#acd663]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#acd663]/5 transition-all duration-400 cursor-default">
+  <div className="flex-shrink-0 w-60 rounded-xl p-5 bg-card/70 border border-border/40 hover:border-[#acd663]/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#acd663]/5 transition-all duration-400 cursor-default">
     <p className="text-foreground/70 text-sm leading-relaxed mb-4">"{item.quote}"</p>
     <p className="text-sm font-bold text-foreground">{item.name}</p>
   </div>

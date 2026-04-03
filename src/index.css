@@ -122,6 +122,25 @@
     --sidebar-accent-foreground: 38 35% 88%;
     --sidebar-border: 30 15% 18%;
     --sidebar-ring: 88 25% 62%;
+
+    /* Custom tokens for dark mode */
+    --success: 82 45% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 30 45% 55%;
+    --warning-foreground: 0 0% 100%;
+    --xp: 30 45% 62%;
+    --streak: 28 22% 58%;
+
+    /* Dark-aware gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(82, 50%, 50%), hsl(82, 45%, 40%));
+    --gradient-accent: linear-gradient(135deg, hsl(30, 45%, 55%), hsl(28, 27%, 45%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(28, 22%, 8%), hsl(28, 20%, 6%));
+
+    /* Dark shadows — more subtle */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.15);
+    --shadow-glow: 0 0 20px rgba(172, 214, 99, 0.2);
   }
 }
 
@@ -136,6 +155,24 @@
 
   html {
     scroll-behavior: smooth;
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  /* Smooth theme transition on toggle */
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: background-color 0.25s ease,
+                color 0.2s ease,
+                border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                fill 0.2s ease,
+                stroke 0.2s ease !important;
   }
 
   h1,

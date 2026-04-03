@@ -75,9 +75,9 @@ const leaderboardData = [
 ];
 
 const medalColors: Record<number, { bg: string; border: string; text: string; emoji: string }> = {
-  1: { bg: "bg-gradient-to-r from-yellow-100 to-amber-50", border: "border-yellow-400", text: "text-yellow-700", emoji: "🥇" },
-  2: { bg: "bg-gradient-to-r from-gray-100 to-slate-50", border: "border-gray-400", text: "text-gray-600", emoji: "🥈" },
-  3: { bg: "bg-gradient-to-r from-orange-100 to-amber-50", border: "border-orange-400", text: "text-orange-700", emoji: "🥉" },
+  1: { bg: "bg-gradient-to-r from-yellow-100 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/20", border: "border-yellow-400 dark:border-yellow-600", text: "text-yellow-700 dark:text-yellow-400", emoji: "🥇" },
+  2: { bg: "bg-gradient-to-r from-gray-100 to-slate-50 dark:from-gray-800/40 dark:to-slate-800/30", border: "border-gray-400 dark:border-gray-600", text: "text-gray-600 dark:text-gray-400", emoji: "🥈" },
+  3: { bg: "bg-gradient-to-r from-orange-100 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/20", border: "border-orange-400 dark:border-orange-600", text: "text-orange-700 dark:text-orange-400", emoji: "🥉" },
 };
 
 const merchItems = [
@@ -125,10 +125,10 @@ const EventsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               viewport={{ once: true }}
-              className="bg-white/60 backdrop-blur-sm rounded-2xl border border-border/60 overflow-hidden flex-1"
+              className="bg-card/70 backdrop-blur-sm rounded-2xl border border-border/60 overflow-hidden flex-1"
             >
               {/* Table header */}
-              <div className="grid grid-cols-12 gap-2 px-5 py-3 bg-white/40 border-b border-border/40 text-xs font-bold text-foreground/55 uppercase tracking-wider">
+              <div className="grid grid-cols-12 gap-2 px-5 py-3 bg-card/60 border-b border-border/40 text-xs font-bold text-foreground/55 uppercase tracking-wider">
                 <div className="col-span-1">#</div>
                 <div className="col-span-5">Learner</div>
                 <div className="col-span-3 text-right">XP</div>
@@ -209,7 +209,7 @@ const EventsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               viewport={{ once: true }}
-              className="bg-gradient-to-br from-[#acd663]/10 via-white/60 to-yellow-50/60 backdrop-blur-sm rounded-2xl border border-[#acd663]/20 p-6 relative overflow-hidden flex-1 flex flex-col"
+              className="bg-gradient-to-br from-[#acd663]/10 via-card/60 to-amber-50/10 dark:to-amber-900/5 backdrop-blur-sm rounded-2xl border border-[#acd663]/20 p-6 relative overflow-hidden flex-1 flex flex-col"
             >
               {/* Sparkle decoration */}
               <motion.div
@@ -246,7 +246,7 @@ const EventsSection = () => {
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 + 0.1 * i, duration: 0.5 }}
                     viewport={{ once: true }}
-                    className="flex items-start gap-3 p-3 rounded-xl bg-white/60 hover:bg-white/80 border border-border/30 hover:border-[#acd663]/20 transition-all duration-300 group cursor-default"
+                    className="flex items-start gap-3 p-3 rounded-xl bg-card/60 hover:bg-card/80 border border-border/30 hover:border-[#acd663]/20 transition-all duration-300 group cursor-default"
                   >
                     <div className="w-10 h-10 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
                       <item.Icon />
@@ -284,7 +284,7 @@ const EventsSection = () => {
           viewport={{ once: true }}
           className="mt-10 max-w-6xl mx-auto"
         >
-          <div className="relative rounded-2xl bg-gradient-to-r from-amber-50 via-yellow-50/80 to-amber-50 border-2 border-amber-300/40 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 overflow-hidden">
+          <div className="relative rounded-2xl bg-gradient-to-r from-amber-50 via-yellow-50/80 to-amber-50 dark:from-amber-950/40 dark:via-yellow-950/20 dark:to-amber-950/40 border-2 border-amber-300/40 dark:border-amber-700/30 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 overflow-hidden">
             {/* Gold shine sweep */}
             <div
               className="absolute inset-0 pointer-events-none"
@@ -309,13 +309,13 @@ const EventsSection = () => {
               </div>
               <div>
                 <p className="font-black text-foreground text-base tracking-tight" style={{ textShadow: '0 1px 0 rgba(0,0,0,0.05)' }}>
-                  This month's top reward: <span className="text-amber-600 font-black">MINDUP Premium Hoodie + Sticker Bundle</span>
+                  This month's top reward: <span className="text-amber-600 dark:text-amber-400 font-black">MINDUP Premium Hoodie + Sticker Bundle</span>
                 </p>
                 <p className="text-foreground/65 text-sm font-semibold">Only 7 days left to claim your spot in the top 10!</p>
               </div>
             </div>
             <div className="flex-shrink-0 relative z-10">
-              <span className="px-5 py-2.5 rounded-full bg-amber-400/20 text-amber-700 text-sm font-black border-2 border-amber-400/40 tracking-wide">
+              <span className="px-5 py-2.5 rounded-full bg-amber-400/20 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 text-sm font-black border-2 border-amber-400/40 dark:border-amber-500/30 tracking-wide">
                 7 Days Left
               </span>
             </div>

@@ -158,7 +158,7 @@ const AboutSection = () => {
               }}
               viewport={{ once: true, amount: 0.2 }}
               whileHover={{ y: -8, transition: { duration: 0.3 } }}
-              className="group relative p-7 rounded-2xl bg-white/50 backdrop-blur-sm border border-border/60 hover:border-[#acd663]/30 cursor-default transition-shadow duration-400 hover:shadow-xl hover:shadow-[#acd663]/10"
+              className="group relative p-7 rounded-2xl bg-card/70 backdrop-blur-sm border border-border/60 hover:border-[#acd663]/30 cursor-default transition-all duration-400 hover:shadow-xl hover:shadow-[#acd663]/10"
             >
               {/* Colorful SVG illustration */}
               <div className="w-20 h-20 mb-5 mx-auto group-hover:scale-110 transition-transform duration-300">
