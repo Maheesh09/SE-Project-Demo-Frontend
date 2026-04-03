@@ -10,11 +10,11 @@ import {
 } from "recharts";
 import {
   TrendingUp, BookOpen, Target,
-  Star, Zap, Brain, ArrowRight,
+  Star, Zap, Brain, ArrowRight, Clock, CheckCircle2, XCircle, ChevronDown,
 } from "lucide-react";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useProfile } from "@/hooks/useProfile";
-import { api, type DashboardStats, type Subject, type SubjectProgress } from "@/lib/api";
+import { api, type DashboardStats, type Subject, type SubjectProgress, type QuizSummary } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -169,6 +169,8 @@ const AnalyticsPage = () => {
   const [loading, setLoading] = useState(true);
   const [mySubjects, setMySubjects] = useState<Subject[]>([]);
   const [subjectProgress, setSubjectProgress] = useState<SubjectProgress[]>([]);
+  const [recentQuizzes, setRecentQuizzes] = useState<QuizSummary[]>([]);
+  const [expandedQuiz, setExpandedQuiz] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -177,15 +179,17 @@ const AnalyticsPage = () => {
         const token = await getToken();
         if (!token) return;
         const email = user?.primaryEmailAddress?.emailAddress || "";
-        const [dashStats, subs, progress] = await Promise.all([
+        const [dashStats, subs, progress, quizzes] = await Promise.all([
           api.getDashboardStats(token, user?.id, email),
           api.getMySubjects(token, user?.id, email),
           api.getSubjectProgress(token, user?.id, email).catch(() => []),
+          api.getRecentQuizzes(token, user?.id, email).catch(() => []),
         ]);
         if (!cancelled) {
           setStats(dashStats);
           setMySubjects(subs);
           setSubjectProgress(progress);
+          setRecentQuizzes(quizzes);
         }
       } catch (err) {
         console.error("Failed to load analytics:", err);
@@ -395,27 +399,94 @@ const AnalyticsPage = () => {
             </div>
           )}
 
-          {/* ── Recent quizzes ── */}
-          {stats && stats.recent_quizzes.length > 0 && (
+          {/* ── Recent quizzes (detailed) ── */}
+          {recentQuizzes.length > 0 && (
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="glass rounded-2xl p-6">
               <h3 className="font-display font-bold text-foreground mb-1">Recent Quiz Results</h3>
-              <p className="text-xs text-muted-foreground mb-4">Your last {stats.recent_quizzes.length} quiz attempts</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                {stats.recent_quizzes.map((q, i) => {
+              <p className="text-xs text-muted-foreground mb-4">Your last {recentQuizzes.length} quizzes with answer breakdowns</p>
+              <div className="space-y-3">
+                {recentQuizzes.map((q) => {
                   const g = getGrade(q.score_percentage);
+                  const isExpanded = expandedQuiz === q.attempt_id;
+                  const correctCount = q.answers.filter(a => a.is_correct).length;
                   return (
-                    <div key={i} className="bg-card rounded-xl p-4 border border-border/50 text-center">
-                      <div className={cn(
-                        "w-10 h-10 mx-auto rounded-full flex items-center justify-center text-lg font-display font-bold mb-2",
-                        q.score_percentage >= 70 ? "bg-success/10 text-success"
-                          : q.score_percentage >= 40 ? "bg-warning/10 text-warning"
-                            : "bg-destructive/10 text-destructive"
-                      )}>
-                        {g.grade}
-                      </div>
-                      <p className="text-xs font-bold text-foreground truncate">{q.subject_name}</p>
-                      <p className="text-[10px] text-muted-foreground">{q.total_correct}/{q.total_questions} · {Math.round(q.score_percentage)}%</p>
-                      <p className="text-[10px] font-semibold text-xp mt-1">+{q.xp_earned} XP</p>
+                    <div key={q.attempt_id} className="bg-card rounded-xl border border-border/50 overflow-hidden">
+                      {/* Quiz header — clickable */}
+                      <button
+                        onClick={() => setExpandedQuiz(isExpanded ? null : q.attempt_id)}
+                        className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/30 transition-colors"
+                      >
+                        <div className={cn(
+                          "w-10 h-10 rounded-full flex items-center justify-center text-lg font-display font-bold flex-shrink-0",
+                          q.score_percentage >= 70 ? "bg-success/10 text-success"
+                            : q.score_percentage >= 40 ? "bg-warning/10 text-warning"
+                              : "bg-destructive/10 text-destructive"
+                        )}>
+                          {g.grade}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-foreground truncate">{q.subject_name}</p>
+                          <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                            <span className="text-[10px] text-muted-foreground">{correctCount}/{q.total_questions} correct · {Math.round(q.score_percentage)}%</span>
+                            <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{q.mode}</span>
+                            <span className={cn(
+                              "text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full",
+                              q.difficulty_profile === "easy" ? "bg-success/10 text-success"
+                                : q.difficulty_profile === "hard" ? "bg-destructive/10 text-destructive"
+                                  : "bg-warning/10 text-warning"
+                            )}>{q.difficulty_profile}</span>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0 mr-2">
+                          <p className="text-sm font-bold text-xp">+{q.xp_earned} XP</p>
+                          {q.completed_at && (
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1 justify-end">
+                              <Clock className="w-3 h-3" />
+                              {new Date(q.completed_at).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                        <ChevronDown className={cn(
+                          "w-4 h-4 text-muted-foreground transition-transform flex-shrink-0",
+                          isExpanded && "rotate-180"
+                        )} />
+                      </button>
+
+                      {/* Expanded answer breakdown */}
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          className="border-t border-border/40 px-4 py-3 space-y-2"
+                        >
+                          {q.answers.map((a, ai) => (
+                            <div key={ai} className="flex items-start gap-2">
+                              {a.is_correct ? (
+                                <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
+                              ) : (
+                                <XCircle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-foreground leading-relaxed">{a.question_text}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className={cn(
+                                    "text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full",
+                                    a.difficulty === "easy" ? "bg-success/10 text-success"
+                                      : a.difficulty === "hard" ? "bg-destructive/10 text-destructive"
+                                        : "bg-warning/10 text-warning"
+                                  )}>{a.difficulty}</span>
+                                  {a.xp_earned > 0 && (
+                                    <span className="text-[10px] font-semibold text-xp">+{a.xp_earned} XP</span>
+                                  )}
+                                  {a.bonus_xp > 0 && (
+                                    <span className="text-[10px] font-semibold text-primary">+{a.bonus_xp} bonus</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </motion.div>
+                      )}
                     </div>
                   );
                 })}
