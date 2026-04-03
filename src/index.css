@@ -196,16 +196,29 @@
 
 /* ─── Hero orbit animation ─── */
 @keyframes heroOrbit {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
+
 @keyframes heroOrbitCounter {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(-360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(-360deg);
+  }
 }
+
 .hero-orbit-ring {
   animation: heroOrbit 25s linear infinite;
 }
+
 .hero-orbit-badge-counter {
   animation: heroOrbitCounter 25s linear infinite;
 }
@@ -219,10 +232,12 @@
 
 /* Star particles */
 @keyframes twinkle {
+
   0%,
   100% {
     opacity: 0.2;
   }
+
   50% {
     opacity: 1;
   }
@@ -243,6 +258,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -250,11 +266,13 @@
 
 /* Shimmer sweep across button */
 @keyframes shimmer {
+
   0%,
   100% {
     transform: translateX(-100%);
     opacity: 0;
   }
+
   50% {
     transform: translateX(100%);
     opacity: 1;
@@ -266,6 +284,7 @@
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -299,11 +318,13 @@
   border-radius: 3px;
 }
 
-.no-scrollbar::-webkit-scrollbar {
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-.no-scrollbar {
+.no-scrollbar,
+.scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
