@@ -6,7 +6,7 @@ import BlurText from "@/components/BlurText";
 import { useEffect, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { api, type DashboardStats, type District, type DistrictLeaderboard } from "@/lib/api";
+import { api, type DashboardStats, type District, type DistrictLeaderboard, type LeaderboardEntry } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 
@@ -38,6 +38,11 @@ const LeaderboardPage = () => {
   // Leaderboard data
   const [leaderboard, setLeaderboard] = useState<DistrictLeaderboard | null>(null);
   const [lbLoading, setLbLoading] = useState(true);
+
+  // Global leaderboard
+  const [mode, setMode] = useState<"district" | "global">("district");
+  const [globalEntries, setGlobalEntries] = useState<LeaderboardEntry[]>([]);
+  const [globalLoading, setGlobalLoading] = useState(false);
 
   // ── Load districts list ──
   useEffect(() => {
@@ -100,6 +105,27 @@ const LeaderboardPage = () => {
     return () => { cancelled = true; };
   }, [getToken, user, selectedDistrictId]);
 
+  // ── Load global leaderboard when mode switches ──
+  useEffect(() => {
+    if (mode !== "global") return;
+    let cancelled = false;
+    setGlobalLoading(true);
+    (async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const email = user?.primaryEmailAddress?.emailAddress || "";
+        const data = await api.getLeaderboard(token, user?.id, email);
+        if (!cancelled) setGlobalEntries(data);
+      } catch (err) {
+        console.error("Failed to load global leaderboard:", err);
+      } finally {
+        if (!cancelled) setGlobalLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [getToken, user, mode]);
+
   // Split entries: top 10 + current user row (if appended outside top 10)
   const top10 = leaderboard?.entries.filter((_, i) => i < 10) ?? [];
   const userEntry = leaderboard?.entries.find(
@@ -110,9 +136,29 @@ const LeaderboardPage = () => {
   return (
     <AppLayout>
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <BlurText text="District Leaderboard" delay={50} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground mb-1" />
-        <p className="text-muted-foreground text-sm">See how you stack up against students in your district</p>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <BlurText text="Leaderboard" delay={50} animateBy="words" direction="top" className="text-3xl font-display font-bold text-foreground mb-1" />
+          <p className="text-muted-foreground text-sm">
+            {mode === "district" ? "See how you stack up in your district" : "Top students across all districts"}
+          </p>
+        </div>
+        <div className="flex bg-card border border-border/50 rounded-xl p-1 gap-1">
+          {(["district", "global"] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={cn(
+                "px-4 py-2 rounded-lg text-xs font-bold transition-all capitalize",
+                mode === m
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              {m === "district" ? "District" : "Global"}
+            </button>
+          ))}
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -126,139 +172,225 @@ const LeaderboardPage = () => {
         >
           <div className="glass rounded-2xl p-6 sm:p-8">
 
-            {/* District selector */}
-            <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center shadow-sm">
-                  <MapPin className="w-5 h-5 text-accent-foreground" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">District</p>
-                  <p className="text-sm font-bold text-foreground">
-                    {leaderboard?.district_name ?? "Select district"}
-                  </p>
-                </div>
-              </div>
+            {mode === "district" ? (
+              <>
+                {/* District selector */}
+                <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center shadow-sm">
+                      <MapPin className="w-5 h-5 text-accent-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">District</p>
+                      <p className="text-sm font-bold text-foreground">
+                        {leaderboard?.district_name ?? "Select district"}
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="relative">
-                <select
-                  id="district-select"
-                  value={selectedDistrictId ?? ""}
-                  onChange={(e) => setSelectedDistrictId(Number(e.target.value))}
-                  disabled={districtsLoading}
-                  className="appearance-none bg-card border border-border/50 text-foreground text-sm font-semibold rounded-xl pl-4 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all cursor-pointer hover:bg-muted/50"
-                >
-                  {allDistricts.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              </div>
-            </div>
+                  <div className="relative">
+                    <select
+                      id="district-select"
+                      value={selectedDistrictId ?? ""}
+                      onChange={(e) => setSelectedDistrictId(Number(e.target.value))}
+                      disabled={districtsLoading}
+                      className="appearance-none bg-card border border-border/50 text-foreground text-sm font-semibold rounded-xl pl-4 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all cursor-pointer hover:bg-muted/50"
+                    >
+                      {allDistricts.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
 
-            {/* Leaderboard list */}
-            {lbLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <span className="w-8 h-8 rounded-full border-3 border-primary/30 border-t-primary animate-spin" />
-              </div>
-            ) : top10.length === 0 ? (
-              <div className="py-16 text-center">
-                <Trophy className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No students with XP in this district yet.</p>
-                <button
-                  onClick={() => navigate("/quizzes")}
-                  className="mt-4 flex items-center gap-2 gradient-primary text-primary-foreground px-5 py-2 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm mx-auto"
-                >
-                  <Brain className="w-4 h-4" /> Be the first — Take a Quiz
-                </button>
-              </div>
+                {/* District leaderboard list */}
+                {lbLoading ? (
+                  <div className="flex items-center justify-center py-16">
+                    <span className="w-8 h-8 rounded-full border-3 border-primary/30 border-t-primary animate-spin" />
+                  </div>
+                ) : top10.length === 0 ? (
+                  <div className="py-16 text-center">
+                    <Trophy className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">No students with XP in this district yet.</p>
+                    <button
+                      onClick={() => navigate("/quizzes")}
+                      className="mt-4 flex items-center gap-2 gradient-primary text-primary-foreground px-5 py-2 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm mx-auto"
+                    >
+                      <Brain className="w-4 h-4" /> Be the first — Take a Quiz
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      {top10.map((entry, i) => {
+                        const medal = rankMedals[entry.rank];
+                        return (
+                          <motion.div
+                            key={`${entry.rank}-${entry.username}`}
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.05 * i }}
+                            className={cn(
+                              "flex items-center gap-4 px-4 py-3 rounded-xl transition-colors",
+                              entry.is_current_user
+                                ? "bg-primary/5 border border-primary/20 shadow-sm"
+                                : "hover:bg-muted/50"
+                            )}
+                          >
+                            <div className="w-9 flex justify-center flex-shrink-0">
+                              {medal ? (
+                                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", medal.bg)}>
+                                  <Medal className={cn("w-4.5 h-4.5", medal.color)} />
+                                </div>
+                              ) : (
+                                <span className="text-sm font-bold text-muted-foreground">#{entry.rank}</span>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={cn(
+                                "text-sm font-semibold truncate",
+                                entry.is_current_user ? "text-primary" : "text-foreground"
+                              )}>
+                                {entry.username ?? "Anonymous"}
+                                {entry.is_current_user && (
+                                  <span className="ml-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">You</span>
+                                )}
+                              </p>
+                            </div>
+                            <span className="text-sm font-bold text-foreground flex-shrink-0">
+                              {entry.total_xp.toLocaleString()} <span className="text-xs text-muted-foreground font-semibold">XP</span>
+                            </span>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    {userEntry && isOwnDistrict && (
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+                        <div className="flex items-center gap-3 my-4">
+                          <div className="flex-1 border-t border-border/50 border-dashed" />
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Your Position</span>
+                          <div className="flex-1 border-t border-border/50 border-dashed" />
+                        </div>
+                        <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20 shadow-sm">
+                          <div className="w-9 flex justify-center flex-shrink-0">
+                            <span className="text-sm font-bold text-primary">#{userEntry.rank}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-primary truncate">
+                              {userEntry.username ?? "Anonymous"}
+                              <span className="ml-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">You</span>
+                            </p>
+                          </div>
+                          <span className="text-sm font-bold text-foreground flex-shrink-0">
+                            {userEntry.total_xp.toLocaleString()} <span className="text-xs text-muted-foreground font-semibold">XP</span>
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </>
+                )}
+              </>
             ) : (
               <>
-                {/* Top 10 list */}
-                <div className="space-y-2">
-                  {top10.map((entry, i) => {
-                    const medal = rankMedals[entry.rank];
-                    return (
-                      <motion.div
-                        key={`${entry.rank}-${entry.username}`}
-                        initial={{ opacity: 0, x: -12 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.05 * i }}
-                        className={cn(
-                          "flex items-center gap-4 px-4 py-3 rounded-xl transition-colors",
-                          entry.is_current_user
-                            ? "bg-primary/5 border border-primary/20 shadow-sm"
-                            : "hover:bg-muted/50"
-                        )}
-                      >
-                        {/* Rank */}
-                        <div className="w-9 flex justify-center flex-shrink-0">
-                          {medal ? (
-                            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", medal.bg)}>
-                              <Medal className={cn("w-4.5 h-4.5", medal.color)} />
-                            </div>
-                          ) : (
-                            <span className="text-sm font-bold text-muted-foreground">#{entry.rank}</span>
-                          )}
-                        </div>
-
-                        {/* Username */}
-                        <div className="flex-1 min-w-0">
-                          <p className={cn(
-                            "text-sm font-semibold truncate",
-                            entry.is_current_user ? "text-primary" : "text-foreground"
-                          )}>
-                            {entry.username ?? "Anonymous"}
-                            {entry.is_current_user && (
-                              <span className="ml-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                                You
-                              </span>
-                            )}
-                          </p>
-                        </div>
-
-                        {/* XP */}
-                        <span className="text-sm font-bold text-foreground flex-shrink-0">
-                          {entry.total_xp.toLocaleString()} <span className="text-xs text-muted-foreground font-semibold">XP</span>
-                        </span>
-                      </motion.div>
-                    );
-                  })}
+                {/* Global header */}
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-sm">
+                    <Trophy className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Global</p>
+                    <p className="text-sm font-bold text-foreground">Top students by total XP</p>
+                  </div>
                 </div>
 
-                {/* Current user outside top 10 */}
-                {userEntry && isOwnDistrict && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                  >
-                    {/* Separator */}
-                    <div className="flex items-center gap-3 my-4">
-                      <div className="flex-1 border-t border-border/50 border-dashed" />
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Your Position</span>
-                      <div className="flex-1 border-t border-border/50 border-dashed" />
+                {/* Global leaderboard list */}
+                {globalLoading ? (
+                  <div className="flex items-center justify-center py-16">
+                    <span className="w-8 h-8 rounded-full border-3 border-primary/30 border-t-primary animate-spin" />
+                  </div>
+                ) : globalEntries.length === 0 ? (
+                  <div className="py-16 text-center">
+                    <Trophy className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">No students on the leaderboard yet.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      {globalEntries.filter((_, i) => i < 10).map((entry, i) => {
+                        const medal = rankMedals[entry.rank];
+                        return (
+                          <motion.div
+                            key={`g-${entry.rank}-${entry.student_id}`}
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.05 * i }}
+                            className={cn(
+                              "flex items-center gap-4 px-4 py-3 rounded-xl transition-colors",
+                              entry.is_current_user
+                                ? "bg-primary/5 border border-primary/20 shadow-sm"
+                                : "hover:bg-muted/50"
+                            )}
+                          >
+                            <div className="w-9 flex justify-center flex-shrink-0">
+                              {medal ? (
+                                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", medal.bg)}>
+                                  <Medal className={cn("w-4.5 h-4.5", medal.color)} />
+                                </div>
+                              ) : (
+                                <span className="text-sm font-bold text-muted-foreground">#{entry.rank}</span>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={cn(
+                                "text-sm font-semibold truncate",
+                                entry.is_current_user ? "text-primary" : "text-foreground"
+                              )}>
+                                {entry.username ?? "Anonymous"}
+                                {entry.is_current_user && (
+                                  <span className="ml-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">You</span>
+                                )}
+                              </p>
+                            </div>
+                            <span className="text-sm font-bold text-foreground flex-shrink-0">
+                              {entry.total_xp.toLocaleString()} <span className="text-xs text-muted-foreground font-semibold">XP</span>
+                            </span>
+                          </motion.div>
+                        );
+                      })}
                     </div>
 
-                    <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20 shadow-sm">
-                      <div className="w-9 flex justify-center flex-shrink-0">
-                        <span className="text-sm font-bold text-primary">#{userEntry.rank}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-primary truncate">
-                          {userEntry.username ?? "Anonymous"}
-                          <span className="ml-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                            You
-                          </span>
-                        </p>
-                      </div>
-                      <span className="text-sm font-bold text-foreground flex-shrink-0">
-                        {userEntry.total_xp.toLocaleString()} <span className="text-xs text-muted-foreground font-semibold">XP</span>
-                      </span>
-                    </div>
-                  </motion.div>
+                    {/* Current user outside top 10 in global */}
+                    {globalEntries.find(e => e.is_current_user && e.rank > 10) && (() => {
+                      const gUser = globalEntries.find(e => e.is_current_user && e.rank > 10)!;
+                      return (
+                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+                          <div className="flex items-center gap-3 my-4">
+                            <div className="flex-1 border-t border-border/50 border-dashed" />
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Your Position</span>
+                            <div className="flex-1 border-t border-border/50 border-dashed" />
+                          </div>
+                          <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20 shadow-sm">
+                            <div className="w-9 flex justify-center flex-shrink-0">
+                              <span className="text-sm font-bold text-primary">#{gUser.rank}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-primary truncate">
+                                {gUser.username ?? "Anonymous"}
+                                <span className="ml-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">You</span>
+                              </p>
+                            </div>
+                            <span className="text-sm font-bold text-foreground flex-shrink-0">
+                              {gUser.total_xp.toLocaleString()} <span className="text-xs text-muted-foreground font-semibold">XP</span>
+                            </span>
+                          </div>
+                        </motion.div>
+                      );
+                    })()}
+                  </>
                 )}
               </>
             )}
