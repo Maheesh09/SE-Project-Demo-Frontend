@@ -189,6 +189,43 @@ export interface DistrictLeaderboard {
     district_name: string;
     entries: DistrictLeaderboardEntry[];
 }
+
+export interface ProvinceLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+export interface ProvinceLeaderboard {
+    province_id: number;
+    province_name: string;
+    entries: ProvinceLeaderboardEntry[];
+}
+
+export interface NationalLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+export interface NationalLeaderboard {
+    entries: NationalLeaderboardEntry[];
+}
+
+export interface SubjectLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+export interface SubjectLeaderboard {
+    subject_id: number;
+    subject_name: string;
+    entries: SubjectLeaderboardEntry[];
+}
 // ─── Chat / RAG Types ────────────────────────────────────────────────────────
 
 export interface ChatRequest {
@@ -333,20 +370,26 @@ export const api = {
             { xClerkUserId, xEmail }
         ),
 
-    // ── Chat / RAG ──
-    getChatSubjects: () =>
-        request<ChatSubject[]>("/api/v1/chat/subjects", null),
+    getProvinceLeaderboard: (token: string, provinceId?: number, xClerkUserId?: string, xEmail?: string) =>
+        request<ProvinceLeaderboard>(
+            `/api/v1/me/province-leaderboard${provinceId ? `?province_id=${provinceId}` : ""}`,
+            token,
+            { xClerkUserId, xEmail }
+        ),
 
-    getChatTopics: (subjectId: number) =>
-        request<ChatTopic[]>(`/api/v1/chat/subjects/${subjectId}/topics`, null),
+    getNationalLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<NationalLeaderboard>(
+            "/api/v1/me/national-leaderboard",
+            token,
+            { xClerkUserId, xEmail }
+        ),
 
-    askChat: (token: string, payload: ChatRequest, xClerkUserId?: string, xEmail?: string) =>
-        request<ChatResponse>("/api/v1/chat/ask", token, {
-            method: "POST",
-            body: JSON.stringify(payload),
-            xClerkUserId,
-            xEmail,
-        }),
+    getSubjectLeaderboard: (token: string, subjectId: number, xClerkUserId?: string, xEmail?: string) =>
+        request<SubjectLeaderboard>(
+            `/api/v1/me/subject-leaderboard?subject_id=${subjectId}`,
+            token,
+            { xClerkUserId, xEmail }
+        ),
 
     // ── Admin ──
     getStudentCount: (adminApiKey: string) =>
