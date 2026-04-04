@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Star, Zap, TrendingUp, Brain, ChevronDown, MapPin, Medal, Globe, Map } from "lucide-react";
+import { motion } from "framer-motion";
+import { Trophy, Star, Zap, TrendingUp, Brain, ChevronDown, MapPin, Medal, Globe, Map, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import BlurText from "@/components/BlurText";
@@ -14,16 +14,14 @@ import {
   type DistrictLeaderboard,
   type ProvinceLeaderboard,
   type NationalLeaderboard,
-  type DistrictLeaderboardEntry,
-  type ProvinceLeaderboardEntry,
-  type NationalLeaderboardEntry,
+  type SubjectLeaderboard,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type LeaderboardTab = "district" | "province" | "national";
+type LeaderboardTab = "district" | "province" | "national" | "subject";
 
 type LeaderboardEntry = {
   rank: number;
@@ -45,6 +43,7 @@ const TAB_CONFIG: { key: LeaderboardTab; label: string; icon: typeof MapPin }[] 
   { key: "district", label: "District", icon: MapPin },
   { key: "province", label: "Province", icon: Map },
   { key: "national", label: "National", icon: Globe },
+  { key: "subject", label: "Subject", icon: BookOpen },
 ];
 
 
@@ -201,21 +200,36 @@ const LeaderboardPage = () => {
   const [nationalLb, setNationalLb] = useState<NationalLeaderboard | null>(null);
   const [nationalLbLoading, setNationalLbLoading] = useState(true);
 
+  // Subject data
+  type SubjectOption = { id: number; name: string };
+  const [allSubjects, setAllSubjects] = useState<SubjectOption[]>([]);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<number | undefined>(undefined);
+  const [subjectsLoading, setSubjectsLoading] = useState(true);
+  const [subjectLb, setSubjectLb] = useState<SubjectLeaderboard | null>(null);
+  const [subjectLbLoading, setSubjectLbLoading] = useState(true);
+
   // ── Load meta data ──
   useEffect(() => {
     (async () => {
       try {
-        const [districts, provinces] = await Promise.all([
+        const [districts, provinces, subjects] = await Promise.all([
           api.getDistricts(),
           api.getProvinces(),
+          api.getAvailableSubjects(),
         ]);
         setAllDistricts(districts);
         setAllProvinces(provinces);
+        setAllSubjects(subjects.map((s: any) => ({ id: s.id, name: s.name })));
+        // Default to first subject
+        if (subjects.length > 0) {
+          setSelectedSubjectId(subjects[0].id);
+        }
       } catch (err) {
         console.error("Failed to load meta:", err);
       } finally {
         setDistrictsLoading(false);
         setProvincesLoading(false);
+        setSubjectsLoading(false);
       }
     })();
   }, []);
@@ -312,6 +326,27 @@ const LeaderboardPage = () => {
     return () => { cancelled = true; };
   }, [getToken, user, activeTab]);
 
+  // ── Load subject leaderboard ──
+  useEffect(() => {
+    if (selectedSubjectId === undefined || activeTab !== "subject") return;
+    let cancelled = false;
+    setSubjectLbLoading(true);
+    (async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const email = user?.primaryEmailAddress?.emailAddress || "";
+        const data = await api.getSubjectLeaderboard(token, selectedSubjectId, user?.id, email);
+        if (!cancelled) setSubjectLb(data);
+      } catch (err) {
+        console.error("Failed to load subject leaderboard:", err);
+      } finally {
+        if (!cancelled) setSubjectLbLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [getToken, user, selectedSubjectId, activeTab]);
+
   // ── Derived state ──
   const isOwnDistrict = profile?.district?.id === selectedDistrictId;
   const isOwnProvince = profile?.district?.province?.id === selectedProvinceId;
@@ -319,27 +354,31 @@ const LeaderboardPage = () => {
   const currentLoading =
     activeTab === "district" ? districtLbLoading :
     activeTab === "province" ? provinceLbLoading :
+    activeTab === "subject" ? subjectLbLoading :
     nationalLbLoading;
 
   const currentEntries: LeaderboardEntry[] = useMemo(() => {
     if (activeTab === "district") return districtLb?.entries ?? [];
     if (activeTab === "province") return provinceLb?.entries ?? [];
+    if (activeTab === "subject") return subjectLb?.entries ?? [];
     return nationalLb?.entries ?? [];
-  }, [activeTab, districtLb, provinceLb, nationalLb]);
+  }, [activeTab, districtLb, provinceLb, nationalLb, subjectLb]);
 
   const currentShowUserPosition =
     activeTab === "district" ? isOwnDistrict :
     activeTab === "province" ? isOwnProvince :
-    true; // always show for national
+    true; // always show for national & subject
 
   const currentLabel =
     activeTab === "district" ? (districtLb?.district_name ?? "Select district") :
     activeTab === "province" ? (provinceLb?.province_name ?? "Select province") :
+    activeTab === "subject" ? (subjectLb?.subject_name ?? "Select subject") :
     "Sri Lanka";
 
   const currentEmptyMessage =
     activeTab === "district" ? "No students with XP in this district yet." :
     activeTab === "province" ? "No students with XP in this province yet." :
+    activeTab === "subject" ? "No students with XP in this subject yet." :
     "No students with XP yet.";
 
   return (
@@ -370,36 +409,37 @@ const LeaderboardPage = () => {
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
                     className={cn(
-                      "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all",
+                      "flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all",
                       isActive
                         ? "bg-card text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <tab.icon className="w-4 h-4" />
-                    {tab.label}
+                    <span className="hidden sm:inline">{tab.label}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Filter bar (district/province selector) + label */}
+            {/* Filter bar + label */}
             <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center shadow-sm">
                   {activeTab === "district" && <MapPin className="w-5 h-5 text-accent-foreground" />}
                   {activeTab === "province" && <Map className="w-5 h-5 text-accent-foreground" />}
                   {activeTab === "national" && <Globe className="w-5 h-5 text-accent-foreground" />}
+                  {activeTab === "subject" && <BookOpen className="w-5 h-5 text-accent-foreground" />}
                 </div>
                 <div>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                    {activeTab === "district" ? "District" : activeTab === "province" ? "Province" : "National"}
+                    {activeTab === "district" ? "District" : activeTab === "province" ? "Province" : activeTab === "subject" ? "Subject" : "National"}
                   </p>
                   <p className="text-sm font-bold text-foreground">{currentLabel}</p>
                 </div>
               </div>
 
-              {/* Dropdown — district or province */}
+              {/* Dropdown — district, province, or subject */}
               {activeTab === "district" && (
                 <div className="relative">
                   <select
@@ -428,6 +468,23 @@ const LeaderboardPage = () => {
                   >
                     {allProvinces.map((p) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                </div>
+              )}
+
+              {activeTab === "subject" && (
+                <div className="relative">
+                  <select
+                    id="subject-select"
+                    value={selectedSubjectId ?? ""}
+                    onChange={(e) => setSelectedSubjectId(Number(e.target.value))}
+                    disabled={subjectsLoading}
+                    className="appearance-none bg-card border border-border/50 text-foreground text-sm font-semibold rounded-xl pl-4 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all cursor-pointer hover:bg-muted/50"
+                  >
+                    {allSubjects.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />

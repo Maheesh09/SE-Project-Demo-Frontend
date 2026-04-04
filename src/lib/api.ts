@@ -213,6 +213,19 @@ export interface NationalLeaderboardEntry {
 export interface NationalLeaderboard {
     entries: NationalLeaderboardEntry[];
 }
+
+export interface SubjectLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+export interface SubjectLeaderboard {
+    subject_id: number;
+    subject_name: string;
+    entries: SubjectLeaderboardEntry[];
+}
 // ─── Chat / RAG Types ────────────────────────────────────────────────────────
 
 export interface ChatRequest {
@@ -367,6 +380,13 @@ export const api = {
     getNationalLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<NationalLeaderboard>(
             "/api/v1/me/national-leaderboard",
+            token,
+            { xClerkUserId, xEmail }
+        ),
+
+    getSubjectLeaderboard: (token: string, subjectId: number, xClerkUserId?: string, xEmail?: string) =>
+        request<SubjectLeaderboard>(
+            `/api/v1/me/subject-leaderboard?subject_id=${subjectId}`,
             token,
             { xClerkUserId, xEmail }
         ),
