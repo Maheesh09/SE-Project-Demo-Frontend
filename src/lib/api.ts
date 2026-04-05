@@ -189,179 +189,43 @@ export interface DistrictLeaderboard {
     district_name: string;
     entries: DistrictLeaderboardEntry[];
 }
-// ─── Student Stats Types ─────────────────────────────────────────────────────
 
-export interface SubjectXp {
-    subject_id: number;
-    subject_name: string;
-    total_xp: number;
-}
-
-export interface RecentXpGain {
-    question_id: number;
-    question_text: string;
-    difficulty: string;
-    is_correct: boolean;
-    xp_earned: number;
-    bonus_xp: number;
-    subject_name: string;
-    completed_at: string;
-}
-
-export interface XpSummary {
-    total_xp: number;
-    total_bonus_xp: number;
-    total_correct_answers: number;
-    xp_per_subject: SubjectXp[];
-    recent_xp_gains: RecentXpGain[];
-}
-
-export interface TopicProgress {
-    topic_id: number;
-    topic_name: string;
-    attempted: boolean;
-    accuracy_percentage: number;
-}
-
-export interface SubjectProgress {
-    subject_id: number;
-    subject_name: string;
-    total_topics: number;
-    topics_attempted: number;
-    progress_percentage: number;
-    average_accuracy: number;
-    total_quizzes: number;
-    total_xp: number;
-    topics: TopicProgress[];
-}
-
-export interface QuizAnswerSummary {
-    question_id: number;
-    question_text: string;
-    difficulty: string;
-    is_correct: boolean;
-    xp_earned: number;
-    bonus_xp: number;
-}
-
-export interface QuizSummary {
-    attempt_id: number;
-    session_id: number;
-    subject_name: string;
-    mode: string;
-    difficulty_profile: string;
-    score_percentage: number;
-    total_correct: number;
-    total_questions: number;
-    xp_earned: number;
-    completed_at: string;
-    answers: QuizAnswerSummary[];
-}
-
-export interface StudyStreak {
-    current_streak: number;
-    longest_streak: number;
-    last_activity_date: string | null;
-}
-
-export interface LeaderboardEntry {
+export interface ProvinceLeaderboardEntry {
     rank: number;
-    student_id: number;
     username: string | null;
-    avatar_key: string | null;
     total_xp: number;
     is_current_user: boolean;
 }
 
-// ─── Admin Types ─────────────────────────────────────────────────────────────
-
-export interface AdminLoginPayload {
-    username: string;
-    password: string;
+export interface ProvinceLeaderboard {
+    province_id: number;
+    province_name: string;
+    entries: ProvinceLeaderboardEntry[];
 }
 
-export interface AdminInfo {
-    username: string;
-    display_name: string | null;
-    token: string;
+export interface NationalLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
 }
 
-export interface AdminLoginResponse {
-    success: boolean;
-    message: string;
-    admin: AdminInfo | null;
+export interface NationalLeaderboard {
+    entries: NationalLeaderboardEntry[];
 }
 
-// ─── Admin Question Types ────────────────────────────────────────────────────
-
-export interface OptionCreate {
-    option_text: string;
-    is_correct: boolean;
+export interface SubjectLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
 }
 
-export interface QuestionCreate {
+export interface SubjectLeaderboard {
     subject_id: number;
-    topic_id: number;
-    difficulty: "easy" | "medium" | "hard";
-    question_text: string;
-    explanation?: string | null;
-    xp_value?: number | null;
-    created_by: number;
-    options: OptionCreate[];
+    subject_name: string;
+    entries: SubjectLeaderboardEntry[];
 }
-
-export interface OptionResponse {
-    id: number;
-    option_text: string;
-    is_correct: boolean;
-}
-
-export interface QuestionResponse {
-    id: number;
-    subject_id: number;
-    topic_id: number;
-    difficulty: string;
-    type: string;
-    question_text: string;
-    explanation: string | null;
-    xp_value: number;
-    is_active: boolean;
-    created_by: number;
-    created_at: string;
-    options: OptionResponse[];
-}
-
-// ─── Admin Resource Types ─────────────────────────────────────────────────────
-
-export interface ResourceCreatePayload {
-    subject_id: number;
-    type: "textbook" | "past_paper" | "notes" | "answers" | "other";
-    title: string;
-    description?: string | null;
-    file_url?: string | null;
-    storage_path?: string | null;
-}
-
-export interface ResourceUpdatePayload {
-    title?: string;
-    description?: string | null;
-    type?: "textbook" | "past_paper" | "notes" | "answers" | "other";
-    file_url?: string | null;
-    storage_path?: string | null;
-}
-
-export interface AdminResource {
-    id: number;
-    subject_id: number;
-    type: string;
-    title: string;
-    description: string | null;
-    is_active: boolean;
-    view_url: string | null;
-    file_url: string | null;
-    storage_path: string | null;
-}
-
 // ─── Chat / RAG Types ────────────────────────────────────────────────────────
 
 export interface ChatRequest {
@@ -506,20 +370,26 @@ export const api = {
             { xClerkUserId, xEmail }
         ),
 
-    // ── Chat / RAG ──
-    getChatSubjects: () =>
-        request<ChatSubject[]>("/api/v1/chat/subjects", null),
+    getProvinceLeaderboard: (token: string, provinceId?: number, xClerkUserId?: string, xEmail?: string) =>
+        request<ProvinceLeaderboard>(
+            `/api/v1/me/province-leaderboard${provinceId ? `?province_id=${provinceId}` : ""}`,
+            token,
+            { xClerkUserId, xEmail }
+        ),
 
-    getChatTopics: (subjectId: number) =>
-        request<ChatTopic[]>(`/api/v1/chat/subjects/${subjectId}/topics`, null),
+    getNationalLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<NationalLeaderboard>(
+            "/api/v1/me/national-leaderboard",
+            token,
+            { xClerkUserId, xEmail }
+        ),
 
-    askChat: (token: string, payload: ChatRequest, xClerkUserId?: string, xEmail?: string) =>
-        request<ChatResponse>("/api/v1/chat/ask", token, {
-            method: "POST",
-            body: JSON.stringify(payload),
-            xClerkUserId,
-            xEmail,
-        }),
+    getSubjectLeaderboard: (token: string, subjectId: number, xClerkUserId?: string, xEmail?: string) =>
+        request<SubjectLeaderboard>(
+            `/api/v1/me/subject-leaderboard?subject_id=${subjectId}`,
+            token,
+            { xClerkUserId, xEmail }
+        ),
 
     // ── Student Stats ──
     getXpSummary: (token: string, xClerkUserId?: string, xEmail?: string) =>
