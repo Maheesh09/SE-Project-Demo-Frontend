@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BrainCircuit, Plus, Trash2, Check, ExternalLink, LogOut, Upload, Loader2, Save, Users } from "lucide-react";
+import { BrainCircuit, Plus, Trash2, Check, ExternalLink, LogOut, Loader2, Users, List, ChevronRight, FileText, ToggleLeft, ToggleRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,9 +9,8 @@ import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
-import { api } from "@/lib/api";
+import { api, type QuestionResponse, type AdminResource } from "@/lib/api";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 const ADMIN_API_KEY = import.meta.env.VITE_ADMIN_API_KEY ?? "change-me";
 
 interface Option {
@@ -44,19 +43,20 @@ const AdminDashboard = () => {
     const [studentCount, setStudentCount] = useState<number | null>(null);
     const [countLoading, setCountLoading] = useState(true);
 
+    // ── Questions list state ──
+    const [questions, setQuestions] = useState<QuestionResponse[]>([]);
+    const [questionsLoading, setQuestionsLoading] = useState(true);
+
     // Fetch subjects from the database on mount
     useEffect(() => {
         let cancelled = false;
         (async () => {
             try {
-                const res = await fetch(`${API_BASE}/api/v1/subjects/available?grade_id=1`);
-                if (res.ok) {
-                    const data: SubjectItem[] = await res.json();
-                    if (!cancelled) {
-                        setSubjects(data);
-                        if (data.length > 0) {
-                            setSubjectId(data[0].id.toString());
-                        }
+                const data = await api.getAvailableSubjects(1);
+                if (!cancelled) {
+                    setSubjects(data);
+                    if (data.length > 0) {
+                        setSubjectId(data[0].id.toString());
                     }
                 }
             } catch (err) {
@@ -82,6 +82,21 @@ const AdminDashboard = () => {
         })();
         return () => { cancelled = true; };
     }, []);
+
+    // Fetch existing questions
+    const fetchQuestions = async () => {
+        setQuestionsLoading(true);
+        try {
+            const data = await api.listQuestions({ limit: 20 });
+            setQuestions(data);
+        } catch (err) {
+            console.error("Failed to fetch questions:", err);
+        } finally {
+            setQuestionsLoading(false);
+        }
+    };
+
+    useEffect(() => { fetchQuestions(); }, []);
 
     // Form State
     const [subjectId, setSubjectId] = useState<string>("");
@@ -123,8 +138,48 @@ const AdminDashboard = () => {
         { id: "4", option_text: "", is_correct: false },
     ]);
 
+    const adminDisplayName = localStorage.getItem("admin-display-name") || "Admin";
+    const [view, setView] = useState<"create" | "bank" | "resources">("create");
+
+    // ── Resources state ──
+    const [resources, setResources] = useState<AdminResource[]>([]);
+    const [resourcesLoading, setResourcesLoading] = useState(false);
+
+    const fetchResources = async () => {
+        setResourcesLoading(true);
+        try {
+            const data = await api.adminListResources(ADMIN_API_KEY);
+            setResources(data);
+        } catch (err) {
+            console.error("Failed to fetch resources:", err);
+        } finally {
+            setResourcesLoading(false);
+        }
+    };
+
+    const handleToggleResource = async (id: number) => {
+        try {
+            await api.adminToggleResource(ADMIN_API_KEY, id);
+            toast.success("Resource toggled");
+            fetchResources();
+        } catch (err) {
+            toast.error("Failed to toggle resource");
+        }
+    };
+
+    const handleDeleteResource = async (id: number) => {
+        try {
+            await api.adminDeleteResource(ADMIN_API_KEY, id);
+            toast.success("Resource deleted");
+            fetchResources();
+        } catch (err) {
+            toast.error("Failed to delete resource");
+        }
+    };
+
     const handleLogout = () => {
         localStorage.removeItem("admin-token");
+        localStorage.removeItem("admin-display-name");
         navigate("/admin/login");
     };
 
@@ -171,46 +226,35 @@ const AdminDashboard = () => {
 
         setLoading(true);
 
-        const payload = {
-            subject_id: parseInt(subjectId),
-            topic_id: parseInt(topicId),
-            difficulty,
-            question_text: questionText,
-            explanation: explanation.trim() || null,
-            xp_value: xpValue && parseInt(xpValue) > 0 ? parseInt(xpValue) : null,
-            created_by: 1, // Default admin user ID
-            options: options.map(o => ({
-                option_text: o.option_text,
-                is_correct: o.is_correct
-            }))
-        };
-
         try {
-            const response = await fetch(`${API_BASE}/api/v1/admin/questions/`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
+            await api.createQuestion({
+                subject_id: parseInt(subjectId),
+                topic_id: parseInt(topicId),
+                difficulty,
+                question_text: questionText,
+                explanation: explanation.trim() || null,
+                xp_value: xpValue && parseInt(xpValue) > 0 ? parseInt(xpValue) : null,
+                created_by: 1,
+                options: options.map(o => ({
+                    option_text: o.option_text,
+                    is_correct: o.is_correct,
+                })),
             });
 
-            if (response.ok) {
-                toast.success("Question successfully added to the Question Bank!");
-                // Reset form
-                setQuestionText("");
-                setExplanation("");
-                setOptions([
-                    { id: Date.now().toString() + "1", option_text: "", is_correct: true },
-                    { id: Date.now().toString() + "2", option_text: "", is_correct: false },
-                    { id: Date.now().toString() + "3", option_text: "", is_correct: false },
-                    { id: Date.now().toString() + "4", option_text: "", is_correct: false },
-                ]);
-            } else {
-                const errData = await response.json();
-                console.error("Backend Error:", errData);
-                toast.error(`Failed to add: ${errData?.detail || "Unknown error from server"}`);
-            }
-        } catch (error) {
-            console.error("Fetch Error:", error);
-            toast.error("Could not reach the backend server. Please ensure it is running.");
+            toast.success("Question successfully added to the Question Bank!");
+            setQuestionText("");
+            setExplanation("");
+            setOptions([
+                { id: Date.now().toString() + "1", option_text: "", is_correct: true },
+                { id: Date.now().toString() + "2", option_text: "", is_correct: false },
+                { id: Date.now().toString() + "3", option_text: "", is_correct: false },
+                { id: Date.now().toString() + "4", option_text: "", is_correct: false },
+            ]);
+            fetchQuestions();
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : "Unknown error";
+            console.error("Create question error:", error);
+            toast.error(`Failed to add: ${msg}`);
         } finally {
             setLoading(false);
         }
@@ -229,7 +273,7 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                         <h2 className="font-display font-bold text-foreground leading-tight tracking-tight">MindUp</h2>
-                        <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Admin Portal</p>
+                        <p className="text-[10px] font-bold text-primary uppercase tracking-wider">{adminDisplayName}</p>
                     </div>
                 </div>
 
@@ -270,17 +314,39 @@ const AdminDashboard = () => {
                         </p>
                     </motion.div>
 
-                    <Button variant="secondary" className="w-full justify-start gap-3 bg-primary/10 text-primary hover:bg-primary/20">
+                    <Button
+                        variant={view === "create" ? "secondary" : "ghost"}
+                        className={`w-full justify-start gap-3 ${view === "create" ? "bg-primary/10 text-primary hover:bg-primary/20" : "text-muted-foreground hover:text-foreground"}`}
+                        onClick={() => setView("create")}
+                    >
                         <Plus className="w-4 h-4" />
                         Insert Question
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground">
-                        <Upload className="w-4 h-4" />
-                        Bulk Upload
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground">
-                        <Save className="w-4 h-4" />
+                    <Button
+                        variant={view === "bank" ? "secondary" : "ghost"}
+                        className={`w-full justify-start gap-3 ${view === "bank" ? "bg-primary/10 text-primary hover:bg-primary/20" : "text-muted-foreground hover:text-foreground"}`}
+                        onClick={() => { setView("bank"); fetchQuestions(); }}
+                    >
+                        <List className="w-4 h-4" />
                         Question Bank
+                        {!questionsLoading && questions.length > 0 && (
+                            <span className="ml-auto text-[10px] font-bold bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
+                                {questions.length}
+                            </span>
+                        )}
+                    </Button>
+                    <Button
+                        variant={view === "resources" ? "secondary" : "ghost"}
+                        className={`w-full justify-start gap-3 ${view === "resources" ? "bg-primary/10 text-primary hover:bg-primary/20" : "text-muted-foreground hover:text-foreground"}`}
+                        onClick={() => { setView("resources"); fetchResources(); }}
+                    >
+                        <FileText className="w-4 h-4" />
+                        Resources
+                        {!resourcesLoading && resources.length > 0 && (
+                            <span className="ml-auto text-[10px] font-bold bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
+                                {resources.length}
+                            </span>
+                        )}
                     </Button>
                 </nav>
 
@@ -296,6 +362,143 @@ const AdminDashboard = () => {
             <main className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto z-10">
                 <div className="max-w-4xl mx-auto">
 
+                {view === "resources" ? (
+                    <>
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+                            <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">Resources</h1>
+                            <p className="text-muted-foreground mt-1 text-sm">Manage textbooks, past papers, and learning materials.</p>
+                        </motion.div>
+
+                        {resourcesLoading ? (
+                            <div className="flex items-center justify-center py-16">
+                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                            </div>
+                        ) : resources.length === 0 ? (
+                            <div className="text-center py-16">
+                                <FileText className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                                <p className="text-muted-foreground">No resources found.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {resources.map((r, i) => (
+                                    <motion.div
+                                        key={r.id}
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.03 }}
+                                        className="glass rounded-xl p-4 border border-border/60"
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <FileText className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-foreground">{r.title}</p>
+                                                {r.description && (
+                                                    <p className="text-xs text-muted-foreground mt-0.5">{r.description}</p>
+                                                )}
+                                                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                                                        {r.type.replace("_", " ")}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground">ID: {r.id}</span>
+                                                    <span className="text-[10px] text-muted-foreground">Subject: {r.subject_id}</span>
+                                                    {!r.is_active && (
+                                                        <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">Inactive</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                    onClick={() => handleToggleResource(r.id)}
+                                                    title={r.is_active ? "Deactivate" : "Activate"}
+                                                >
+                                                    {r.is_active ? <ToggleRight className="w-4 h-4 text-success" /> : <ToggleLeft className="w-4 h-4" />}
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                    onClick={() => handleDeleteResource(r.id)}
+                                                    title="Delete resource"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                ) : view === "bank" ? (
+                    <>
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+                            <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">Question Bank</h1>
+                            <p className="text-muted-foreground mt-1 text-sm">Browse existing questions in the system.</p>
+                        </motion.div>
+
+                        {questionsLoading ? (
+                            <div className="flex items-center justify-center py-16">
+                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                            </div>
+                        ) : questions.length === 0 ? (
+                            <div className="text-center py-16">
+                                <p className="text-muted-foreground mb-4">No questions found.</p>
+                                <Button onClick={() => setView("create")} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                                    <Plus className="w-4 h-4 mr-2" /> Create First Question
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {questions.map((q, i) => (
+                                    <motion.div
+                                        key={q.id}
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.03 }}
+                                        className="glass rounded-xl p-4 border border-border/60"
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <span className="text-xs font-bold text-muted-foreground mt-0.5">#{q.id}</span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-foreground mb-2">{q.question_text}</p>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                                                        q.difficulty === "easy" ? "bg-success/10 text-success"
+                                                        : q.difficulty === "medium" ? "bg-warning/10 text-warning"
+                                                        : "bg-destructive/10 text-destructive"
+                                                    }`}>
+                                                        {q.difficulty}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground">{q.xp_value} XP</span>
+                                                    <span className="text-[10px] text-muted-foreground">·</span>
+                                                    <span className="text-[10px] text-muted-foreground">{q.options.length} options</span>
+                                                    {!q.is_active && (
+                                                        <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">Inactive</span>
+                                                    )}
+                                                </div>
+                                                {/* Show options */}
+                                                <div className="mt-2 space-y-1">
+                                                    {q.options.map((opt) => (
+                                                        <div key={opt.id} className="flex items-center gap-2">
+                                                            <ChevronRight className={`w-3 h-3 ${opt.is_correct ? "text-success" : "text-muted-foreground/40"}`} />
+                                                            <span className={`text-xs ${opt.is_correct ? "font-bold text-success" : "text-muted-foreground"}`}>
+                                                                {opt.option_text}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <>
                     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
                         <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">Add New Question</h1>
                         <p className="text-muted-foreground mt-1 text-sm">Create an interactive question to add to the student quiz engine.</p>
@@ -479,6 +682,8 @@ const AdminDashboard = () => {
                         </motion.div>
 
                     </form>
+                    </>
+                )}
                 </div>
             </main>
         </div>

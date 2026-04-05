@@ -10,11 +10,11 @@ import {
 } from "recharts";
 import {
   TrendingUp, BookOpen, Target,
-  Star, Zap, Brain, ArrowRight,
+  Star, Zap, Brain, ArrowRight, Clock, CheckCircle2, XCircle, ChevronDown,
 } from "lucide-react";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useProfile } from "@/hooks/useProfile";
-import { api, type DashboardStats, type Subject } from "@/lib/api";
+import { api, type DashboardStats, type Subject, type SubjectProgress, type QuizSummary } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -69,9 +69,10 @@ const Ring = ({ score, size = 72, stroke = 6, color }: { score: number; size?: n
 
 // ─── Subject card ─────────────────────────────────────────────────────────────
 
-const SubjectCard = ({ s, delay }: {
+const SubjectCard = ({ s, delay, progress }: {
   s: { subject_name: string; average_score: number; total_quizzes: number; total_xp: number };
   delay: number;
+  progress?: SubjectProgress;
 }) => {
   const mastery = getMastery(s.average_score);
 
@@ -96,6 +97,25 @@ const SubjectCard = ({ s, delay }: {
         </div>
       </div>
 
+      {/* Topic progress bar */}
+      {progress && progress.total_topics > 0 && (
+        <div>
+          <div className="flex items-center justify-between text-[10px] mb-1">
+            <span className="text-muted-foreground">{progress.topics_attempted}/{progress.total_topics} topics covered</span>
+            <span className="font-bold text-foreground">{Math.round(progress.progress_percentage)}%</span>
+          </div>
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${progress.progress_percentage}%`,
+                background: `linear-gradient(90deg, ${mastery.ring}, ${mastery.ring}dd)`,
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-2 text-center border-t border-border/40 pt-3">
         <div className="bg-muted/40 rounded-xl p-2">
@@ -106,6 +126,12 @@ const SubjectCard = ({ s, delay }: {
           <p className="text-sm font-bold text-xp">{s.total_xp.toLocaleString()} XP</p>
           <p className="text-[10px] text-muted-foreground font-medium">XP Earned</p>
         </div>
+        {progress && (
+          <div>
+            <p className="text-xs font-bold text-foreground">{Math.round(progress.average_accuracy)}%</p>
+            <p className="text-[10px] text-muted-foreground">Accuracy</p>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -142,6 +168,9 @@ const AnalyticsPage = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [mySubjects, setMySubjects] = useState<Subject[]>([]);
+  const [subjectProgress, setSubjectProgress] = useState<SubjectProgress[]>([]);
+  const [recentQuizzes, setRecentQuizzes] = useState<QuizSummary[]>([]);
+  const [expandedQuiz, setExpandedQuiz] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -150,13 +179,17 @@ const AnalyticsPage = () => {
         const token = await getToken();
         if (!token) return;
         const email = user?.primaryEmailAddress?.emailAddress || "";
-        const [dashStats, subs] = await Promise.all([
+        const [dashStats, subs, progress, quizzes] = await Promise.all([
           api.getDashboardStats(token, user?.id, email),
           api.getMySubjects(token, user?.id, email),
+          api.getSubjectProgress(token, user?.id, email).catch(() => []),
+          api.getRecentQuizzes(token, user?.id, email).catch(() => []),
         ]);
         if (!cancelled) {
           setStats(dashStats);
           setMySubjects(subs);
+          setSubjectProgress(progress);
+          setRecentQuizzes(quizzes);
         }
       } catch (err) {
         console.error("Failed to load analytics:", err);
@@ -242,14 +275,91 @@ const AnalyticsPage = () => {
             </div>
           </motion.div>
 
-          {/* ── Subject cards ── */}
+          {/* ── Subject cards with topic progress ── */}
           {subjectStats.length > 0 && (
             <div className="mb-6">
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">
                 Subject Breakdown
               </motion.p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {subjectStats.map((s, i) => <SubjectCard key={s.subject_id} s={s} delay={0.18 + i * 0.05} />)}
+                {subjectStats.map((s, i) => {
+                  const progress = subjectProgress.find(p => p.subject_id === s.subject_id);
+                  return (
+                    <SubjectCard
+                      key={s.subject_id}
+                      s={s}
+                      delay={0.18 + i * 0.05}
+                      progress={progress}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Topic-level progress ── */}
+          {subjectProgress.filter(p => p.topics.length > 0 && p.total_quizzes > 0).length > 0 && (
+            <div className="mb-6">
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                Topic Coverage
+              </motion.p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {subjectProgress
+                  .filter(p => p.total_quizzes > 0)
+                  .map((sp, i) => (
+                  <motion.div
+                    key={sp.subject_id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.42 + i * 0.05 }}
+                    className="bg-card rounded-2xl p-5 border border-border/50"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-display font-bold text-foreground text-sm">{sp.subject_name}</h4>
+                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                        {sp.topics_attempted}/{sp.total_topics} topics
+                      </span>
+                    </div>
+                    {/* Overall progress bar */}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between text-[10px] mb-1">
+                        <span className="text-muted-foreground">Coverage</span>
+                        <span className="font-bold text-foreground">{Math.round(sp.progress_percentage)}%</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${sp.progress_percentage}%`,
+                            background: "linear-gradient(90deg, hsl(88 29% 65%), hsl(88 29% 55%))",
+                          }}
+                        />
+                      </div>
+                    </div>
+                    {/* Topic list */}
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {sp.topics.map((t) => (
+                        <div key={t.topic_id} className="flex items-center gap-2">
+                          <div className={cn(
+                            "w-1.5 h-1.5 rounded-full flex-shrink-0",
+                            t.attempted ? "bg-success" : "bg-muted-foreground/30"
+                          )} />
+                          <span className="text-[11px] text-foreground flex-1 truncate">{t.topic_name}</span>
+                          {t.attempted ? (
+                            <span className={cn(
+                              "text-[10px] font-bold",
+                              t.accuracy_percentage >= 70 ? "text-success" : t.accuracy_percentage >= 40 ? "text-warning" : "text-destructive"
+                            )}>
+                              {Math.round(t.accuracy_percentage)}%
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground/50">—</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </div>
           )}
@@ -296,6 +406,8 @@ const AnalyticsPage = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {stats.recent_quizzes.map((q, i) => {
                   const g = getGrade(q.score_percentage);
+                  const isExpanded = expandedQuiz === q.attempt_id;
+                  const correctCount = q.answers.filter(a => a.is_correct).length;
                   return (
                     <div key={i} className="bg-muted/30 rounded-xl p-3.5 border border-border/50 text-center hover:bg-muted/50 transition-colors">
                       <div className={cn(
