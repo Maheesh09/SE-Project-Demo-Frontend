@@ -1,9 +1,8 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion"; //dashboard
 import { useState, useEffect } from "react";
 import {
-  Star, Zap, BookOpen, TrendingUp, Brain, BarChart3, ArrowRight,
-  Calendar, Trophy, Check,
-  Flame, GraduationCap,
+  Star, Brain, BookOpen, TrendingUp, BarChart3, ArrowRight,
+  Calendar, Trophy, Check, GraduationCap, ChevronRight, Zap,
 } from "lucide-react";
 import BlurText from "@/components/BlurText";
 import { Link, useNavigate } from "react-router-dom";
@@ -45,6 +44,12 @@ const todayLabel = new Date().toLocaleDateString("en-US", {
   weekday: "long", month: "long", day: "numeric",
 });
 
+const todayShort = new Date().toLocaleDateString("en-US", {
+  weekday: "short", month: "short", day: "numeric",
+});
+
+// ─── Live Clock (desktop only) ────────────────────────────────────────────────
+
 const useLiveClock = () => {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
@@ -57,8 +62,6 @@ const useLiveClock = () => {
   const ss = time.getSeconds().toString().padStart(2, "0");
   return { h12, mm, ss, period };
 };
-
-// ─── Clock ────────────────────────────────────────────────────────────────────
 
 const LiveClock = () => {
   const { h12, mm, ss, period } = useLiveClock();
@@ -78,18 +81,19 @@ const LiveClock = () => {
   );
 };
 
-
 // ─── Section header ───────────────────────────────────────────────────────────
 
 const SectionHeader = ({ title, linkTo, linkLabel = "View All", delay = 0 }: {
   title: string; linkTo?: string; linkLabel?: string; delay?: number;
 }) => (
-  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
-    className="flex items-center justify-between mb-4">
-    <h2 className="text-base font-display font-bold text-foreground">{title}</h2>
+  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
+    className="flex items-center justify-between mb-2.5 md:mb-4">
+    <h2 className="text-sm md:text-base font-display font-bold text-foreground">{title}</h2>
     {linkTo && (
-      <Link to={linkTo} className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
-        {linkLabel} <ArrowRight className="w-3.5 h-3.5" />
+      <Link to={linkTo} className="flex items-center gap-0.5 md:gap-1 text-[11px] md:text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
+        {linkLabel}
+        <ChevronRight className="w-3 h-3 md:hidden" />
+        <ArrowRight className="hidden md:block w-3.5 h-3.5" />
       </Link>
     )}
   </motion.div>
@@ -100,11 +104,11 @@ const SectionHeader = ({ title, linkTo, linkLabel = "View All", delay = 0 }: {
 const EmptyState = ({ icon: Icon, message, actionLabel, onAction }: {
   icon: React.ElementType; message: string; actionLabel?: string; onAction?: () => void;
 }) => (
-  <div className="py-10 text-center">
-    <Icon className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-    <p className="text-sm text-muted-foreground">{message}</p>
+  <div className="py-8 md:py-10 text-center">
+    <Icon className="w-8 h-8 md:w-10 md:h-10 text-muted-foreground/30 mx-auto mb-2 md:mb-3" />
+    <p className="text-xs md:text-sm text-muted-foreground">{message}</p>
     {actionLabel && onAction && (
-      <button onClick={onAction} className="mt-3 text-xs font-bold text-primary hover:text-primary/80 transition-colors">
+      <button onClick={onAction} className="mt-2 md:mt-3 text-xs font-bold text-primary hover:text-primary/80 transition-colors">
         {actionLabel}
       </button>
     )}
@@ -171,37 +175,85 @@ const Dashboard = () => {
   return (
     <AppLayout>
 
-      {/* ── Header ── */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-7">
-        <div>
-          <BlurText text={`${getGreeting()}, ${displayName}`} delay={40} animateBy="words" direction="top" className="text-2xl sm:text-3xl font-display font-bold text-foreground" />
-          <div className="flex items-center gap-2 mt-1.5">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>{todayLabel}</span>
-            </div>
+      {/* ══════════════════════════════════════════
+          HEADER
+          Mobile: greeting + CTA in one compact row
+          Desktop: full row with date, clock, CTA
+      ══════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between gap-3 mb-4 md:mb-7"
+      >
+        <div className="min-w-0">
+          <BlurText
+            text={`${getGreeting()}, ${displayName}`}
+            delay={40}
+            animateBy="words"
+            direction="top"
+            className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground"
+          />
+          <div className="flex items-center gap-1.5 mt-0.5 md:mt-1.5">
+            <Calendar className="w-3 h-3 md:w-3.5 md:h-3.5 text-muted-foreground" />
+            {/* Short date on mobile, full date on desktop */}
+            <span className="text-[11px] md:hidden text-muted-foreground">{todayShort}</span>
+            <span className="hidden md:inline text-xs text-muted-foreground">{todayLabel}</span>
           </div>
         </div>
-        <div className="flex items-center flex-wrap sm:flex-nowrap gap-2.5">
-          <LiveClock />
+
+        {/* Desktop: clock + CTA | Mobile: just CTA */}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="hidden md:block">
+            <LiveClock />
+          </div>
           <Link
             to="/courses"
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 gradient-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm"
+            className="flex items-center gap-1.5 gradient-primary text-primary-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-sm px-3.5 py-2 text-xs md:px-5 md:py-2.5 md:text-sm"
           >
-            Continue Learning <ArrowRight className="w-4 h-4" />
+            <span className="hidden md:inline">Continue Learning</span>
+            <span className="md:hidden">Study</span>
+            <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
           </Link>
         </div>
       </motion.div>
 
-      {/* ── Grade Badge ── */}
+      {/* ══════════════════════════════════════════
+          GRADE BANNER
+          Mobile: slim single-line strip
+          Desktop: richer card with all subject pills
+      ══════════════════════════════════════════ */}
       {profile?.grade && (
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="mb-7"
+          className="mb-4 md:mb-7"
         >
-          <div className="bg-card border border-border/60 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-primary shadow-sm">
+          {/* Mobile slim banner */}
+          <div className="md:hidden bg-card border border-border/60 border-l-4 border-l-primary rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
+                <GraduationCap className="w-3.5 h-3.5 text-primary-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground truncate">{profile.grade.name}</p>
+                {profile.district && (
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
+                  </p>
+                )}
+              </div>
+            </div>
+            {!subjectsLoading && mySubjects.length > 0 && (
+              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 flex-shrink-0">
+                {mySubjects.length} subjects
+              </span>
+            )}
+            {subjectsLoading && <span className="w-4 h-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin flex-shrink-0" />}
+          </div>
+
+          {/* Desktop rich card */}
+          <div className="hidden md:flex bg-card border border-border/60 rounded-2xl p-4 sm:p-5 flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-primary shadow-sm">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shadow-sm flex-shrink-0">
                 <GraduationCap className="w-6 h-6 text-primary-foreground" />
@@ -228,9 +280,7 @@ const Dashboard = () => {
                   </span>
                 );
               })}
-              {subjectsLoading && (
-                <span className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-              )}
+              {subjectsLoading && <span className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />}
             </div>
           </div>
         </motion.div>
@@ -294,27 +344,152 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* ── Subject Performance + Recent Activity ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-7">
+      {/* ══════════════════════════════════════════
+          QUICK ACTIONS
+          Mobile: horizontal scroll row of compact chips
+          Desktop: 3-column MagicCard bento grid
+      ══════════════════════════════════════════ */}
+      <div className="mb-4 md:mb-7">
+        <SectionHeader title="Quick Actions" delay={0.25} />
+
+        {/* Mobile horizontal scroll */}
+        <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide md:hidden">
+          {[
+            {
+              icon: Brain, label: "Quizzes", sublabel: "Test knowledge",
+              onClick: () => navigate("/quizzes"),
+              iconBg: "gradient-primary", iconClass: "text-primary-foreground",
+              badge: !subjectsLoading ? `${mySubjects.length} subjects` : null,
+              badgeClass: "text-primary",
+            },
+            {
+              icon: BarChart3, label: "Analytics", sublabel: "Your progress",
+              onClick: () => navigate("/analytics"),
+              iconBg: "gradient-accent", iconClass: "text-accent-foreground",
+              badge: (!statsLoading && stats && stats.total_quizzes > 0) ? `${stats.total_quizzes} done` : null,
+              badgeClass: "text-accent",
+            },
+            {
+              icon: Brain, label: "AI Tutor", sublabel: "Ask anything",
+              onClick: () => navigate("/chatbot"),
+              iconBg: "bg-amber-100", iconClass: "text-amber-700",
+              badge: "Online",
+              badgeClass: "text-success",
+            },
+          ].map((item) => (
+            <button
+              key={item.label}
+              onClick={item.onClick}
+              className="flex-shrink-0 w-[130px] bg-card border border-border/60 rounded-xl p-3.5 flex flex-col gap-2 text-left hover:shadow-md hover:border-primary/20 transition-all duration-200 active:scale-95"
+            >
+              <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", item.iconBg)}>
+                <item.icon className={cn("w-4 h-4", item.iconClass)} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-foreground">{item.label}</p>
+                <p className="text-[10px] text-muted-foreground">{item.sublabel}</p>
+              </div>
+              {item.badge && (
+                <span className={cn("text-[10px] font-semibold mt-auto", item.badgeClass)}>
+                  {item.badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Desktop MagicCard bento */}
+        <BentoCardGrid className="hidden md:grid grid-cols-3 gap-4">
+          <MagicCard onClick={() => navigate("/quizzes")} enableTilt enableMagnetism enableStars glowColor="172,214,99">
+            <div className="flex flex-col h-full bg-card p-5 rounded-xl border border-transparent hover:border-border/50 transition-colors">
+              <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center mb-4 shadow-sm">
+                <Brain className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <h2 className="text-base font-display font-bold text-foreground mb-1">Quizzes</h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">Select a subject and test your knowledge with adaptive questions</p>
+              <div className="mt-auto pt-4 flex gap-2 flex-wrap">
+                <span className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">
+                  {subjectsLoading ? "…" : `${mySubjects.length} subjects`}
+                </span>
+                {!statsLoading && stats && stats.total_quizzes > 0 && (
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-accent/10 text-accent font-semibold border border-accent/20">
+                    {stats.total_quizzes} completed
+                  </span>
+                )}
+              </div>
+            </div>
+          </MagicCard>
+
+          <MagicCard onClick={() => navigate("/analytics")} enableTilt enableMagnetism enableStars glowColor="212,168,122">
+            <div className="flex flex-col h-full bg-card p-5 rounded-xl border border-transparent hover:border-border/50 transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-11 h-11 rounded-xl gradient-accent flex items-center justify-center shadow-sm">
+                  <BarChart3 className="w-5 h-5 text-accent-foreground" />
+                </div>
+              </div>
+              <h2 className="text-base font-display font-bold text-foreground mb-2">Analytics</h2>
+              <div className="h-[68px]">
+                {subjectScores.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={subjectScores} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                      <XAxis dataKey="subject" tick={{ fontSize: 8, fill: "hsl(28 15% 45%)" }} />
+                      <YAxis hide />
+                      <Tooltip contentStyle={{ background: "hsl(48 40% 97%)", border: "1px solid hsl(48 25% 85%)", borderRadius: "8px", fontSize: "11px" }} cursor={{ fill: "hsl(48 25% 85% / 0.4)" }} />
+                      <Bar dataKey="score" fill="#acd663" radius={[3, 3, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-[10px] text-muted-foreground">Complete quizzes to see analytics</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </MagicCard>
+
+          <MagicCard onClick={() => navigate("/chatbot")} enableTilt enableMagnetism enableStars glowColor="176,138,104">
+            <div className="flex flex-col items-center justify-center h-full bg-card p-5 rounded-xl border border-transparent hover:border-border/50 text-center transition-colors">
+              <img src={foxMascot} alt="AI Tutor" className="w-16 h-16 object-contain mb-3 drop-shadow-sm" />
+              <h2 className="text-base font-display font-bold text-foreground mb-1">AI Tutor</h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">Ask anything about your studies</p>
+              <div className="mt-3 flex items-center gap-1.5 bg-success/10 px-3 py-1.5 rounded-full border border-success/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                <span className="text-xs font-semibold text-success">Online · Ready</span>
+              </div>
+            </div>
+          </MagicCard>
+        </BentoCardGrid>
+      </div>
+
+      {/* ══════════════════════════════════════════
+          PERFORMANCE CHART + RECENT QUIZZES
+          Mobile: stacked single column
+          Desktop: 3-column (chart takes 2)
+      ══════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 md:gap-4 mb-4 md:mb-7">
 
         {/* Subject Performance chart */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-          className="lg:col-span-2 bg-card border border-border/60 rounded-2xl p-4 sm:p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28 }}
+          className="lg:col-span-2 bg-card border border-border/60 rounded-xl md:rounded-2xl p-3.5 md:p-5 shadow-sm"
+        >
+          <div className="flex items-center justify-between mb-3 md:mb-4">
             <div>
-              <h3 className="text-sm font-display font-bold text-foreground">Subject Performance</h3>
-              <p className="text-xs text-muted-foreground">Average quiz scores by subject</p>
+              <h3 className="text-xs md:text-sm font-display font-bold text-foreground">Subject Performance</h3>
+              <p className="text-[10px] md:text-xs text-muted-foreground">Average quiz scores by subject</p>
             </div>
             {!statsLoading && stats && stats.total_quizzes > 0 && (
-              <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+              <span className="text-[10px] md:text-xs font-bold text-primary bg-primary/10 px-2 md:px-2.5 py-0.5 md:py-1 rounded-full border border-primary/20">
                 {formatXP(stats.total_xp)} XP total
               </span>
             )}
           </div>
 
           {statsLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <span className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+            <div className="flex items-center justify-center py-6 md:py-8">
+              <span className="w-5 h-5 md:w-6 md:h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
             </div>
           ) : subjectScores.length === 0 ? (
             <EmptyState
@@ -324,11 +499,15 @@ const Dashboard = () => {
               onAction={() => navigate("/quizzes")}
             />
           ) : (
-            <ResponsiveContainer width="100%" height={130}>
-              <BarChart data={subjectScores} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-                <XAxis dataKey="subject" tick={{ fontSize: 10, fill: "hsl(28 15% 45%)" }} />
-                <YAxis tick={{ fontSize: 10, fill: "hsl(28 15% 45%)" }} domain={[0, 100]} />
-                <Tooltip contentStyle={{ background: "hsl(48 40% 97%)", border: "1px solid hsl(48 25% 85%)", borderRadius: "8px", fontSize: "11px" }} cursor={{ fill: "hsl(48 25% 85% / 0.4)" }} />
+            /* Taller chart on desktop */
+            <ResponsiveContainer width="100%" height={110} className="md:[&]:!h-[150px]">
+              <BarChart data={subjectScores} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                <XAxis dataKey="subject" tick={{ fontSize: 9, fill: "hsl(28 15% 45%)" }} />
+                <YAxis tick={{ fontSize: 9, fill: "hsl(28 15% 45%)" }} domain={[0, 100]} />
+                <Tooltip
+                  contentStyle={{ background: "hsl(48 40% 97%)", border: "1px solid hsl(48 25% 85%)", borderRadius: "8px", fontSize: "11px" }}
+                  cursor={{ fill: "hsl(48 25% 85% / 0.4)" }}
+                />
                 <Bar dataKey="score" fill="#acd663" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -336,17 +515,21 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Recent Quiz Results */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
-          className="bg-card border border-border/60 rounded-2xl p-4 sm:p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <Trophy className="w-4 h-4 text-accent" />
-            <h3 className="text-sm font-display font-bold text-foreground">Recent Quizzes</h3>
-            <span className="ml-auto text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Click to review</span>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.31 }}
+          className="bg-card border border-border/60 rounded-xl md:rounded-2xl p-3.5 md:p-5 shadow-sm"
+        >
+          <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4">
+            <Trophy className="w-3.5 h-3.5 md:w-4 md:h-4 text-accent" />
+            <h3 className="text-xs md:text-sm font-display font-bold text-foreground">Recent Quizzes</h3>
+            <span className="ml-auto text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full hidden md:inline">Click to review</span>
           </div>
 
           {statsLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <span className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+            <div className="flex items-center justify-center py-6">
+              <span className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
             </div>
           ) : !stats || stats.recent_quizzes.length === 0 ? (
             <EmptyState
@@ -356,21 +539,21 @@ const Dashboard = () => {
               onAction={() => navigate("/quizzes")}
             />
           ) : (
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1 md:gap-1.5">
               {stats.recent_quizzes.map((q, i) => (
                 <button
                   key={i}
                   onClick={() => navigate(`/quiz/review?session_id=${q.session_id}`)}
-                  className="flex items-center gap-2.5 w-full text-left rounded-xl px-2.5 py-2 hover:bg-muted/50 transition-colors cursor-pointer group"
+                  className="flex items-center gap-2 md:gap-2.5 w-full text-left rounded-lg md:rounded-xl px-2 md:px-2.5 py-1.5 md:py-2 hover:bg-muted/50 transition-colors cursor-pointer group"
                 >
                   <div className={cn(
-                    "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0",
+                    "w-6 h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center flex-shrink-0",
                     q.score_percentage >= 70 ? "bg-success/15 text-success" : q.score_percentage >= 40 ? "bg-amber-100 text-amber-600" : "bg-destructive/10 text-destructive"
                   )}>
-                    <Check className="w-3.5 h-3.5" />
+                    <Check className="w-3 h-3 md:w-3.5 md:h-3.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">{q.subject_name}</p>
+                    <p className="text-[11px] md:text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">{q.subject_name}</p>
                     <p className="text-[10px] text-muted-foreground">{q.total_correct}/{q.total_questions} correct</p>
                   </div>
                   <div className="text-right flex-shrink-0">
@@ -384,90 +567,70 @@ const Dashboard = () => {
         </motion.div>
       </div>
 
-      {/* ── Quick action bento ── */}
-      <SectionHeader title="Quick Actions" delay={0.3} />
-      <BentoCardGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
-
-        <MagicCard onClick={() => navigate("/quizzes")} enableTilt enableMagnetism enableStars glowColor="172,214,99">
-          <div className="flex flex-col h-full bg-card p-5 rounded-xl border border-transparent hover:border-border/50 transition-colors">
-            <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center mb-4 shadow-sm">
-              <Brain className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <h2 className="text-base font-display font-bold text-foreground mb-1">Quizzes</h2>
-            <p className="text-xs text-muted-foreground leading-relaxed">Select a subject and test your knowledge</p>
-            <div className="mt-auto pt-4 flex gap-2 flex-wrap">
-              <span className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">
-                {subjectsLoading ? "…" : `${mySubjects.length} subjects`}
-              </span>
-              {!statsLoading && stats && stats.total_quizzes > 0 && (
-                <span className="text-xs px-2.5 py-1 rounded-full bg-accent/10 text-accent font-semibold border border-accent/20">
-                  {stats.total_quizzes} completed
-                </span>
-              )}
-            </div>
-          </div>
-        </MagicCard>
-
-        <MagicCard onClick={() => navigate("/analytics")} enableTilt enableMagnetism enableStars glowColor="212,168,122">
-          <div className="flex flex-col h-full bg-card p-5 rounded-xl border border-transparent hover:border-border/50 transition-colors">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-11 h-11 rounded-xl gradient-accent flex items-center justify-center shadow-sm">
-                <BarChart3 className="w-5 h-5 text-accent-foreground" />
-              </div>
-            </div>
-            <h2 className="text-base font-display font-bold text-foreground mb-2">Analytics</h2>
-            <div className="h-[68px]">
-              {subjectScores.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={subjectScores} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                    <XAxis dataKey="subject" tick={{ fontSize: 8, fill: "hsl(28 15% 45%)" }} />
-                    <YAxis hide />
-                    <Tooltip contentStyle={{ background: "hsl(48 40% 97%)", border: "1px solid hsl(48 25% 85%)", borderRadius: "8px", fontSize: "11px" }} cursor={{ fill: "hsl(48 25% 85% / 0.4)" }} />
-                    <Bar dataKey="score" fill="#acd663" radius={[3, 3, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center">
-                  <p className="text-[10px] text-muted-foreground">Complete quizzes to see analytics</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </MagicCard>
-
-        <MagicCard onClick={() => navigate("/chatbot")} enableTilt enableMagnetism enableStars glowColor="176,138,104">
-          <div className="flex flex-col items-center justify-center h-full bg-card p-5 rounded-xl border border-transparent hover:border-border/50 text-center transition-colors">
-            <img src={foxMascot} alt="AI Tutor" className="w-16 h-16 object-contain mb-3 drop-shadow-sm" />
-            <h2 className="text-base font-display font-bold text-foreground mb-1">AI Tutor</h2>
-            <p className="text-xs text-muted-foreground leading-relaxed">Ask anything about your studies</p>
-            <div className="mt-3 flex items-center gap-1.5 bg-success/10 px-3 py-1.5 rounded-full border border-success/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              <span className="text-xs font-semibold text-success">Online · Ready</span>
-            </div>
-          </div>
-        </MagicCard>
-      </BentoCardGrid>
-
-      {/* ── Divider ── */}
-      <div className="border-t border-border/40 mb-7" />
-
-      {/* ── My Subjects ── */}
+      {/* ══════════════════════════════════════════
+          MY SUBJECTS
+          Mobile: 2-column compact grid
+          Desktop: 3-4 column richer cards
+      ══════════════════════════════════════════ */}
       <div>
         <SectionHeader title="My Subjects" linkTo="/courses" delay={0.35} />
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }} className="bg-card border border-border/60 rounded-2xl p-4 shadow-sm">
-          {subjectsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <span className="w-8 h-8 rounded-full border-3 border-primary/30 border-t-primary animate-spin" />
-            </div>
-          ) : mySubjects.length === 0 ? (
+
+        {subjectsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <span className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+          </div>
+        ) : mySubjects.length === 0 ? (
+          <div className="bg-card border border-border/60 rounded-xl md:rounded-2xl p-4">
             <EmptyState
               icon={BookOpen}
               message="No subjects enrolled yet."
               actionLabel="Go to Settings to add subjects"
               onAction={() => navigate("/settings")}
             />
-          ) : (
-            <BentoCardGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          </div>
+        ) : (
+          /* Mobile: 2-col compact | Desktop: BentoCard grid */
+          <>
+            {/* Mobile grid */}
+            <div className="grid grid-cols-2 gap-2.5 md:hidden">
+              {mySubjects.map((subject, i) => {
+                const color = getSubjectColor(i);
+                const subjectStat = stats?.subject_stats?.find(s => s.subject_id === subject.id);
+                return (
+                  <motion.button
+                    key={subject.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.38 + i * 0.04 }}
+                    onClick={() => navigate(`/subject/${subject.id}`)}
+                    className="group bg-card border border-border/60 rounded-xl p-3 text-left hover:shadow-md hover:-translate-y-0.5 hover:border-primary/20 transition-all duration-200 active:scale-95 flex flex-col gap-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${color.gradient} flex items-center justify-center flex-shrink-0`}>
+                        <BookOpen className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      {subjectStat ? (
+                        <span className="flex items-center gap-0.5 text-[9px] font-bold text-xp">
+                          <Star className="w-2.5 h-2.5 fill-current" />{formatXP(subjectStat.total_xp)}
+                        </span>
+                      ) : (
+                        <span className="text-[9px] text-muted-foreground/60">0 XP</span>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-foreground leading-tight line-clamp-2">{subject.name}</h3>
+                      <p className="text-[9px] text-muted-foreground mt-0.5">{profile?.grade?.name ?? "—"}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-primary group-hover:text-primary/80 transition-colors mt-auto">
+                      <Brain className="w-2.5 h-2.5" /> Quiz
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Desktop MagicCard bento grid */}
+            <BentoCardGrid className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-4">
               {mySubjects.map((subject, i) => {
                 const color = getSubjectColor(i);
                 const subjectStat = stats?.subject_stats?.find(s => s.subject_id === subject.id);
@@ -481,34 +644,58 @@ const Dashboard = () => {
                     className="rounded-xl overflow-hidden cursor-pointer"
                     onClick={() => navigate(`/subject/${subject.id}`)}
                   >
-                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.05 }} className="p-4">
-                      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${color.gradient} flex items-center justify-center mb-3 shadow-sm`}>
-                        <BookOpen className="w-4 h-4 text-white" />
-                      </div>
-                      <h3 className="text-sm font-display font-bold text-foreground mb-0.5">{subject.name}</h3>
-                      <p className="text-[10px] text-muted-foreground">{profile?.grade?.name ?? "—"}</p>
-                      <div className="mt-3 flex items-center justify-between">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); navigate("/quizzes", { state: { preselectedSubjectId: subject.id } }); }}
-                          className="text-[10px] font-bold text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
-                        >
-                          <Brain className="w-3 h-3" /> Start Quiz
-                        </button>
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 + i * 0.05 }}
+                      className="p-4"
+                    >
+                      {/* Icon + XP */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color.gradient} flex items-center justify-center shadow-sm`}>
+                          <BookOpen className="w-5 h-5 text-white" />
+                        </div>
                         {subjectStat ? (
-                          <span className="flex items-center gap-0.5 text-[10px] font-semibold text-xp">
+                          <span className="flex items-center gap-0.5 text-[10px] font-bold text-xp bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
                             <Star className="w-3 h-3 fill-current opacity-70" />{formatXP(subjectStat.total_xp)} XP
                           </span>
                         ) : (
-                          <span className="text-[10px] text-muted-foreground">No quizzes yet</span>
+                          <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">No quizzes yet</span>
                         )}
                       </div>
+
+                      {/* Name + grade */}
+                      <h3 className="text-sm font-display font-bold text-foreground mb-0.5">{subject.name}</h3>
+                      <p className="text-[10px] text-muted-foreground mb-3">{profile?.grade?.name ?? "—"}</p>
+
+                      {/* Stats row */}
+                      {subjectStat && (
+                        <div className="flex items-center gap-3 mb-3 text-[10px] text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Brain className="w-3 h-3" />
+                            {subjectStat.total_quizzes} quiz{subjectStat.total_quizzes !== 1 ? "zes" : ""}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3" />
+                            {Math.round(subjectStat.average_score)}% avg
+                          </span>
+                        </div>
+                      )}
+
+                      {/* CTA */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigate("/quizzes", { state: { preselectedSubjectId: subject.id } }); }}
+                        className="text-[10px] font-bold text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
+                      >
+                        <Zap className="w-3 h-3" /> Start Quiz
+                      </button>
                     </motion.div>
                   </MagicCard>
                 );
               })}
             </BentoCardGrid>
-          )}
-        </motion.div>
+          </>
+        )}
       </div>
 
     </AppLayout>

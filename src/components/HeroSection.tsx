@@ -89,16 +89,16 @@ const SpeechBubble = () => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.4, delay: 2.1, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="relative bg-white rounded-2xl px-4 py-2 shadow-md border border-black/[0.04]">
-        <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+      <div className="relative bg-card rounded-2xl px-4 py-2 shadow-md border border-border/40">
+        <span className="text-sm font-semibold text-foreground/70 whitespace-nowrap">
           {text}
           <motion.span
-            className="inline-block w-[2px] h-[14px] bg-gray-400 ml-0.5 align-middle"
+            className="inline-block w-[2px] h-[14px] bg-foreground/40 ml-0.5 align-middle"
             animate={{ opacity: [1, 0] }}
             transition={{ duration: 0.6, repeat: Infinity }}
           />
         </span>
-        <div className="absolute -bottom-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 border-r border-b border-black/[0.04]" />
+        <div className="absolute -bottom-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-card rotate-45 border-r border-b border-border/40" />
       </div>
     </motion.div>
   );
@@ -139,7 +139,7 @@ const HeroSection = () => {
   const { typed: howText, showCursor: cursor2 } = useTypewriter("How It Works", 80, 1500);
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center overflow-hidden bg-[#f7f5df]">
+    <section id="home" className="relative min-h-screen flex items-center overflow-hidden bg-background transition-colors duration-300">
 
       {/* Subtle background blobs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -149,8 +149,8 @@ const HeroSection = () => {
 
       {/* Dot pattern texture */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.025]"
-        style={{ backgroundImage: "radial-gradient(circle, #000 0.8px, transparent 0.8px)", backgroundSize: "24px 24px" }}
+        className="absolute inset-0 pointer-events-none opacity-[0.025] dark:opacity-[0.06]"
+        style={{ backgroundImage: "radial-gradient(circle, currentColor 0.8px, transparent 0.8px)", backgroundSize: "24px 24px" }}
       />
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16">
@@ -304,7 +304,7 @@ const HeroSection = () => {
       </div>
 
       {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#f7f5df] to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </section>
   );
 };
