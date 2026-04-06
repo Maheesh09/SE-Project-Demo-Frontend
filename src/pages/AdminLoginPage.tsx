@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BrainCircuit } from "lucide-react";
+import { api } from "@/lib/api";
 
 const AdminLoginPage = () => {
     const [username, setUsername] = useState("");
@@ -20,24 +21,24 @@ const AdminLoginPage = () => {
         setError("");
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/v1/admin/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-            });
+            const data = await api.adminLogin({ username, password });
 
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                // If backend provides a token, use that. Otherwise use "true".
-                localStorage.setItem("admin-token", data.admin?.token || "true");
+            if (data.success && data.admin) {
+                localStorage.setItem("admin-token", data.admin.token);
+                if (data.admin.display_name) {
+                    localStorage.setItem("admin-display-name", data.admin.display_name);
+                }
                 navigate("/admin/dashboard");
             } else {
-                setError(data.detail || data.message || "Invalid admin username or password.");
+                setError(data.message || "Invalid admin username or password.");
             }
-        } catch (err) {
-            console.error(err);
-            setError("Could not connect to the server. Please try again.");
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "Could not connect to the server.";
+            if (msg.includes("401")) {
+                setError("Invalid admin username or password.");
+            } else {
+                setError(msg);
+            }
         } finally {
             setLoading(false);
         }

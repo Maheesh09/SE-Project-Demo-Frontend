@@ -14,7 +14,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recha
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { api, type Subject, type DashboardStats } from "@/lib/api";
+import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary } from "@/lib/api";
 
 
 // ─── Subject color palette ────────────────────────────────────────────────────
@@ -130,6 +130,10 @@ const Dashboard = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
+  // ── Study streak & XP summary ──
+  const [streak, setStreak] = useState<StudyStreak | null>(null);
+  const [xpSummary, setXpSummary] = useState<XpSummary | null>(null);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -137,13 +141,17 @@ const Dashboard = () => {
         const token = await getToken();
         if (!token) return;
         const email = user?.primaryEmailAddress?.emailAddress || "";
-        const [subs, dashStats] = await Promise.all([
+        const [subs, dashStats, streakData, xpData] = await Promise.all([
           api.getMySubjects(token, user?.id, email),
           api.getDashboardStats(token, user?.id, email),
+          api.getStudyStreak(token, user?.id, email).catch(() => null),
+          api.getXpSummary(token, user?.id, email).catch(() => null),
         ]);
         if (!cancelled) {
           setMySubjects(subs);
           setStats(dashStats);
+          setStreak(streakData);
+          setXpSummary(xpData);
         }
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
@@ -278,20 +286,25 @@ const Dashboard = () => {
         </motion.div>
       )}
 
-      {/* ══════════════════════════════════════════
-          KPI STATS
-          Mobile: 2-column compact horizontal cards
-          Desktop: 4-column full vertical cards
-      ══════════════════════════════════════════ */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-4 mb-4 md:mb-7">
+      {/* ── KPI row ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-7">
         <StatCard
           icon={Star}
           label="Total XP"
           value={statsLoading ? "…" : formatXP(stats?.total_xp ?? 0)}
-          subtitle={stats?.total_xp === 0 ? "Take a quiz to earn XP" : "Earned from quizzes"}
+          subtitle={xpSummary ? `${formatXP(xpSummary.total_bonus_xp)} bonus XP` : stats?.total_xp === 0 ? "Take a quiz to earn XP" : "Earned from quizzes"}
           subtitleTrend="neutral"
           colorClass="text-xp"
           delay={0}
+        />
+        <StatCard
+          icon={Flame}
+          label="Study Streak"
+          value={statsLoading ? "…" : streak ? `${streak.current_streak}d` : "0d"}
+          subtitle={streak && streak.longest_streak > 0 ? `Best: ${streak.longest_streak}d` : "Complete a quiz daily"}
+          subtitleTrend="neutral"
+          colorClass="text-streak"
+          delay={0.05}
         />
         <StatCard
           icon={Brain}
@@ -300,7 +313,16 @@ const Dashboard = () => {
           subtitle={stats?.total_quizzes === 0 ? "Start your first quiz!" : `Across ${stats?.subject_stats?.length ?? 0} subjects`}
           subtitleTrend="neutral"
           colorClass="text-streak"
-          delay={0.07}
+          delay={0.1}
+        />
+        <StatCard
+          icon={Target}
+          label="Correct Answers"
+          value={statsLoading ? "…" : xpSummary ? String(xpSummary.total_correct_answers) : "0"}
+          subtitle={xpSummary && xpSummary.xp_per_subject.length > 0 ? `In ${xpSummary.xp_per_subject.length} subjects` : "Answer quiz questions"}
+          subtitleTrend="neutral"
+          colorClass="text-primary"
+          delay={0.15}
         />
         <StatCard
           icon={BookOpen}
@@ -309,7 +331,7 @@ const Dashboard = () => {
           subtitle={profile?.grade?.name ?? "—"}
           subtitleTrend="neutral"
           colorClass="text-primary"
-          delay={0.14}
+          delay={0.2}
         />
         <StatCard
           icon={TrendingUp}
@@ -318,7 +340,7 @@ const Dashboard = () => {
           subtitle={stats?.average_score == null ? "No quizzes yet" : "Across all subjects"}
           subtitleTrend="neutral"
           colorClass="text-success"
-          delay={0.21}
+          delay={0.25}
         />
       </div>
 

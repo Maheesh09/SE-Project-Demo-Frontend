@@ -189,6 +189,43 @@ export interface DistrictLeaderboard {
     district_name: string;
     entries: DistrictLeaderboardEntry[];
 }
+
+export interface ProvinceLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+export interface ProvinceLeaderboard {
+    province_id: number;
+    province_name: string;
+    entries: ProvinceLeaderboardEntry[];
+}
+
+export interface NationalLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+export interface NationalLeaderboard {
+    entries: NationalLeaderboardEntry[];
+}
+
+export interface SubjectLeaderboardEntry {
+    rank: number;
+    username: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+export interface SubjectLeaderboard {
+    subject_id: number;
+    subject_name: string;
+    entries: SubjectLeaderboardEntry[];
+}
 // ─── Chat / RAG Types ────────────────────────────────────────────────────────
 
 export interface ChatRequest {
@@ -333,24 +370,107 @@ export const api = {
             { xClerkUserId, xEmail }
         ),
 
-    // ── Chat / RAG ──
-    getChatSubjects: () =>
-        request<ChatSubject[]>("/api/v1/chat/subjects", null),
+    getProvinceLeaderboard: (token: string, provinceId?: number, xClerkUserId?: string, xEmail?: string) =>
+        request<ProvinceLeaderboard>(
+            `/api/v1/me/province-leaderboard${provinceId ? `?province_id=${provinceId}` : ""}`,
+            token,
+            { xClerkUserId, xEmail }
+        ),
 
-    getChatTopics: (subjectId: number) =>
-        request<ChatTopic[]>(`/api/v1/chat/subjects/${subjectId}/topics`, null),
+    getNationalLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<NationalLeaderboard>(
+            "/api/v1/me/national-leaderboard",
+            token,
+            { xClerkUserId, xEmail }
+        ),
 
-    askChat: (token: string, payload: ChatRequest, xClerkUserId?: string, xEmail?: string) =>
-        request<ChatResponse>("/api/v1/chat/ask", token, {
-            method: "POST",
-            body: JSON.stringify(payload),
-            xClerkUserId,
-            xEmail,
-        }),
+    getSubjectLeaderboard: (token: string, subjectId: number, xClerkUserId?: string, xEmail?: string) =>
+        request<SubjectLeaderboard>(
+            `/api/v1/me/subject-leaderboard?subject_id=${subjectId}`,
+            token,
+            { xClerkUserId, xEmail }
+        ),
+
+    // ── Student Stats ──
+    getXpSummary: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<XpSummary>("/api/v1/me/xp-summary", token, { xClerkUserId, xEmail }),
+
+    getSubjectProgress: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<SubjectProgress[]>("/api/v1/me/subject-progress", token, { xClerkUserId, xEmail }),
+
+    getRecentQuizzes: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<QuizSummary[]>("/api/v1/me/recent-quizzes", token, { xClerkUserId, xEmail }),
+
+    getStudyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StudyStreak>("/api/v1/me/study-streak", token, { xClerkUserId, xEmail }),
+
+    getLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<LeaderboardEntry[]>("/api/v1/me/leaderboard", token, { xClerkUserId, xEmail }),
 
     // ── Admin ──
+    adminLogin: (payload: AdminLoginPayload) =>
+        request<AdminLoginResponse>("/api/v1/admin/login", null, {
+            method: "POST",
+            body: JSON.stringify(payload),
+        }),
+
     getStudentCount: (adminApiKey: string) =>
         request<StudentCountOut>("/api/v1/admin/stats/student-count", null, {
+            headers: { "X-Admin-Api-Key": adminApiKey },
+        }),
+
+    createQuestion: (payload: QuestionCreate) =>
+        request<QuestionResponse>("/api/v1/admin/questions/", null, {
+            method: "POST",
+            body: JSON.stringify(payload),
+        }),
+
+    listQuestions: (params?: { subject_id?: number; topic_id?: number; difficulty?: string; is_active?: boolean; skip?: number; limit?: number }) => {
+        const qs = new URLSearchParams();
+        if (params?.subject_id != null) qs.set("subject_id", String(params.subject_id));
+        if (params?.topic_id != null) qs.set("topic_id", String(params.topic_id));
+        if (params?.difficulty) qs.set("difficulty", params.difficulty);
+        if (params?.is_active != null) qs.set("is_active", String(params.is_active));
+        if (params?.skip != null) qs.set("skip", String(params.skip));
+        if (params?.limit != null) qs.set("limit", String(params.limit));
+        const query = qs.toString();
+        return request<QuestionResponse[]>(`/api/v1/admin/questions/${query ? `?${query}` : ""}`, null);
+    },
+
+    getQuestion: (questionId: number) =>
+        request<QuestionResponse>(`/api/v1/admin/questions/${questionId}`, null),
+
+    // ── Admin Resources ──
+    adminListResources: (adminApiKey: string, subjectId?: number) =>
+        request<AdminResource[]>(
+            `/api/v1/admin/resources${subjectId ? `?subject_id=${subjectId}` : ""}`,
+            null,
+            { headers: { "X-Admin-Api-Key": adminApiKey } },
+        ),
+
+    adminCreateResource: (adminApiKey: string, payload: ResourceCreatePayload) =>
+        request<AdminResource>("/api/v1/admin/resources", null, {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers: { "X-Admin-Api-Key": adminApiKey },
+        }),
+
+    adminUpdateResource: (adminApiKey: string, resourceId: number, payload: ResourceUpdatePayload) =>
+        request<AdminResource>(`/api/v1/admin/resources/${resourceId}`, null, {
+            method: "PUT",
+            body: JSON.stringify(payload),
+            headers: { "X-Admin-Api-Key": adminApiKey },
+        }),
+
+    adminDeleteResource: (adminApiKey: string, resourceId: number) =>
+        request<{ detail: string }>(`/api/v1/admin/resources/${resourceId}`, null, {
+            method: "DELETE",
+            headers: { "X-Admin-Api-Key": adminApiKey },
+        }),
+
+    adminToggleResource: (adminApiKey: string, resourceId: number) =>
+        request<AdminResource>(`/api/v1/admin/resources/${resourceId}/toggle`, null, {
+            method: "PATCH",
             headers: { "X-Admin-Api-Key": adminApiKey },
         }),
 };
