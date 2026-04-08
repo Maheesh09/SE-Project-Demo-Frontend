@@ -222,73 +222,132 @@ const Dashboard = () => {
       </motion.div>
 
       {/* ══════════════════════════════════════════
-          GRADE BANNER
-          Mobile: slim single-line strip
-          Desktop: richer card with all subject pills
+          TOP SECTION: GRADE & BADGES
       ══════════════════════════════════════════ */}
-      {profile?.grade && (
-        <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="mb-4 md:mb-7"
-        >
-          {/* Mobile slim banner */}
-          <div className="md:hidden bg-card border border-border/60 border-l-4 border-l-primary rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3 shadow-sm">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-7 h-7 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
-                <GraduationCap className="w-3.5 h-3.5 text-primary-foreground" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground truncate">{profile.grade.name}</p>
-                {profile.district && (
-                  <p className="text-[10px] text-muted-foreground truncate">
-                    {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
-                  </p>
-                )}
-              </div>
-            </div>
-            {!subjectsLoading && mySubjects.length > 0 && (
-              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 flex-shrink-0">
-                {mySubjects.length} subjects
-              </span>
-            )}
-            {subjectsLoading && <span className="w-4 h-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin flex-shrink-0" />}
-          </div>
+      <div className={`grid grid-cols-1 ${badges.length > 0 ? "xl:grid-cols-3" : ""} gap-4 md:gap-7 mb-4 md:mb-7`}>
 
-          {/* Desktop rich card */}
-          <div className="hidden md:flex bg-card border border-border/60 rounded-2xl p-4 sm:p-5 flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-primary shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shadow-sm flex-shrink-0">
-                <GraduationCap className="w-6 h-6 text-primary-foreground" />
+        {/* Left: Grade Banner */}
+        {profile?.grade && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className={`h-full ${badges.length > 0 ? "xl:col-span-2" : ""}`}
+          >
+            {/* Mobile slim banner */}
+            <div className="md:hidden bg-card border border-border/60 border-l-4 border-l-primary rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3 shadow-sm h-full">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
+                  <GraduationCap className="w-3.5 h-3.5 text-primary-foreground" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-foreground truncate">{profile.grade.name}</p>
+                  {profile.district && (
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Your Grade</p>
-                <h3 className="text-lg font-display font-black text-foreground">{profile.grade.name}</h3>
-                {profile.district && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
-                  </p>
-                )}
+              {!subjectsLoading && mySubjects.length > 0 && (
+                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 flex-shrink-0">
+                  {mySubjects.length} subjects
+                </span>
+              )}
+              {subjectsLoading && <span className="w-4 h-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin flex-shrink-0" />}
+            </div>
+
+            {/* Desktop rich card */}
+            <div className="hidden md:flex bg-card border border-border/60 rounded-2xl p-4 sm:p-5 flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-primary shadow-sm h-full">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shadow-sm flex-shrink-0">
+                  <GraduationCap className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Your Grade</p>
+                  <h3 className="text-lg font-display font-black text-foreground">{profile.grade.name}</h3>
+                  {profile.district && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {!subjectsLoading && mySubjects.length > 0 && mySubjects.map((s, i) => {
+                  const color = getSubjectColor(i);
+                  return (
+                    <span
+                      key={s.id}
+                      className={`px-3 py-1.5 rounded-full text-[11px] font-bold border ${color.bg} ${color.text} ${color.border}`}
+                    >
+                      {s.name}
+                    </span>
+                  );
+                })}
+                {subjectsLoading && <span className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />}
               </div>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {!subjectsLoading && mySubjects.length > 0 && mySubjects.map((s, i) => {
-                const color = getSubjectColor(i);
-                return (
-                  <span
-                    key={s.id}
-                    className={`px-3 py-1.5 rounded-full text-[11px] font-bold border ${color.bg} ${color.text} ${color.border}`}
-                  >
-                    {s.name}
-                  </span>
-                );
-              })}
-              {subjectsLoading && <span className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />}
+          </motion.div>
+        )}
+
+        {/* Right Corner: Badges Spotlight */}
+        {badges.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="xl:col-span-1 h-full"
+          >
+            <div className="bg-card border-none rounded-2xl p-4 sm:p-5 flex flex-col justify-center h-full shadow-[0_0_40px_-10px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_-10px_rgba(255,255,255,0.03)] relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
+
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest"> Earned Badges</p>
+                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  {badges.length}
+                </span>
+              </div>
+
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide scroll-smooth">
+                {badges.map((badge) => {
+                  const label = badge.name
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase());
+                  const awardedDate = badge.awarded_at
+                    ? new Date(badge.awarded_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                    : "";
+                  return (
+                    <div key={badge.id} className="flex items-center gap-3 min-w-max">
+                      <div className="relative flex-shrink-0">
+                        <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
+                        {badge.description ? (
+                          <img
+                            src={badge.description}
+                            alt={label}
+                            className="w-16 h-16 object-contain drop-shadow-md relative z-10"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-xl gradient-primary flex items-center justify-center relative z-10 shadow-sm border border-primary-foreground/20">
+                            <span className="text-2xl drop-shadow-sm">🏅</span>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-display font-bold text-foreground leading-tight">{label}</h4>
+                        {awardedDate && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{awardedDate}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </div>
 
       {/* ── KPI row ── */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-7">
@@ -347,64 +406,6 @@ const Dashboard = () => {
           delay={0.25}
         />
       </div>
-
-      {/* ── Badges Showcase ── */}
-      {badges.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.22 }}
-          className="mb-4 md:mb-7"
-        >
-          <SectionHeader title="My Badges" delay={0.22} />
-          <div className="flex flex-wrap gap-3">
-            {badges.map((badge) => {
-              const label = badge.name
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, (c) => c.toUpperCase());
-              const awardedDate = badge.awarded_at
-                ? new Date(badge.awarded_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                : "";
-              return (
-                <motion.div
-                  key={badge.id}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="group relative bg-card border border-border/60 rounded-2xl px-4 py-3.5 flex items-center gap-3.5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200 cursor-default"
-                >
-                  {/* Glow behind image */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  {/* Badge image */}
-                  {badge.description ? (
-                    <img
-                      src={badge.description}
-                      alt={label}
-                      className="w-12 h-12 md:w-14 md:h-14 object-contain drop-shadow-sm flex-shrink-0 relative z-10"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                    />
-                  ) : (
-                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 relative z-10">
-                      <span className="text-2xl">🏅</span>
-                    </div>
-                  )}
-
-                  {/* Text */}
-                  <div className="relative z-10">
-                    <p className="text-xs md:text-sm font-display font-bold text-foreground leading-tight">{label}</p>
-                    {awardedDate && (
-                      <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">Earned {awardedDate}</p>
-                    )}
-                  </div>
-
-                  {/* Shimmer badge on hover */}
-                  <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse" />
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
 
       {/* ══════════════════════════════════════════
           QUICK ACTIONS
