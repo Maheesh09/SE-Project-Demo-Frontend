@@ -226,6 +226,113 @@ export interface SubjectLeaderboard {
     subject_name: string;
     entries: SubjectLeaderboardEntry[];
 }
+
+export interface StudyStreak {
+    current_streak: number;
+    longest_streak: number;
+    last_activity_date: string | null;
+}
+
+export interface SubjectXp {
+    subject_id: number;
+    subject_name: string;
+    total_xp: number;
+}
+
+export interface RecentXpGain {
+    question_id: number;
+    question_text: string;
+    difficulty: string;
+    is_correct: boolean;
+    xp_earned: number;
+    bonus_xp: number;
+    subject_name: string;
+    completed_at: string;
+}
+
+export interface XpSummary {
+    total_xp: number;
+    total_bonus_xp: number;
+    total_correct_answers: number;
+    xp_per_subject: SubjectXp[];
+    recent_xp_gains: RecentXpGain[];
+}
+
+export interface TopicProgress {
+    topic_id: number;
+    topic_name: string;
+    attempted: boolean;
+    accuracy_percentage: number;
+}
+
+export interface SubjectProgress {
+    subject_id: number;
+    subject_name: string;
+    total_topics: number;
+    topics_attempted: number;
+    progress_percentage: number;
+    average_accuracy: number;
+    total_quizzes: number;
+    total_xp: number;
+    topics: TopicProgress[];
+}
+
+export interface QuizAnswerSummary {
+    question_id: number;
+    question_text: string;
+    difficulty: string;
+    is_correct: boolean;
+    xp_earned: number;
+    bonus_xp: number;
+}
+
+export interface QuizSummary {
+    attempt_id: number;
+    session_id: number;
+    subject_name: string;
+    mode: string;
+    difficulty_profile: string;
+    score_percentage: number;
+    total_correct: number;
+    total_questions: number;
+    xp_earned: number;
+    completed_at: string;
+    answers: QuizAnswerSummary[];
+}
+
+export interface LeaderboardEntry {
+    rank: number;
+    student_id: number;
+    username: string | null;
+    avatar_key: string | null;
+    total_xp: number;
+    is_current_user: boolean;
+}
+
+// ─── Admin Types ─────────────────────────────────────────────────────────────
+
+export interface AdminLoginPayload {
+    passcode?: string;
+}
+export interface AdminLoginResponse {
+    access_token?: string;
+}
+export interface QuestionCreate {
+    [key: string]: any;
+}
+export interface QuestionResponse {
+    [key: string]: any;
+}
+export interface AdminResource {
+    [key: string]: any;
+}
+export interface ResourceCreatePayload {
+    [key: string]: any;
+}
+export interface ResourceUpdatePayload {
+    [key: string]: any;
+}
+
 // ─── Chat / RAG Types ────────────────────────────────────────────────────────
 
 export interface ChatRequest {

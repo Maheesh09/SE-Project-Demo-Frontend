@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import {
   Star, Brain, BookOpen, TrendingUp, BarChart3, ArrowRight,
   Calendar, Trophy, Check, GraduationCap, ChevronRight, Zap,
+  Flame, Target,
 } from "lucide-react";
 import BlurText from "@/components/BlurText";
 import { Link, useNavigate } from "react-router-dom";

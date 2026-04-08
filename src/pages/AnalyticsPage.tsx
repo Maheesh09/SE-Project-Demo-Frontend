@@ -406,8 +406,6 @@ const AnalyticsPage = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {stats.recent_quizzes.map((q, i) => {
                   const g = getGrade(q.score_percentage);
-                  const isExpanded = expandedQuiz === q.attempt_id;
-                  const correctCount = q.answers.filter(a => a.is_correct).length;
                   return (
                     <div key={i} className="bg-muted/30 rounded-xl p-3.5 border border-border/50 text-center hover:bg-muted/50 transition-colors">
                       <div className={cn(
