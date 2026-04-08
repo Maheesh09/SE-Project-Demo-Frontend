@@ -15,7 +15,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recha
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary } from "@/lib/api";
+import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type StudentBadge } from "@/lib/api";
 
 
 // ─── Subject color palette ────────────────────────────────────────────────────
@@ -134,6 +134,7 @@ const Dashboard = () => {
   // ── Study streak & XP summary ──
   const [streak, setStreak] = useState<StudyStreak | null>(null);
   const [xpSummary, setXpSummary] = useState<XpSummary | null>(null);
+  const [badges, setBadges] = useState<StudentBadge[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -142,17 +143,19 @@ const Dashboard = () => {
         const token = await getToken();
         if (!token) return;
         const email = user?.primaryEmailAddress?.emailAddress || "";
-        const [subs, dashStats, streakData, xpData] = await Promise.all([
+        const [subs, dashStats, streakData, xpData, badgeData] = await Promise.all([
           api.getMySubjects(token, user?.id, email),
           api.getDashboardStats(token, user?.id, email),
           api.getStudyStreak(token, user?.id, email).catch(() => null),
           api.getXpSummary(token, user?.id, email).catch(() => null),
+          api.getMyBadges(token, user?.id, email).catch(() => []),
         ]);
         if (!cancelled) {
           setMySubjects(subs);
           setStats(dashStats);
           setStreak(streakData);
           setXpSummary(xpData);
+          setBadges(badgeData);
         }
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
@@ -344,6 +347,64 @@ const Dashboard = () => {
           delay={0.25}
         />
       </div>
+
+      {/* ── Badges Showcase ── */}
+      {badges.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
+          className="mb-4 md:mb-7"
+        >
+          <SectionHeader title="My Badges" delay={0.22} />
+          <div className="flex flex-wrap gap-3">
+            {badges.map((badge) => {
+              const label = badge.name
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase());
+              const awardedDate = badge.awarded_at
+                ? new Date(badge.awarded_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                : "";
+              return (
+                <motion.div
+                  key={badge.id}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="group relative bg-card border border-border/60 rounded-2xl px-4 py-3.5 flex items-center gap-3.5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200 cursor-default"
+                >
+                  {/* Glow behind image */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                  {/* Badge image */}
+                  {badge.description ? (
+                    <img
+                      src={badge.description}
+                      alt={label}
+                      className="w-12 h-12 md:w-14 md:h-14 object-contain drop-shadow-sm flex-shrink-0 relative z-10"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                    />
+                  ) : (
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 relative z-10">
+                      <span className="text-2xl">🏅</span>
+                    </div>
+                  )}
+
+                  {/* Text */}
+                  <div className="relative z-10">
+                    <p className="text-xs md:text-sm font-display font-bold text-foreground leading-tight">{label}</p>
+                    {awardedDate && (
+                      <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">Earned {awardedDate}</p>
+                    )}
+                  </div>
+
+                  {/* Shimmer badge on hover */}
+                  <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse" />
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* ══════════════════════════════════════════
           QUICK ACTIONS
