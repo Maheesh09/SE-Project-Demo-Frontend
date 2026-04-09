@@ -2,6 +2,7 @@ import { useState } from "react";
 import AppSidebar from "./AppSidebar";
 import { Menu } from "lucide-react";
 import mindupLogo from "@/assets/mindup-logo.png";
+import { StreakBadgeNotification } from "./StreakBadgeNotification";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -41,6 +42,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
+
+      {/* Global Streak Notification */}
+      <StreakBadgeNotification />
     </div>
   );
 };
