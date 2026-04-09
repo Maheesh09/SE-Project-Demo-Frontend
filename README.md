@@ -8,7 +8,7 @@ A gamified self-learning platform that makes education feel like playing. Built 
 
 ## ✨ Features
 
-- **Gamified Learning** — XP, badges, streaks, and leaderboards
+- **Gamified Learning** — XP, badges, streaks, and leaderboards. Specifically includes a fully animated 7-Day Streak Badge system with dashboard notifications!
 - **AI-Powered Tutor** — Personalized learning paths that adapt to your pace
 - **Weekly Leaderboard** — Compete with learners and earn real merch rewards
 - **Clerk Authentication** — Secure login/signup with Google, email, and more
