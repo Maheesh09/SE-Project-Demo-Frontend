@@ -309,13 +309,6 @@ export interface LeaderboardEntry {
     is_current_user: boolean;
 }
 
-export interface StudentBadge {
-    id: number;
-    name: string;
-    description: string | null; // Supabase public image URL
-    awarded_at: string;
-}
-
 // ─── Admin Types ─────────────────────────────────────────────────────────────
 
 export interface AdminLoginPayload {
@@ -521,8 +514,20 @@ export const api = {
     getLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<LeaderboardEntry[]>("/api/v1/me/leaderboard", token, { xClerkUserId, xEmail }),
 
-    getMyBadges: (token: string, xClerkUserId?: string, xEmail?: string) =>
-        request<StudentBadge[]>("/api/v1/me/badges", token, { xClerkUserId, xEmail }),
+    // ── Chat / RAG ──
+    getChatSubjects: () =>
+        request<ChatSubject[]>("/api/v1/chat/subjects", null),
+
+    getChatTopics: (subjectId: number) =>
+        request<ChatTopic[]>(`/api/v1/chat/subjects/${subjectId}/topics`, null),
+
+    askChat: (token: string, payload: ChatRequest, xClerkUserId?: string, xEmail?: string) =>
+        request<ChatResponse>("/api/v1/chat/ask", token, {
+            method: "POST",
+            body: JSON.stringify(payload),
+            xClerkUserId,
+            xEmail,
+        }),
 
     // ── Admin ──
     adminLogin: (payload: AdminLoginPayload) =>
