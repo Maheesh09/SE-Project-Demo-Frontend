@@ -258,6 +258,25 @@ export interface XpSummary {
     recent_xp_gains: RecentXpGain[];
 }
 
+// ─── Badge Types ──────────────────────────────────────────────────────────────
+
+/** A badge definition as stored in the database. */
+export interface Badge {
+    id: number;
+    name: string;
+    description: string;
+    image_url: string;
+    /** Slug-style key, e.g. "seven_day_streak" */
+    badge_key: string;
+}
+
+/** A badge that has been awarded to the current student. */
+export interface UserBadge {
+    id: number;
+    badge: Badge;
+    earned_at: string; // ISO-8601 date string
+}
+
 export interface TopicProgress {
     topic_id: number;
     topic_name: string;
@@ -510,6 +529,15 @@ export const api = {
 
     getStudyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<StudyStreak>("/api/v1/me/study-streak", token, { xClerkUserId, xEmail }),
+
+    // ── Badges ──
+    /**
+     * Returns all badges the current student has earned.
+     * The 7-day streak badge (badge_key: "seven_day_streak") is included
+     * here once the backend awards it.
+     */
+    getBadges: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<UserBadge[]>("/api/v1/me/badges", token, { xClerkUserId, xEmail }),
 
     getLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<LeaderboardEntry[]>("/api/v1/me/leaderboard", token, { xClerkUserId, xEmail }),
