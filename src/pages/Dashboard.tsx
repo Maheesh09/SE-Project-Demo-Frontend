@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import {
   Star, Brain, BookOpen, TrendingUp, BarChart3, ArrowRight,
   Calendar, Trophy, Check, GraduationCap, ChevronRight, Zap,
-  Flame, Target,
+  Flame, Target, Award,
 } from "lucide-react";
 import BlurText from "@/components/BlurText";
 import { Link, useNavigate } from "react-router-dom";
@@ -14,8 +14,10 @@ const foxMascot = "/fox/mascot.png";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
+import { useStreakBadge } from "@/hooks/useStreakBadge";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary } from "@/lib/api";
+import { BadgeCard } from "@/components/BadgeCard";
 
 
 // ─── Subject color palette ────────────────────────────────────────────────────
@@ -124,6 +126,7 @@ const Dashboard = () => {
   const { profile } = useProfile();
   const { getToken } = useAuth();
   const { user } = useUser();
+  const { badges, isLoading: badgesLoading } = useStreakBadge();
   const displayName = profile?.full_name?.split(" ")[0] ?? profile?.username ?? "Student";
 
   const [mySubjects, setMySubjects] = useState<Subject[]>([]);
@@ -460,6 +463,43 @@ const Dashboard = () => {
             </div>
           </MagicCard>
         </BentoCardGrid>
+      </div>
+
+      {/* ══════════════════════════════════════════
+          EARNED BADGES
+          Mobile & Desktop horizontal scroll or grid
+      ══════════════════════════════════════════ */}
+      <div className="mb-4 md:mb-7">
+        <SectionHeader title="Earned Badges" delay={0.27} />
+        
+        {badgesLoading ? (
+          <div className="flex justify-center py-6">
+            <span className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+          </div>
+        ) : badges.length === 0 ? (
+          <div className="bg-card border border-border/60 rounded-xl md:rounded-2xl p-4">
+            <EmptyState
+              icon={Award}
+              message="No badges earned yet. Keep learning to unlock your first badge!"
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+            {badges.map((ub, idx) => (
+              <motion.div
+                key={ub.id}
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.28 + idx * 0.05, type: "spring", stiffness: 300 }}
+              >
+                <BadgeCard 
+                  badge={ub.badge} 
+                  earnedAt={ub.earned_at} 
+                />
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ══════════════════════════════════════════
