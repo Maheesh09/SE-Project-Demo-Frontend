@@ -126,7 +126,7 @@ const Dashboard = () => {
   const { profile } = useProfile();
   const { getToken } = useAuth();
   const { user } = useUser();
-  const { badges, isLoading: badgesLoading } = useStreakBadge();
+  const { badges, isLoading: badgesLoading, newlyEarned, streakBadge } = useStreakBadge();
   const displayName = profile?.full_name?.split(" ")[0] ?? profile?.username ?? "Student";
 
   const [mySubjects, setMySubjects] = useState<Subject[]>([]);
@@ -304,10 +304,23 @@ const Dashboard = () => {
         <StatCard
           icon={Flame}
           label="Study Streak"
-          value={statsLoading ? "…" : streak ? `${streak.current_streak}d` : "0d"}
+          value={statsLoading ? "…" : streak ? (
+            <span className="flex items-center gap-1.5">
+              {streak.current_streak}d
+              {streak.current_streak >= 7 && (
+                <motion.span 
+                  initial={{ scale: 0 }} 
+                  animate={{ scale: 1 }} 
+                  className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-streak/20 text-streak border border-streak/30 shadow-sm"
+                >
+                  <Trophy className="w-3.5 h-3.5" />
+                </motion.span>
+              )}
+            </span>
+          ) : "0d"}
           subtitle={streak && streak.longest_streak > 0 ? `Best: ${streak.longest_streak}d` : "Complete a quiz daily"}
-          subtitleTrend="neutral"
-          colorClass="text-streak"
+          subtitleTrend={streak && streak.current_streak >= 7 ? "up" : "neutral"}
+          colorClass={streak && streak.current_streak >= 7 ? "text-streak" : "text-streak"}
           delay={0.05}
         />
         <StatCard
@@ -476,7 +489,7 @@ const Dashboard = () => {
           <div className="flex justify-center py-6">
             <span className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
           </div>
-        ) : badges.length === 0 ? (
+        ) : (badges.length === 0 && !(streak && streak.current_streak >= 7)) ? (
           <div className="bg-card border border-border/60 rounded-xl md:rounded-2xl p-4">
             <EmptyState
               icon={Award}
@@ -484,8 +497,23 @@ const Dashboard = () => {
             />
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
-            {badges.map((ub, idx) => (
+          <div className="flex flex-col gap-3">
+            {/* Display actual badges + a fallback for the 7-day streak badge if it's missing but earned */}
+            {[
+              ...badges,
+              // If current streak is >= 7 but the streak badge isn't in the list, show a virtual one
+              ...(streak && streak.current_streak >= 7 && !streakBadge ? [{
+                id: -999, // virtual id
+                earned_at: new Date().toISOString(),
+                badge: {
+                  id: -999,
+                  name: "7 day streak",
+                  description: "Awarded for completing quizzes 7 days in a row.",
+                  badge_key: "seven_day_streak",
+                  image_url: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/streak_7day.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9zdHJlYWtfN2RheS5wbmciLCJpYXQiOjE3NzU4MTc4ODMsImV4cCI6MTgwNzM1Mzg4M30.ko7VlDRFpaQat6pA9tyvUD8CLg05WhcYV3hlQmW-bBI"
+                }
+              }] : [])
+            ].map((ub, idx) => (
               <motion.div
                 key={ub.id}
                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
@@ -494,7 +522,8 @@ const Dashboard = () => {
               >
                 <BadgeCard 
                   badge={ub.badge} 
-                  earnedAt={ub.earned_at} 
+                  earnedAt={ub.earned_at}
+                  isNew={(newlyEarned && streakBadge?.id === ub.id) || (ub.earned_at ? (new Date().getTime() - new Date(ub.earned_at).getTime() < 12 * 60 * 60 * 1000) : false)}
                 />
               </motion.div>
             ))}

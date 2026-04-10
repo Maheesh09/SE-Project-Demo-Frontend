@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { Zap, CalendarHeart } from "lucide-react";
+import { Zap, CalendarHeart, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { UserBadge, Badge } from "@/lib/api";
+import type { Badge } from "@/lib/api";
 
 interface BadgeCardProps {
   badge: Badge;
@@ -20,57 +20,51 @@ export function BadgeCard({ badge, earnedAt, isNew, className }: BadgeCardProps)
 
   return (
     <motion.div
-      whileHover={{ scale: isEarned ? 1.02 : 1 }}
-      whileTap={{ scale: isEarned ? 0.98 : 1 }}
+      whileHover={{ x: 4 }}
       className={cn(
-        "relative rounded-2xl flex flex-col items-center justify-center p-5 text-center transition-all bg-card border border-border/60 shadow-sm",
-        isEarned ? "hover:shadow-md hover:border-streak/30" : "opacity-60 grayscale",
-        isNew && "ring-2 ring-streak bg-streak/5",
+        "relative rounded-xl flex items-center gap-4 px-5 py-4 transition-all bg-[#f8f9fa] border border-border/40 shadow-sm",
+        !isEarned && "opacity-60 grayscale",
+        isNew && "bg-primary/5 border-primary/20",
         className
       )}
     >
-      {/* Optional 'NEW' badge */}
-      {isNew && (
-        <span className="absolute -top-2.5 -right-2.5 bg-streak text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm z-10 animate-bounce">
-          New!
-        </span>
-      )}
-
       {/* Hexagon/Badge icon container */}
       <div className={cn(
-        "relative w-24 h-24 mb-4 flex items-center justify-center rounded-2xl",
-        isEarned ? "bg-streak/10" : "bg-muted"
+        "relative w-14 h-14 flex items-center justify-center flex-shrink-0 rounded-lg overflow-hidden shrink-0",
+        isEarned ? "bg-[#121212]" : "bg-muted"
       )}>
-        {/* Glow effect back */}
-        {isEarned && (
-          <div className="absolute inset-0 bg-streak/20 blur-xl rounded-full" />
-        )}
-        
         {badge.image_url ? (
           <img 
             src={badge.image_url} 
             alt={badge.name} 
-            className="w-16 h-16 object-contain relative z-10 drop-shadow-md"
+            className="w-10 h-10 object-contain relative z-10"
             loading="lazy"
           />
         ) : (
-           <Zap className={cn("w-10 h-10 relative z-10", isEarned ? "text-streak" : "text-muted-foreground")} />
+          <Zap className={cn("w-6 h-6 relative z-10", isEarned ? "text-primary" : "text-muted-foreground")} />
         )}
       </div>
 
-      <h3 className="font-display font-bold text-base text-foreground mb-1">
-        {badge.name}
-      </h3>
-      
-      {isEarned ? (
-        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground mt-1">
-          <CalendarHeart className="w-3.5 h-3.5 text-streak" />
-          <span>Earned {formattedDate}</span>
-        </div>
-      ) : (
-        <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">
-          {badge.description}
-        </p>
+      <div className="flex-1 min-w-0">
+        <h3 className="font-display font-bold text-[15px] text-foreground leading-tight">
+          {badge.name}
+        </h3>
+        
+        {isEarned ? (
+          <p className="text-[11px] font-medium text-muted-foreground/80 mt-1">
+            {formattedDate}
+          </p>
+        ) : (
+          <p className="text-[11px] text-muted-foreground leading-tight mt-1 line-clamp-1">
+            {badge.description}
+          </p>
+        )}
+      </div>
+
+      {isNew && (
+        <span className="flex items-center gap-1 text-[9px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+          <Sparkles className="w-2.5 h-2.5" /> New
+        </span>
       )}
     </motion.div>
   );

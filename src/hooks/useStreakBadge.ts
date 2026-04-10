@@ -20,17 +20,24 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { api, type UserBadge } from "@/lib/api";
+import { api, type UserBadge, type StudyStreak } from "@/lib/api";
 
 /** badge_key used by the backend for the 7-day streak badge */
 export const SEVEN_DAY_STREAK_KEY = "seven_day_streak";
+export const SEVEN_DAY_STREAK_KEY_ALT = "7_day_streak";
 
 const SEEN_STORAGE_KEY = "mindup_streak_badge_seen";
 
-function wasEarnedWithinLastDay(earnedAt: string): boolean {
-  const earned = new Date(earnedAt).getTime();
-  const oneDayMs = 24 * 60 * 60 * 1000;
-  return Date.now() - earned < oneDayMs;
+function wasEarnedRecently(earnedAt: string): boolean {
+  try {
+    const earned = new Date(earnedAt).getTime();
+    if (isNaN(earned)) return false;
+    // Allow up to 48 hours to be considered "new" for celebration purposes
+    const twoDaysMs = 48 * 60 * 60 * 1000;
+    return Date.now() - earned < twoDaysMs;
+  } catch {
+    return false;
+  }
 }
 
 export interface UseStreakBadgeResult {
@@ -38,6 +45,7 @@ export interface UseStreakBadgeResult {
   streakBadge: UserBadge | null;
   newlyEarned: boolean;
   isLoading: boolean;
+  streak: StudyStreak | null;
   dismissToast: () => void;
   refetch: () => void;
 }
@@ -47,6 +55,7 @@ export function useStreakBadge(): UseStreakBadgeResult {
   const { user } = useUser();
 
   const [badges, setBadges] = useState<UserBadge[]>([]);
+  const [streak, setStreak] = useState<StudyStreak | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [tick, setTick] = useState(0);
   const [newlyEarned, setNewlyEarned] = useState(false);
@@ -77,27 +86,47 @@ export function useStreakBadge(): UseStreakBadgeResult {
         if (!token) return;
 
         const email = user?.primaryEmailAddress?.emailAddress ?? "";
-        const data = await api.getBadges(token, user?.id, email);
+        
+        // Fetch badges and streak data in parallel
+        const [badgeData, streakData] = await Promise.all([
+          api.getBadges(token, user?.id, email),
+          api.getStudyStreak(token, user?.id, email).catch(() => null)
+        ]);
 
         if (cancelled) return;
 
-        setBadges(data);
+        setBadges(badgeData);
+        setStreak(streakData);
 
         // Determine whether to show the celebration toast
-        const streak = data.find(
-          (ub) => ub.badge.badge_key === SEVEN_DAY_STREAK_KEY
+        // Find by key (multiple variants) OR by name if key fails
+        const matchingStreakBadge = badgeData.find(
+          (ub) => {
+            const key = ub.badge.badge_key?.toLowerCase() || "";
+            const name = ub.badge.name?.toLowerCase() || "";
+            return (
+              key === SEVEN_DAY_STREAK_KEY || 
+              key === SEVEN_DAY_STREAK_KEY_ALT ||
+              key === "streak_7_day" ||
+              key === "7-day-streak" ||
+              (name.includes("7") && name.includes("day") && name.includes("streak"))
+            );
+          }
         );
 
-        if (streak) {
+        if (matchingStreakBadge) {
           const alreadySeen = localStorage.getItem(SEEN_STORAGE_KEY) === "true";
-          const isNew = wasEarnedWithinLastDay(streak.earned_at);
+          const isNew = wasEarnedRecently(matchingStreakBadge.earned_at);
           setNewlyEarned(isNew && !alreadySeen);
         } else {
           setNewlyEarned(false);
         }
-      } catch {
-        // Badge endpoint may not exist yet in staging; fail silently
-        if (!cancelled) setBadges([]);
+      } catch (err) {
+        console.error("Failed to fetch streak/badges:", err);
+        if (!cancelled) {
+          setBadges([]);
+          setStreak(null);
+        }
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -109,7 +138,19 @@ export function useStreakBadge(): UseStreakBadgeResult {
   }, [isLoaded, isSignedIn, getToken, tick, user]);
 
   const streakBadge =
-    badges.find((ub) => ub.badge.badge_key === SEVEN_DAY_STREAK_KEY) ?? null;
+    badges.find(
+      (ub) => {
+        const key = ub.badge.badge_key?.toLowerCase() || "";
+        const name = ub.badge.name?.toLowerCase() || "";
+        return (
+          key === SEVEN_DAY_STREAK_KEY || 
+          key === SEVEN_DAY_STREAK_KEY_ALT ||
+          key === "streak_7_day" ||
+          key === "7-day-streak" ||
+          (name.includes("7") && name.includes("day") && name.includes("streak"))
+        );
+      }
+    ) ?? null;
 
-  return { badges, streakBadge, newlyEarned, isLoading, dismissToast, refetch };
+  return { badges, streakBadge, newlyEarned, isLoading, streak, dismissToast, refetch };
 }
