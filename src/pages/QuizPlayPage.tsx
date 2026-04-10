@@ -196,18 +196,18 @@ export default function QuizPlayPage() {
     const selectedOption = answers[currentQuestion.id];
 
     return (
-        <div className="min-h-screen bg-background flex flex-col font-sans">
-            <header className="h-16 border-b border-border/40 flex items-center justify-between px-6 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+    <div className="min-h-screen bg-background flex flex-col font-sans">
+            <header className="h-14 border-b border-border/40 flex items-center justify-between px-5 bg-background/95 backdrop-blur-md sticky top-0 z-20">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate("/quizzes")} className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                    <button onClick={() => navigate("/quizzes")} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                         Quit
                     </button>
                     <div className="w-px h-4 bg-border/50" />
-                    <span className="text-xs font-bold uppercase tracking-widest text-primary/80">Question {currentQuestionIdx + 1} of {total_questions}</span>
+                    <span className="text-xs font-semibold uppercase tracking-widest text-primary/70">Question {currentQuestionIdx + 1} of {total_questions}</span>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border/50 rounded-lg shadow-sm">
-                    <Timer className={`w-4 h-4 ${timeLeft < 60 ? 'text-destructive animate-pulse' : 'text-muted-foreground'}`} />
-                    <span className={`text-sm font-mono font-bold ${timeLeft < 60 ? 'text-destructive' : 'text-foreground'}`}>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-card border border-border/60 rounded-xl shadow-sm">
+                    <Timer className={`w-3.5 h-3.5 ${timeLeft < 60 ? 'text-red-500 animate-pulse' : 'text-muted-foreground'}`} />
+                    <span className={`text-sm font-mono font-semibold ${timeLeft < 60 ? 'text-red-500' : 'text-foreground'}`}>
                         {formatTime(timeLeft)}
                     </span>
                 </div>
