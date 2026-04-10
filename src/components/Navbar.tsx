@@ -65,7 +65,11 @@ const Navbar = () => {
       >
         {/* Logo */}
         <a href="#home" className="flex items-center">
-          <img src="/logo.png" alt="MINDUP Logo" className="h-8 sm:h-10 w-auto transition-all duration-500" />
+          <img
+              src={isDark ? "/logo2.png" : "/logo.png"}
+              alt="MINDUP Logo"
+              className="h-8 sm:h-10 w-auto transition-opacity duration-300"
+            />
         </a>
 
         <div
