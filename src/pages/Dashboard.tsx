@@ -16,8 +16,34 @@ import { useAuth, useUser } from "@clerk/clerk-react";
 import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type DistrictLeaderboard } from "@/lib/api";
 
 const getDistrictBadgeUrl = (rank: number) => {
-  if (rank === 1) return "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_01.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAxLnBuZyIsImlhdCI6MTc3NjA4OTk3NywiZXhwIjoxODA3NjI1OTc3fQ.wXYhf5Z-WqpVqDa7bwQmajejaG2zvo-AxtBti26iiN0";
-  return null;
+  const badges: Record<number, string> = {
+    1: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_01.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAxLnBuZyIsImlhdCI6MTc3NjA4OTk3NywiZXhwIjoxODA3NjI1OTc3fQ.wXYhf5Z-WqpVqDa7bwQmajejaG2zvo-AxtBti26iiN0",
+    2: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_02.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAyLnBuZyIsImlhdCI6MTc3NjA5Mzc4MywiZXhwIjoxODA3NjI5NzgzfQ.K069l5kz9mLuPgMePU1xK5dbeKRMjLs9kosQdqpl1qo"
+  };
+  return badges[rank] || null;
+};
+
+const RANK_THEMES: Record<number, any> = {
+  1: {
+    title: "District Champion",
+    borderGradient: "from-amber-300 via-amber-500 to-amber-300",
+    textGradient: "from-amber-600 to-amber-400 dark:from-amber-400 dark:to-amber-200",
+    glowColor: "bg-amber-500/20",
+    badgeBg: "bg-amber-500",
+    iconColor: "text-amber-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(245,158,11,0.2)]",
+    description: "Incredible work! Your dedication to learning has placed you at the very top of your district. Keep up the streak to defend your title."
+  },
+  2: {
+    title: "District Challenger",
+    borderGradient: "from-slate-300 via-slate-400 to-slate-300",
+    textGradient: "from-slate-600 to-slate-400 dark:from-slate-400 dark:to-slate-200",
+    glowColor: "bg-slate-400/20",
+    badgeBg: "bg-slate-500",
+    iconColor: "text-slate-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(148,163,184,0.2)]",
+    description: "Amazing achievement! You're the #2 student in your district. You're just one step away from the top—keep pushing!"
+  }
 };
 
 const foxMascot = "/fox/mascot.png";
@@ -283,47 +309,47 @@ const Dashboard = () => {
       )}
 
       {/* ── District Rank Badge ── */}
-      {badgeUrl && districtRank === 1 && (
+      {badgeUrl && districtRank && RANK_THEMES[districtRank] && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1, type: "spring", stiffness: 100 }}
-          className="relative mb-6 md:mb-8 w-full p-[2px] rounded-2xl overflow-hidden group shadow-[0_0_40px_-10px_rgba(245,158,11,0.2)]"
+          className={cn("relative mb-6 md:mb-8 w-full p-[2px] rounded-2xl overflow-hidden group", RANK_THEMES[districtRank].shadow)}
         >
           {/* Animated gradient border */}
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-300 via-amber-500 to-amber-300 opacity-80" />
+          <div className={cn("absolute inset-0 bg-gradient-to-r opacity-80", RANK_THEMES[districtRank].borderGradient)} />
           
           <div className="relative flex flex-col sm:flex-row items-center gap-5 sm:gap-6 bg-card/95 dark:bg-card/90 backdrop-blur-md rounded-2xl px-5 py-5 md:px-7 md:py-6 w-full h-full">
             <div className="relative flex-shrink-0">
-              <div className="absolute inset-0 bg-amber-500/20 blur-2xl rounded-full" />
+              <div className={cn("absolute inset-0 blur-2xl rounded-full", RANK_THEMES[districtRank].glowColor)} />
               <img 
                 src={badgeUrl} 
-                alt="District Rank 1 Badge" 
+                alt={`District Rank ${districtRank} Badge`} 
                 className="relative w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-2xl z-10 transition-transform duration-500 group-hover:scale-110" 
               />
-              <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-lg border-2 border-white dark:border-slate-900 z-20">
-                Rank 1
+              <div className={cn("absolute -top-2 -right-2 text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-lg border-2 border-white dark:border-slate-900 z-20", RANK_THEMES[districtRank].badgeBg)}>
+                Rank {districtRank}
               </div>
             </div>
             
             <div className="text-center sm:text-left flex-1 z-10 min-w-0">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-1.5">
-                <Trophy className="w-5 h-5 text-amber-500 fill-amber-500/20 animate-pulse" />
-                <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-amber-600 to-amber-400 dark:from-amber-400 dark:to-amber-200 bg-clip-text text-transparent truncate">
-                  District Champion
+                <Trophy className={cn("w-5 h-5 fill-current/20 animate-pulse", RANK_THEMES[districtRank].iconColor)} />
+                <h3 className={cn("text-lg sm:text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent truncate", RANK_THEMES[districtRank].textGradient)}>
+                  {RANK_THEMES[districtRank].title}
                 </h3>
               </div>
               <p className="text-sm font-semibold text-foreground mb-1 truncate">
-                You are currently <span className="text-amber-600 dark:text-amber-400 font-extrabold uppercase">#1</span> in {profile?.district?.name}!
+                You are currently <span className={cn("font-extrabold uppercase", RANK_THEMES[districtRank].iconColor)}>#{districtRank}</span> in {profile?.district?.name}!
               </p>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-lg">
-                Incredible work! Your dedication to learning has placed you at the very top of your district. Keep up the streak to defend your title.
+                {RANK_THEMES[districtRank].description}
               </p>
             </div>
             
             {/* Decorative shining stars */}
-            <Star className="hidden sm:block absolute top-6 right-6 w-5 h-5 text-amber-500/50 animate-pulse" />
-            <Star className="hidden sm:block absolute bottom-6 right-16 w-3 h-3 text-amber-500/40 animate-pulse" style={{ animationDelay: "1s" }} />
+            <Star className={cn("hidden sm:block absolute top-6 right-6 w-5 h-5 opacity-50 animate-pulse", RANK_THEMES[districtRank].iconColor)} />
+            <Star className={cn("hidden sm:block absolute bottom-6 right-16 w-3 h-3 opacity-40 animate-pulse", RANK_THEMES[districtRank].iconColor)} style={{ animationDelay: "1s" }} />
           </div>
         </motion.div>
       )}
