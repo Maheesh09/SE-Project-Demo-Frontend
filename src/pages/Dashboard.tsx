@@ -24,7 +24,8 @@ const getDistrictBadgeUrl = (rank: number) => {
     5: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_05.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzA1LnBuZyIsImlhdCI6MTc3NjEwNTc3NSwiZXhwIjoxODA3NjQxNzc1fQ.vnfKWieKL28jJg2G6KxVLWRotIW90MOUczwM5zU5VaM",
     6: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_06.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzA2LnBuZyIsImlhdCI6MTc3NjEwNjcyMSwiZXhwIjoxODA3NjQyNzIxfQ.Aj73TIi_DtlkXhrlts6OkZozRJMM_zjQpxuDR-ccdxs",
     7: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_07.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzA3LnBuZyIsImlhdCI6MTc3NjEwODUwNywiZXhwIjoxODA3NjQ0NTA3fQ.7vZhtCsop7zTHG0UAqTRuglpjOp1JZLuJ-TQajNWw5g",
-    8: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_08.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzA4LnBuZyIsImlhdCI6MTc3NjEwODk4MywiZXhwIjoxODA3NjQ0OTgzfQ.17Q1mzwg9Mackv2ejAuwwc4tUWvtT97o6QAp7L8kn4Y"
+    8: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_08.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzA4LnBuZyIsImlhdCI6MTc3NjEwODk4MywiZXhwIjoxODA3NjQ0OTgzfQ.17Q1mzwg9Mackv2ejAuwwc4tUWvtT97o6QAp7L8kn4Y",
+    9: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_09.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzA5LnBuZyIsImlhdCI6MTc3NjEwOTc1OCwiZXhwIjoxODA3NjQ1NzU4fQ.2dneIdNfadXKIS9ukYgHC5MEtmRRwpRHrpw4-DkzHMA"
   };
   return badges[rank] || null;
 };
@@ -109,6 +110,16 @@ const RANK_THEMES: Record<number, any> = {
     iconColor: "text-purple-500",
     shadow: "shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)]",
     description: "Top 8 in the district! You're proving your worth as a top-tier scholar."
+  },
+  9: {
+    title: "District Prodigy",
+    borderGradient: "from-slate-500 via-indigo-500 to-slate-500",
+    textGradient: "from-indigo-400 to-blue-400 dark:from-indigo-300 dark:to-blue-200",
+    glowColor: "bg-indigo-500/10",
+    badgeBg: "bg-indigo-500",
+    iconColor: "text-indigo-400",
+    shadow: "shadow-[0_0_40px_-10px_rgba(99,102,241,0.15)]",
+    description: "Top 9 in the district! Keep climbing the ranks and leaving your mark."
   }
 };
 
