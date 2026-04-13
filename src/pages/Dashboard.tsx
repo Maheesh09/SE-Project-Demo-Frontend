@@ -13,7 +13,12 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recha
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary } from "@/lib/api";
+import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type DistrictLeaderboard } from "@/lib/api";
+
+const getDistrictBadgeUrl = (rank: number) => {
+  if (rank === 1) return "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_01.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAxLnBuZyIsImlhdCI6MTc3NjA4OTk3NywiZXhwIjoxODA3NjI1OTc3fQ.wXYhf5Z-WqpVqDa7bwQmajejaG2zvo-AxtBti26iiN0";
+  return null;
+};
 
 const foxMascot = "/fox/mascot.png";
 
@@ -168,6 +173,7 @@ const Dashboard = () => {
   const [statsLoading, setStatsLoading] = useState(true);
   const [streak, setStreak] = useState<StudyStreak | null>(null);
   const [xpSummary, setXpSummary] = useState<XpSummary | null>(null);
+  const [districtLB, setDistrictLB] = useState<DistrictLeaderboard | null>(null);
   const [showSecondary, setShowSecondary] = useState(false);
 
   useEffect(() => {
@@ -177,17 +183,19 @@ const Dashboard = () => {
         const token = await getToken();
         if (!token) return;
         const email = user?.primaryEmailAddress?.emailAddress || "";
-        const [subs, dashStats, streakData, xpData] = await Promise.all([
+        const [subs, dashStats, streakData, xpData, districtData] = await Promise.all([
           api.getMySubjects(token, user?.id, email),
           api.getDashboardStats(token, user?.id, email),
           api.getStudyStreak(token, user?.id, email).catch(() => null),
           api.getXpSummary(token, user?.id, email).catch(() => null),
+          api.getDistrictLeaderboard(token, undefined, user?.id, email).catch(() => null),
         ]);
         if (!cancelled) {
           setMySubjects(subs);
           setStats(dashStats);
           setStreak(streakData);
           setXpSummary(xpData);
+          setDistrictLB(districtData);
         }
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
@@ -207,6 +215,10 @@ const Dashboard = () => {
   }));
 
   const formatXP = (xp: number) => xp.toLocaleString();
+
+  const currentUserEntry = districtLB?.entries?.find((e: any) => e.is_current_user);
+  const districtRank = currentUserEntry?.rank;
+  const badgeUrl = districtRank ? getDistrictBadgeUrl(districtRank) : null;
 
   return (
     <AppLayout>
@@ -267,6 +279,52 @@ const Dashboard = () => {
           {!subjectsLoading && mySubjects.length > 0 && (
             <span className="text-[11px] text-muted-foreground">· {mySubjects.length} subjects enrolled</span>
           )}
+        </motion.div>
+      )}
+
+      {/* ── District Rank Badge ── */}
+      {badgeUrl && districtRank === 1 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 100 }}
+          className="relative mb-6 md:mb-8 w-full p-[2px] rounded-2xl overflow-hidden group shadow-[0_0_40px_-10px_rgba(245,158,11,0.2)]"
+        >
+          {/* Animated gradient border */}
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-300 via-amber-500 to-amber-300 opacity-80" />
+          
+          <div className="relative flex flex-col sm:flex-row items-center gap-5 sm:gap-6 bg-card/95 dark:bg-card/90 backdrop-blur-md rounded-2xl px-5 py-5 md:px-7 md:py-6 w-full h-full">
+            <div className="relative flex-shrink-0">
+              <div className="absolute inset-0 bg-amber-500/20 blur-2xl rounded-full" />
+              <img 
+                src={badgeUrl} 
+                alt="District Rank 1 Badge" 
+                className="relative w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-2xl z-10 transition-transform duration-500 group-hover:scale-110" 
+              />
+              <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-lg border-2 border-white dark:border-slate-900 z-20">
+                Rank 1
+              </div>
+            </div>
+            
+            <div className="text-center sm:text-left flex-1 z-10 min-w-0">
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-1.5">
+                <Trophy className="w-5 h-5 text-amber-500 fill-amber-500/20 animate-pulse" />
+                <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-amber-600 to-amber-400 dark:from-amber-400 dark:to-amber-200 bg-clip-text text-transparent truncate">
+                  District Champion
+                </h3>
+              </div>
+              <p className="text-sm font-semibold text-foreground mb-1 truncate">
+                You are currently <span className="text-amber-600 dark:text-amber-400 font-extrabold uppercase">#1</span> in {profile?.district?.name}!
+              </p>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-lg">
+                Incredible work! Your dedication to learning has placed you at the very top of your district. Keep up the streak to defend your title.
+              </p>
+            </div>
+            
+            {/* Decorative shining stars */}
+            <Star className="hidden sm:block absolute top-6 right-6 w-5 h-5 text-amber-500/50 animate-pulse" />
+            <Star className="hidden sm:block absolute bottom-6 right-16 w-3 h-3 text-amber-500/40 animate-pulse" style={{ animationDelay: "1s" }} />
+          </div>
         </motion.div>
       )}
 
