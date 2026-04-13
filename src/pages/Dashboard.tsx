@@ -18,7 +18,8 @@ import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummar
 const getDistrictBadgeUrl = (rank: number) => {
   const badges: Record<number, string> = {
     1: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_01.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAxLnBuZyIsImlhdCI6MTc3NjA4OTk3NywiZXhwIjoxODA3NjI1OTc3fQ.wXYhf5Z-WqpVqDa7bwQmajejaG2zvo-AxtBti26iiN0",
-    2: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_02.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAyLnBuZyIsImlhdCI6MTc3NjA5Mzc4MywiZXhwIjoxODA3NjI5NzgzfQ.K069l5kz9mLuPgMePU1xK5dbeKRMjLs9kosQdqpl1qo"
+    2: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_02.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAyLnBuZyIsImlhdCI6MTc3NjA5Mzc4MywiZXhwIjoxODA3NjI5NzgzfQ.K069l5kz9mLuPgMePU1xK5dbeKRMjLs9kosQdqpl1qo",
+    3: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_03.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAzLnBuZyIsImlhdCI6MTc3NjEwMjI5NiwiZXhwIjoxODA3NjM4Mjk2fQ.PCSsnWLkHxpcU1rmUfFmcf5s-TNpLV5VDWd0UDCnzgE"
   };
   return badges[rank] || null;
 };
@@ -43,6 +44,16 @@ const RANK_THEMES: Record<number, any> = {
     iconColor: "text-slate-500",
     shadow: "shadow-[0_0_40px_-10px_rgba(148,163,184,0.2)]",
     description: "Amazing achievement! You're the #2 student in your district. You're just one step away from the top—keep pushing!"
+  },
+  3: {
+    title: "District Contender",
+    borderGradient: "from-orange-400 via-orange-600 to-orange-400",
+    textGradient: "from-orange-700 to-orange-500 dark:from-orange-500 dark:to-orange-300",
+    glowColor: "bg-orange-500/20",
+    badgeBg: "bg-orange-600",
+    iconColor: "text-orange-600",
+    shadow: "shadow-[0_0_40px_-10px_rgba(234,88,12,0.2)]",
+    description: "Fantastic effort! Ranking 3rd in the district is a massive accomplishment. Keep striving for the top spot!"
   }
 };
 
