@@ -19,7 +19,8 @@ const getDistrictBadgeUrl = (rank: number) => {
   const badges: Record<number, string> = {
     1: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_01.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAxLnBuZyIsImlhdCI6MTc3NjA4OTk3NywiZXhwIjoxODA3NjI1OTc3fQ.wXYhf5Z-WqpVqDa7bwQmajejaG2zvo-AxtBti26iiN0",
     2: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_02.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAyLnBuZyIsImlhdCI6MTc3NjA5Mzc4MywiZXhwIjoxODA3NjI5NzgzfQ.K069l5kz9mLuPgMePU1xK5dbeKRMjLs9kosQdqpl1qo",
-    3: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_03.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAzLnBuZyIsImlhdCI6MTc3NjEwMjI5NiwiZXhwIjoxODA3NjM4Mjk2fQ.PCSsnWLkHxpcU1rmUfFmcf5s-TNpLV5VDWd0UDCnzgE"
+    3: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_03.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzAzLnBuZyIsImlhdCI6MTc3NjEwMjI5NiwiZXhwIjoxODA3NjM4Mjk2fQ.PCSsnWLkHxpcU1rmUfFmcf5s-TNpLV5VDWd0UDCnzgE",
+    4: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/district_hero_04.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9kaXN0cmljdF9oZXJvXzA0LnBuZyIsImlhdCI6MTc3NjEwNDY3OSwiZXhwIjoxODA3NjQwNjc5fQ.lxBUrey7kNg3xzXV6T8Lci73eKxzdFQYAcGuOh2-F9Q"
   };
   return badges[rank] || null;
 };
@@ -54,6 +55,16 @@ const RANK_THEMES: Record<number, any> = {
     iconColor: "text-orange-600",
     shadow: "shadow-[0_0_40px_-10px_rgba(234,88,12,0.2)]",
     description: "Fantastic effort! Ranking 3rd in the district is a massive accomplishment. Keep striving for the top spot!"
+  },
+  4: {
+    title: "District Elite",
+    borderGradient: "from-zinc-400 via-zinc-500 to-zinc-400",
+    textGradient: "from-zinc-700 to-zinc-500 dark:from-zinc-300 dark:to-zinc-100",
+    glowColor: "bg-zinc-500/20",
+    badgeBg: "bg-zinc-600",
+    iconColor: "text-zinc-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(113,113,122,0.2)]",
+    description: "Top 4 in your district! You are among the elite students pushing the limits. The podium is within your reach!"
   }
 };
 
