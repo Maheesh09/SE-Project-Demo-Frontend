@@ -230,7 +230,22 @@ export interface SubjectLeaderboard {
 export interface StudyStreak {
     current_streak: number;
     longest_streak: number;
-    last_activity_date: string | null;
+    // New backend field (was last_activity_date in legacy endpoint)
+    last_completed_date: string | null;
+    // Legacy field alias – kept for StreakDisplay backward compatibility
+    last_activity_date?: string | null;
+}
+
+export interface StreakCompleteResponse {
+    status: "streak_updated" | "already_completed";
+    message: string;
+    current_streak: number;
+    longest_streak: number;
+}
+
+export interface StreakHistoryItem {
+    completed_date: string;
+    tasks_completed: Record<string, unknown> | null;
 }
 
 export interface SubjectXp {
@@ -510,6 +525,20 @@ export const api = {
 
     getStudyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<StudyStreak>("/api/v1/me/study-streak", token, { xClerkUserId, xEmail }),
+
+    // ── Daily Streak (MIN-63 new endpoints) ──
+    getDailyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StudyStreak>("/api/v1/streaks/current", token, { xClerkUserId, xEmail }),
+
+    completeDailyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StreakCompleteResponse>("/api/v1/streaks/complete", token, {
+            method: "POST",
+            xClerkUserId,
+            xEmail,
+        }),
+
+    getDailyStreakHistory: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StreakHistoryItem[]>("/api/v1/streaks/history", token, { xClerkUserId, xEmail }),
 
     completeStudyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<StudyStreak>("/api/v1/me/study-streak/complete", token, { 
