@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useProfile } from "@/hooks/useProfile";
+import { useToast } from "@/hooks/use-toast";
 
 export default function QuizPlayPage() {
     const location = useLocation();
@@ -13,6 +14,7 @@ export default function QuizPlayPage() {
     const { getToken } = useAuth();
     const { user } = useUser();
     const { profile } = useProfile();
+    const { toast } = useToast();
 
     const quizData = location.state?.quizData;
     const quizMeta = location.state?.quizMeta as
@@ -95,6 +97,25 @@ export default function QuizPlayPage() {
         try {
             const data = await submitCurrentQuiz();
 
+            try {
+                const token = await getToken();
+                const email = user?.primaryEmailAddress?.emailAddress || "";
+                if (token) {
+                    const streakData = await api.completeStudyStreak(token, user?.id, email);
+                    toast({
+                        title: "Task Completed! 🔥",
+                        description: `Streak extended to ${streakData.current_streak} days!`,
+                    });
+                }
+            } catch (err) {
+                console.error("Streak complete error", err);
+                toast({
+                    title: "Streak Update Failed",
+                    description: "We couldn't update your streak. Please tap to retry from dashboard.",
+                    variant: "destructive"
+                });
+            }
+
             // Transform answer_results from backend into the "results" shape
             // that QuizReviewPage expects.
             const transformedResults = (data.answer_results || []).map((ar: any) => ({
@@ -147,6 +168,21 @@ export default function QuizPlayPage() {
             const token = await getToken();
             if (!token) throw new Error("Not authenticated");
             const email = user?.primaryEmailAddress?.emailAddress || "";
+
+            try {
+                const streakData = await api.completeStudyStreak(token, user?.id, email);
+                toast({
+                    title: "Task Completed! 🔥",
+                    description: `Streak extended to ${streakData.current_streak} days!`,
+                });
+            } catch (err) {
+                console.error("Streak complete error", err);
+                toast({
+                    title: "Streak Update Failed",
+                    description: "We couldn't update your streak. Please tap to retry from dashboard.",
+                    variant: "destructive"
+                });
+            }
 
             const nextQuizData = await api.startQuiz(
                 token,

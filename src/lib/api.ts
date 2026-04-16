@@ -511,6 +511,13 @@ export const api = {
     getStudyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<StudyStreak>("/api/v1/me/study-streak", token, { xClerkUserId, xEmail }),
 
+    completeStudyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StudyStreak>("/api/v1/me/study-streak/complete", token, { 
+            method: "POST",
+            xClerkUserId, 
+            xEmail 
+        }),
+
     getLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<LeaderboardEntry[]>("/api/v1/me/leaderboard", token, { xClerkUserId, xEmail }),
 
