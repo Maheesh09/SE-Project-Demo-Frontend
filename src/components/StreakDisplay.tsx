@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
 import { Flame, Info, AlertCircle, RotateCcw, Trophy, CheckCircle2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useStreak } from "@/hooks/useStreak";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export default function StreakDisplay({ className }: { className?: string }) {
     const { streak, isLoading, error, refetch } = useStreak();
+    const { toast } = useToast();
 
     if (isLoading) {
         return (
@@ -39,6 +42,16 @@ export default function StreakDisplay({ className }: { className?: string }) {
     const isEmpty = current_streak === 0 && longest_streak === 0 && !last_activity_date;
     const isBroken = !isEmpty && current_streak === 0 && longest_streak > 0;
     const isActive = current_streak > 0;
+
+    useEffect(() => {
+        if (isBroken && !sessionStorage.getItem("broken_streak_toast_shown")) {
+            toast({
+                title: "Streak Broken 💔",
+                description: `Your ${longest_streak}-day streak ended. Start fresh today!`,
+            });
+            sessionStorage.setItem("broken_streak_toast_shown", "true");
+        }
+    }, [isBroken, longest_streak, toast]);
 
     // A simple visual progress representing days to next 7-day milestone
     const milestoneProgress = current_streak % 7;
