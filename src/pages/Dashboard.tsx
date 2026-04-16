@@ -11,6 +11,7 @@ import AppLayout from "@/components/AppLayout";
 import StatCard from "@/components/StatCard";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
+import StreakDisplay from "@/components/StreakDisplay";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary } from "@/lib/api";
@@ -282,16 +283,7 @@ const Dashboard = () => {
           iconBgClass="bg-amber-100 dark:bg-amber-900/20"
           delay={0}
         />
-        <StatCard
-          icon={Flame}
-          label="Study Streak"
-          value={statsLoading ? "…" : streak ? `${streak.current_streak}d` : "0d"}
-          subtitle={streak && streak.longest_streak > 0 ? `Best: ${streak.longest_streak} days` : "Complete a quiz daily"}
-          colorClass="text-orange-500"
-          accentColor="#f97316"
-          iconBgClass="bg-orange-100 dark:bg-orange-900/20"
-          delay={0.06}
-        />
+        <StreakDisplay className="border-l-[3px] border-l-[#f97316]" />
         <StatCard
           icon={TrendingUp}
           label="Avg Score"
