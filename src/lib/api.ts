@@ -333,19 +333,19 @@ export interface AdminLoginResponse {
     access_token?: string;
 }
 export interface QuestionCreate {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 export interface QuestionResponse {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 export interface AdminResource {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 export interface ResourceCreatePayload {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 export interface ResourceUpdatePayload {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 // ─── Chat / RAG Types ────────────────────────────────────────────────────────

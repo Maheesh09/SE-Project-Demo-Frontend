@@ -101,11 +101,18 @@ export default function QuizPlayPage() {
                 const token = await getToken();
                 const email = user?.primaryEmailAddress?.emailAddress || "";
                 if (token) {
-                    const streakData = await api.completeStudyStreak(token, user?.id, email);
-                    toast({
-                        title: "Task Completed! 🔥",
-                        description: `Streak extended to ${streakData.current_streak} days!`,
-                    });
+                    const result = await api.completeDailyStreak(token, user?.id, email);
+                    if (result.status === "streak_updated") {
+                        toast({
+                        title: "Streak Extended! 🔥",
+                        description: `Your daily streak is now ${result.current_streak} days!`,
+                        });
+                    } else {
+                        toast({
+                        title: "Daily Goal Met! ✅",
+                        description: "You've already completed today's daily goal. Keep it up!",
+                        });
+                    }
                 }
             } catch (err) {
                 console.error("Streak complete error", err);
@@ -118,7 +125,7 @@ export default function QuizPlayPage() {
 
             // Transform answer_results from backend into the "results" shape
             // that QuizReviewPage expects.
-            const transformedResults = (data.answer_results || []).map((ar: any) => ({
+            const transformedResults = (data.answer_results || []).map((ar: { question_id: number; is_correct: boolean; correct_option_id: number; selected_option_id: number | null }) => ({
                 question_id: ar.question_id,
                 is_correct: ar.is_correct,
                 correct_option_id: ar.correct_option_id,
@@ -170,18 +177,15 @@ export default function QuizPlayPage() {
             const email = user?.primaryEmailAddress?.emailAddress || "";
 
             try {
-                const streakData = await api.completeStudyStreak(token, user?.id, email);
-                toast({
-                    title: "Task Completed! 🔥",
-                    description: `Streak extended to ${streakData.current_streak} days!`,
-                });
+                const result = await api.completeDailyStreak(token, user?.id, email);
+                if (result.status === "streak_updated") {
+                    toast({
+                    title: "Streak Extended! 🔥",
+                    description: `Your daily streak is now ${result.current_streak} days!`,
+                    });
+                }
             } catch (err) {
                 console.error("Streak complete error", err);
-                toast({
-                    title: "Streak Update Failed",
-                    description: "We couldn't update your streak. Please tap to retry from dashboard.",
-                    variant: "destructive"
-                });
             }
 
             const nextQuizData = await api.startQuiz(
