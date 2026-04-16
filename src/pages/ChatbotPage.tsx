@@ -74,8 +74,8 @@ const ChatbotPage = () => {
       }, user?.id, email);
       setSessionId(res.session_id);
       setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), role: "bot", text: res.answer, sources: res.sources, matched: res.matched }]);
-    } catch (err: any) {
-      setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), role: "bot", text: err.message || "Something went wrong. Please try again." }]);
+    } catch (err: unknown) {
+      setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), role: "bot", text: err instanceof Error ? err.message : "Something went wrong. Please try again." }]);
     } finally {
       setIsTyping(false);
       inputRef.current?.focus();

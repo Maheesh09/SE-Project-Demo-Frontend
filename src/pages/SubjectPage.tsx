@@ -79,8 +79,8 @@ const SubjectPage = () => {
                 const rtype = view === "textbooks" ? "textbook" : "past_paper";
                 const data = await api.getResources(token, subjectId, rtype, user?.id, email);
                 if (!cancelled) setResources(data);
-            } catch (e: any) {
-                if (!cancelled) setResourceError(e.message ?? "Failed to load resources.");
+            } catch (e: unknown) {
+                if (!cancelled) setResourceError(e instanceof Error ? e.message : "Failed to load resources.");
             } finally {
                 if (!cancelled) setLoadingResources(false);
             }

@@ -302,7 +302,7 @@ void main() {
                         const canvas = renderer.gl.canvas;
 
                         // Need a safer cast/check for standard TS typing mismatch
-                        let loseContextExt: any = renderer.gl.getExtension('WEBGL_lose_context');
+                        const loseContextExt: any = renderer.gl.getExtension('WEBGL_lose_context');
                         if (loseContextExt) {
                             loseContextExt.loseContext();
                         }

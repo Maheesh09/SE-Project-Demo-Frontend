@@ -9,6 +9,34 @@ export default function StreakDisplay({ className }: { className?: string }) {
     const { streak, isLoading, error, isCompleting, refetch, completeStreak } = useStreak();
     const { toast } = useToast();
 
+    // ── Derived state ───────────────────────────────────────────────────────────
+    // Support both new field (last_completed_date) and legacy (last_activity_date)
+    const current_streak = streak?.current_streak ?? 0;
+    const longest_streak = streak?.longest_streak ?? 0;
+    const last_completed_date = streak?.last_completed_date ?? streak?.last_activity_date ?? null;
+
+    const isEmpty = current_streak === 0 && longest_streak === 0 && !last_completed_date;
+    const isBroken = !isEmpty && current_streak === 0 && longest_streak > 0;
+    const isActive = current_streak > 0;
+
+    // Determine if user has already completed today
+    const todayStr = new Date().toISOString().split("T")[0];
+    const completedToday = last_completed_date === todayStr;
+
+    // Progress to next 7-day milestone
+    const milestoneProgress = current_streak % 7;
+    const progressPercent = isActive ? ((milestoneProgress || 7) / 7) * 100 : 0;
+
+    // ── Broken streak notification ───────────────────────────────────────────────
+    useEffect(() => {
+        if (isBroken && !sessionStorage.getItem("broken_streak_toast_shown")) {
+            toast({
+                title: "Streak Broken 💔",
+                description: `Your ${longest_streak}-day streak ended. Start fresh today!`,
+            });
+            sessionStorage.setItem("broken_streak_toast_shown", "true");
+        }
+    }, [isBroken, longest_streak, toast]);
     // ── Loading state ──────────────────────────────────────────────────────────
     if (isLoading) {
         return (
@@ -53,34 +81,7 @@ export default function StreakDisplay({ className }: { className?: string }) {
         );
     }
 
-    // ── Derived state ───────────────────────────────────────────────────────────
-    // Support both new field (last_completed_date) and legacy (last_activity_date)
-    const current_streak = streak?.current_streak ?? 0;
-    const longest_streak = streak?.longest_streak ?? 0;
-    const last_completed_date = streak?.last_completed_date ?? streak?.last_activity_date ?? null;
 
-    const isEmpty = current_streak === 0 && longest_streak === 0 && !last_completed_date;
-    const isBroken = !isEmpty && current_streak === 0 && longest_streak > 0;
-    const isActive = current_streak > 0;
-
-    // Determine if user has already completed today
-    const todayStr = new Date().toISOString().split("T")[0];
-    const completedToday = last_completed_date === todayStr;
-
-    // Progress to next 7-day milestone
-    const milestoneProgress = current_streak % 7;
-    const progressPercent = isActive ? ((milestoneProgress || 7) / 7) * 100 : 0;
-
-    // ── Broken streak notification ───────────────────────────────────────────────
-    useEffect(() => {
-        if (isBroken && !sessionStorage.getItem("broken_streak_toast_shown")) {
-            toast({
-                title: "Streak Broken 💔",
-                description: `Your ${longest_streak}-day streak ended. Start fresh today!`,
-            });
-            sessionStorage.setItem("broken_streak_toast_shown", "true");
-        }
-    }, [isBroken, longest_streak, toast]);
 
     // ── Complete today handler ───────────────────────────────────────────────────
     const handleCompleteToday = async () => {

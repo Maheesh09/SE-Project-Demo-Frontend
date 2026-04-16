@@ -36,6 +36,7 @@ export default function QuizPlayPage() {
             setIsStartingNext(false);
             setTimeLeft((quizData.total_questions || 10) * 60);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [quizData?.session_id]);
 
 
@@ -53,6 +54,7 @@ export default function QuizPlayPage() {
             });
         }, 1000);
         return () => clearInterval(timerId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [quizData, isSubmitting]);
 
     const formatTime = (seconds: number) => {
@@ -88,7 +90,7 @@ export default function QuizPlayPage() {
             { session_id, answers: payloadAnswers },
             user?.id,
             email
-        ) as any;
+        ) as unknown;
     };
 
     const handleFinishQuiz = async () => {
@@ -150,9 +152,9 @@ export default function QuizPlayPage() {
                 },
                 replace: true,   // so Back button goes to /quizzes, not back here
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            alert("Submission failed: " + (err.message || "Network error."));
+            alert("Submission failed: " + (err instanceof Error ? err.message : "Network error."));
             setIsSubmitting(false);
         }
     };
@@ -198,15 +200,15 @@ export default function QuizPlayPage() {
                 },
                 user?.id,
                 email
-            ) as any;
+            ) as unknown;
 
             navigate("/quiz/play", {
                 state: { quizData: nextQuizData, quizMeta },
                 replace: true,
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            alert("Failed to start next quiz: " + (err.message || "Network error."));
+            alert("Failed to start next quiz: " + (err instanceof Error ? err.message : "Network error."));
         } finally {
             setIsStartingNext(false);
         }
@@ -281,7 +283,7 @@ export default function QuizPlayPage() {
                             </h2>
 
                             <div className="flex flex-col gap-3 sm:gap-4">
-                                {currentQuestion.options.map((opt: any) => {
+                                {currentQuestion.options.map((opt: { id: number; option_text: string }) => {
                                     const isSelected = selectedOption === opt.id;
                                     return (
                                         <button

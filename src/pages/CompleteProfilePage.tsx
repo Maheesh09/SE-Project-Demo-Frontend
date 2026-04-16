@@ -158,8 +158,8 @@ const CompleteProfilePage = () => {
                 email
             );
             navigate("/dashboard");
-        } catch (err: any) {
-            setError("Failed to save profile: " + (err.message || "Unknown error"));
+        } catch (err: unknown) {
+            setError("Failed to save profile: " + (err instanceof Error ? err.message : "Unknown error"));
         } finally {
             setLoading(false);
         }

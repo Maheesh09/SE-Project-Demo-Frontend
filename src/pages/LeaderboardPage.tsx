@@ -156,7 +156,7 @@ const LeaderboardPage = () => {
           api.getDistricts(), api.getProvinces(), api.getAvailableSubjects(),
         ]);
         setAllDistricts(districts); setAllProvinces(provinces);
-        setAllSubjects(subjects.map((s: any) => ({ id: s.id, name: s.name })));
+        setAllSubjects(subjects.map((s: { id: number; name: string }) => ({ id: s.id, name: s.name })));
         if (subjects.length > 0) setSelectedSubjectId(subjects[0].id);
       } catch (err) { console.error(err); }
       finally { setDistrictsLoading(false); setProvincesLoading(false); setSubjectsLoading(false); }
@@ -166,7 +166,7 @@ const LeaderboardPage = () => {
   useEffect(() => {
     if (profile?.district && selectedDistrictId === undefined) setSelectedDistrictId(profile.district.id);
     if (profile?.district?.province && selectedProvinceId === undefined) setSelectedProvinceId(profile.district.province.id);
-  }, [profile]);
+  }, [profile, selectedDistrictId, selectedProvinceId]);
 
   useEffect(() => {
     let cancelled = false;

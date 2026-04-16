@@ -47,8 +47,8 @@ export function useProfile(): UseProfileResult {
                 const data = await api.getProfile(token, user?.id, email);
 
                 if (!cancelled) setProfile(data);
-            } catch (e: any) {
-                if (!cancelled) setError(e.message ?? "Failed to load profile.");
+            } catch (e: unknown) {
+                if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load profile.");
             } finally {
                 if (!cancelled) setIsLoading(false);
             }
