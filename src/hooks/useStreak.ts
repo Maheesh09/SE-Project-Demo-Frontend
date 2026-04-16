@@ -45,15 +45,22 @@ export function useStreak(): UseStreakResult {
                     data = await api.getDailyStreak(token, user?.id, email);
                     // Normalise: ensure legacy field is also populated for backward compatibility
                     data.last_activity_date = data.last_completed_date;
-                } catch {
-                    data = await api.getStudyStreak(token, user?.id, email);
-                    // Normalise legacy response to use new field name
-                    data.last_completed_date = data.last_activity_date ?? null;
+                } catch (primaryErr: unknown) {
+                    console.warn("Primary streak endpoint failed, trying legacy:", primaryErr);
+                    try {
+                        data = await api.getStudyStreak(token, user?.id, email);
+                        // Normalise legacy response to use new field name
+                        data.last_completed_date = data.last_activity_date ?? null;
+                    } catch (fallbackErr: unknown) {
+                        console.error("Both streak endpoints failed:", { primaryErr, fallbackErr });
+                        throw fallbackErr;
+                    }
                 }
 
                 if (!cancelled) setStreak(data);
             } catch (e: unknown) {
                 const msg = e instanceof Error ? e.message : "Failed to load streak data.";
+                console.error("useStreak error:", msg, e);
                 if (!cancelled) setError(msg);
             } finally {
                 if (!cancelled) setIsLoading(false);

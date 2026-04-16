@@ -106,23 +106,19 @@ export default function QuizPlayPage() {
                     const result = await api.completeDailyStreak(token, user?.id, email);
                     if (result.status === "streak_updated") {
                         toast({
-                        title: "Streak Extended! 🔥",
+                        title: "Streak Extended!",
                         description: `Your daily streak is now ${result.current_streak} days!`,
                         });
                     } else {
                         toast({
-                        title: "Daily Goal Met! ✅",
+                        title: "Daily Goal Met!",
                         description: "You've already completed today's daily goal. Keep it up!",
                         });
                     }
                 }
             } catch (err) {
-                console.error("Streak complete error", err);
-                toast({
-                    title: "Streak Update Failed",
-                    description: "We couldn't update your streak. Please tap to retry from dashboard.",
-                    variant: "destructive"
-                });
+                // Streak update is non-critical — log only, don't block quiz flow
+                console.warn("Streak update failed (non-critical):", err);
             }
 
             // Transform answer_results from backend into the "results" shape
@@ -182,7 +178,7 @@ export default function QuizPlayPage() {
                 const result = await api.completeDailyStreak(token, user?.id, email);
                 if (result.status === "streak_updated") {
                     toast({
-                    title: "Streak Extended! 🔥",
+                    title: "Streak Extended!",
                     description: `Your daily streak is now ${result.current_streak} days!`,
                     });
                 }
