@@ -108,11 +108,19 @@ export default function QuizPlayPage() {
                         toast({
                         title: "Streak Extended!",
                         description: `Your daily streak is now ${result.current_streak} days!`,
+                        className: "bg-emerald-500/20 text-emerald-950 dark:text-emerald-50 border border-emerald-500/30 backdrop-blur-md",
                         });
-                    } else {
+                    } else if (result.status === "streak_broken") {
+                        toast({
+                        title: "Streak Broken",
+                        description: "You missed a day, but your new streak starts now at 1 day!",
+                        className: "bg-red-500/20 text-red-950 dark:text-red-50 border border-red-500/30 backdrop-blur-md shadow-lg",
+                        });
+                    } else if (result.status === "already_completed") {
                         toast({
                         title: "Daily Goal Met!",
                         description: "You've already completed today's daily goal. Keep it up!",
+                        className: "bg-emerald-500/20 text-emerald-950 dark:text-emerald-50 border border-emerald-500/30 backdrop-blur-md",
                         });
                     }
                 }
@@ -180,6 +188,13 @@ export default function QuizPlayPage() {
                     toast({
                     title: "Streak Extended!",
                     description: `Your daily streak is now ${result.current_streak} days!`,
+                    className: "bg-emerald-500/20 text-emerald-950 dark:text-emerald-50 border border-emerald-500/30 backdrop-blur-md",
+                    });
+                } else if (result.status === "streak_broken") {
+                    toast({
+                    title: "Streak Broken",
+                    description: "You missed a day, but your new streak starts now at 1 day!",
+                    className: "bg-red-500/20 text-red-950 dark:text-red-50 border border-red-500/30 backdrop-blur-md shadow-lg",
                     });
                 }
             } catch (err) {

@@ -32,6 +32,7 @@ export default function StreakDisplay({ className }: { className?: string }) {
             toast({
                 title: "Streak Broken",
                 description: `Your ${longest_streak}-day streak ended. Start fresh today!`,
+                className: "bg-red-500/20 text-red-950 dark:text-red-50 border border-red-500/30 backdrop-blur-md shadow-lg",
             });
             sessionStorage.setItem("broken_streak_toast_shown", "true");
         }

@@ -181,9 +181,9 @@ const Dashboard = () => {
       const alerted = sessionStorage.getItem("streak_broken_alerted");
       if (!alerted) {
         toast({
-          title: "Streak Broken!",
+          title: "Streak Broken",
           description: "Oh no! Your daily streak has been reset. Start a new one today!",
-          variant: "destructive",
+          className: "bg-red-500/20 text-red-950 dark:text-red-50 border border-red-500/30 backdrop-blur-md shadow-lg",
         });
         sessionStorage.setItem("streak_broken_alerted", "true");
       }
