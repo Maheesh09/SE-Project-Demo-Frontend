@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
 
 interface StatCardProps {
   icon: LucideIcon;
   label: string;
-  value: string;
+  value: ReactNode | string;
   subtitle?: string;
+  subtitleTrend?: "up" | "down" | "neutral";
   /** Tailwind text color class, e.g. "text-amber-500" */
   colorClass?: string;
   /** Hex or CSS color for the left accent border */
