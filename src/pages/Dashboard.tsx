@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import {
   Star, Brain, BookOpen, TrendingUp, BarChart3, ArrowRight,
   Calendar, Trophy, Check, GraduationCap, ChevronRight, Zap,
+  Flame, Target, Award,
   Flame, Target, ChevronDown, MousePointerClick,
 } from "lucide-react";
 import BlurText from "@/components/BlurText";
@@ -13,6 +14,11 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recha
 import { cn } from "@/lib/utils";
 import StreakDisplay from "@/components/StreakDisplay";
 import { useProfile } from "@/hooks/useProfile";
+import { useStreakBadge } from "@/hooks/useStreakBadge";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary } from "@/lib/api";
+import { BadgeCard } from "@/components/BadgeCard";
+
 import { useStreak } from "@/hooks/useStreak";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser } from "@clerk/clerk-react";
@@ -268,6 +274,7 @@ const Dashboard = () => {
   const { profile } = useProfile();
   const { getToken } = useAuth();
   const { user } = useUser();
+  const { badges, isLoading: badgesLoading, newlyEarned, streakBadge } = useStreakBadge();
   const displayName = profile?.full_name?.split(" ")[0] ?? profile?.username ?? "Student";
 
   const [mySubjects, setMySubjects] = useState<Subject[]>([]);
@@ -473,7 +480,55 @@ const Dashboard = () => {
           iconBgClass="bg-amber-100 dark:bg-amber-900/20"
           delay={0}
         />
-        <StreakDisplay className="border-l-[3px] border-l-[#f97316]" />
+        <StatCard
+          icon={Flame}
+          label="Study Streak"
+          value={statsLoading ? "…" : streak ? (
+            <span className="flex items-center gap-1.5">
+              {streak.current_streak}d
+              {streak.current_streak >= 7 && (
+                <motion.span 
+                  initial={{ scale: 0 }} 
+                  animate={{ scale: 1 }} 
+                  className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-streak/20 text-streak border border-streak/30 shadow-sm"
+                >
+                  <Trophy className="w-3.5 h-3.5" />
+                </motion.span>
+              )}
+            </span>
+          ) : "0d"}
+          subtitle={streak && streak.longest_streak > 0 ? `Best: ${streak.longest_streak}d` : "Complete a quiz daily"}
+          subtitleTrend={streak && streak.current_streak >= 7 ? "up" : "neutral"}
+          colorClass={streak && streak.current_streak >= 7 ? "text-streak" : "text-streak"}
+          delay={0.05}
+        />
+        <StatCard
+          icon={Brain}
+          label="Quizzes Taken"
+          value={statsLoading ? "…" : String(stats?.total_quizzes ?? 0)}
+          subtitle={stats?.total_quizzes === 0 ? "Start your first quiz!" : `Across ${stats?.subject_stats?.length ?? 0} subjects`}
+          subtitleTrend="neutral"
+          colorClass="text-streak"
+          delay={0.1}
+        />
+        <StatCard
+          icon={Target}
+          label="Correct Answers"
+          value={statsLoading ? "…" : xpSummary ? String(xpSummary.total_correct_answers) : "0"}
+          subtitle={xpSummary && xpSummary.xp_per_subject.length > 0 ? `In ${xpSummary.xp_per_subject.length} subjects` : "Answer quiz questions"}
+          subtitleTrend="neutral"
+          colorClass="text-primary"
+          delay={0.15}
+        />
+        <StatCard
+          icon={BookOpen}
+          label="Subjects"
+          value={subjectsLoading ? "…" : String(mySubjects.length)}
+          subtitle={profile?.grade?.name ?? "—"}
+          subtitleTrend="neutral"
+          colorClass="text-primary"
+          delay={0.2}
+        />
         <StatCard
           icon={TrendingUp}
           label="Avg Score"
@@ -600,8 +655,65 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── Performance + Recent Quizzes ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
+      {/* ══════════════════════════════════════════
+          EARNED BADGES
+          Mobile & Desktop horizontal scroll or grid
+      ══════════════════════════════════════════ */}
+      <div className="mb-4 md:mb-7">
+        <SectionHeader title="Earned Badges" delay={0.27} />
+        
+        {badgesLoading ? (
+          <div className="flex justify-center py-6">
+            <span className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+          </div>
+        ) : (badges.length === 0 && !(streak && streak.current_streak >= 7)) ? (
+          <div className="bg-card border border-border/60 rounded-xl md:rounded-2xl p-4">
+            <EmptyState
+              icon={Award}
+              message="No badges earned yet. Keep learning to unlock your first badge!"
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {/* Display actual badges + a fallback for the 7-day streak badge if it's missing but earned */}
+            {[
+              ...badges,
+              // If current streak is >= 7 but the streak badge isn't in the list, show a virtual one
+              ...(streak && streak.current_streak >= 7 && !streakBadge ? [{
+                id: -999, // virtual id
+                earned_at: new Date().toISOString(),
+                badge: {
+                  id: -999,
+                  name: "7 day streak",
+                  description: "Awarded for completing quizzes 7 days in a row.",
+                  badge_key: "seven_day_streak",
+                  image_url: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/streak_7day.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9zdHJlYWtfN2RheS5wbmciLCJpYXQiOjE3NzU4MTc4ODMsImV4cCI6MTgwNzM1Mzg4M30.ko7VlDRFpaQat6pA9tyvUD8CLg05WhcYV3hlQmW-bBI"
+                }
+              }] : [])
+            ].map((ub, idx) => (
+              <motion.div
+                key={ub.id}
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.28 + idx * 0.05, type: "spring", stiffness: 300 }}
+              >
+                <BadgeCard 
+                  badge={ub.badge} 
+                  earnedAt={ub.earned_at}
+                  isNew={(newlyEarned && streakBadge?.id === ub.id) || (ub.earned_at ? (new Date().getTime() - new Date(ub.earned_at).getTime() < 12 * 60 * 60 * 1000) : false)}
+                />
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ══════════════════════════════════════════
+          PERFORMANCE CHART + RECENT QUIZZES
+          Mobile: stacked single column
+          Desktop: 3-column (chart takes 2)
+      ══════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 md:gap-4 mb-4 md:mb-7">
 
         {/* Chart */}
         <motion.div

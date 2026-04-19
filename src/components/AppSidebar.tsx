@@ -8,8 +8,10 @@ import { cn } from "@/lib/utils";
 import mindupLogo from "@/assets/mindup-logo.png";
 import { useState, useEffect } from "react";
 import ProfileModal from "./ProfileModal";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { useProfile } from "@/hooks/useProfile";
+import { useStreakBadge } from "@/hooks/useStreakBadge";
+import { api } from "@/lib/api";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -30,6 +32,20 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user } = useUser();
   const { profile } = useProfile();
+  const { badges, newlyEarned, streakBadge, streak } = useStreakBadge();
+  const [stats, setStats] = useState<any>(null);
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const s = await api.getDashboardStats(token, user?.id, user?.primaryEmailAddress?.emailAddress);
+        setStats(s);
+      } catch { /* ignore */ }
+    })();
+  }, [getToken, user]);
 
   useEffect(() => {
     if (onClose) onClose();
@@ -38,6 +54,11 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
   const displayName = user?.firstName || user?.username || "User";
   const fullName = profile?.full_name || displayName;
   const initial = (fullName && typeof fullName === "string" && fullName.length > 0) ? fullName[0].toUpperCase() : "U";
+
+  const currentXP = stats?.total_xp ?? 0;
+  const levelXP = 5000; // Placeholder for level logic
+  const xpProgress = Math.min(Math.round((currentXP / levelXP) * 100), 100);
+  const currentStreak = streak?.current_streak ?? 0;
 
   return (
     <>
@@ -82,7 +103,22 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
                 {profile?.district ? ` · ${profile.district.name}` : ""}
               </p>
             </div>
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" title="Online" />
+            <div className="w-2 h-2 rounded-full bg-success flex-shrink-0" title="Online" />
+          </div>
+
+          {/* XP progress */}
+          <div className="mt-2.5 pt-2.5 border-t border-border/40">
+            <div className="flex justify-between text-[10px] text-muted-foreground mb-1.5 font-medium">
+              <span>{currentXP.toLocaleString()} XP earned</span>
+              <span className="text-foreground font-bold">{xpProgress}% to next goal</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-border/60 overflow-hidden">
+              <div className="h-full rounded-full gradient-primary transition-all duration-700" style={{ width: `${xpProgress}%` }} />
+            </div>
+            <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-streak font-semibold">
+              <Zap className={cn("w-3 h-3", currentStreak > 0 ? "animate-pulse" : "opacity-30")} />
+              <span>{currentStreak}-day streak</span>
+            </div>
           </div>
         </div>
 
