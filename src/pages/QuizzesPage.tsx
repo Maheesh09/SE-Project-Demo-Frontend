@@ -41,7 +41,7 @@ const QuizzesPage = () => {
   const [chosenTopic, setChosenTopic] = useState<number | "">("");
   const [topicsLoading, setTopicsLoading] = useState(false);
 
-  const preselectedSubjectId = (location.state as any)?.preselectedSubjectId;
+  const preselectedSubjectId = (location.state as { preselectedSubjectId?: number } | null)?.preselectedSubjectId;
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +67,7 @@ const QuizzesPage = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [getToken, user]);
+  }, [getToken, user, preselectedSubjectId]);
 
   useEffect(() => {
     if (!selectedSubjectId) { setTopics([]); setChosenTopic(""); return; }
@@ -110,9 +110,9 @@ const QuizzesPage = () => {
           quizMeta: { subjectId: selectedSubjectId, mode, topicId: mode === "topic" ? Number(chosenTopic) : null },
         },
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || "Failed to generate quiz. Is the backend running?");
+      toast.error(err instanceof Error ? err.message : "Failed to generate quiz. Is the backend running?");
     } finally {
       setLoadingMode(null);
     }

@@ -37,7 +37,7 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
 
   const displayName = user?.firstName || user?.username || "User";
   const fullName = profile?.full_name || displayName;
-  const initial = fullName[0]?.toUpperCase() || "U";
+  const initial = (fullName && typeof fullName === "string" && fullName.length > 0) ? fullName[0].toUpperCase() : "U";
 
   return (
     <>

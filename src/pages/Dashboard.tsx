@@ -11,7 +11,10 @@ import AppLayout from "@/components/AppLayout";
 import StatCard from "@/components/StatCard";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
+import StreakDisplay from "@/components/StreakDisplay";
 import { useProfile } from "@/hooks/useProfile";
+import { useStreak } from "@/hooks/useStreak";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type StudentBadge } from "@/lib/api";
 
@@ -168,7 +171,24 @@ const Dashboard = () => {
   const [statsLoading, setStatsLoading] = useState(true);
   const [streak, setStreak] = useState<StudyStreak | null>(null);
   const [xpSummary, setXpSummary] = useState<XpSummary | null>(null);
-  const [badges, setBadges] = useState<StudentBadge[]>([]);
+  const [showSecondary, setShowSecondary] = useState(false);
+  const { toast } = useToast();
+  const { streak: streakFromHook, error: streakError } = useStreak();
+
+  // Handle broken streak notification once per session
+  useEffect(() => {
+    if (streakFromHook && streakFromHook.current_streak === 0 && streakFromHook.longest_streak > 0) {
+      const alerted = sessionStorage.getItem("streak_broken_alerted");
+      if (!alerted) {
+        toast({
+          title: "Streak Broken",
+          description: "Oh no! Your daily streak has been reset. Start a new one today!",
+          className: "bg-red-500/20 text-red-950 dark:text-red-50 border border-red-500/30 backdrop-blur-md shadow-lg",
+        });
+        sessionStorage.setItem("streak_broken_alerted", "true");
+      }
+    }
+  }, [streakFromHook, toast]);
 
   useEffect(() => {
     let cancelled = false;
@@ -201,10 +221,10 @@ const Dashboard = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [getToken, user]);
+  }, [getToken, user?.id, user?.primaryEmailAddress?.emailAddress]);
 
   const subjectScores = (stats?.subject_stats ?? []).map((s) => ({
-    subject: s.subject_name.length > 8 ? s.subject_name.slice(0, 7) + "…" : s.subject_name,
+    subject: (s.subject_name || "").length > 8 ? (s.subject_name || "").slice(0, 7) + "…" : (s.subject_name || ""),
     score: Math.round(s.average_score),
   }));
 
@@ -389,28 +409,7 @@ const Dashboard = () => {
           iconBgClass="bg-amber-100 dark:bg-amber-900/20"
           delay={0}
         />
-        <StatCard
-          icon={Trophy}
-          label="Current Level"
-          value={statsLoading ? "…" : stats?.current_level?.level_name ?? "Level 1"}
-          subtitle={stats?.current_level?.xp_to_next_level 
-            ? `${formatXP(stats.current_level.xp_to_next_level)} XP to next level` 
-            : "Maximum level achieved"}
-          colorClass="text-emerald-500"
-          accentColor="#10b981"
-          iconBgClass="bg-emerald-100 dark:bg-emerald-900/20"
-          delay={0.06}
-        />
-        <StatCard
-          icon={Flame}
-          label="Study Streak"
-          value={statsLoading ? "…" : streak ? `${streak.current_streak}d` : "0d"}
-          subtitle={streak && streak.longest_streak > 0 ? `Best: ${streak.longest_streak} days` : "Complete a quiz daily"}
-          colorClass="text-orange-500"
-          accentColor="#f97316"
-          iconBgClass="bg-orange-100 dark:bg-orange-900/20"
-          delay={0.12}
-        />
+        <StreakDisplay className="border-l-[3px] border-l-[#f97316]" />
         <StatCard
           icon={TrendingUp}
           label="Avg Score"
@@ -571,7 +570,7 @@ const Dashboard = () => {
               onAction={() => navigate("/quizzes")}
             />
           ) : (
-            <ResponsiveContainer width="100%" height={140} className="md:[![]:!h-[170px]">
+            <ResponsiveContainer width="100%" height={140} className="md:h-[170px]">
               <BarChart data={subjectScores} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
                 <XAxis dataKey="subject" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} domain={[0, 100]} axisLine={false} tickLine={false} />

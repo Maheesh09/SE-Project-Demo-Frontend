@@ -6,7 +6,8 @@ import AppLayout from "@/components/AppLayout";
 import BlurText from "@/components/BlurText";
 import { cn } from "@/lib/utils";
 
-const topicData: any = {
+type TopicData = Record<string, { id: string; title: string; subtopics: { id: string; title: string; quizzes: number; xp: number; }[] }[]>;
+const topicData: TopicData = {
     science: [
         {
             id: "t1",
@@ -27,7 +28,8 @@ const topicData: any = {
     ]
 };
 
-const termData: any = {
+type TermData = Record<string, { id: string; title: string; quizzes: number; xp: number; time: string; }[]>;
+const termData: TermData = {
     science: [
         { id: "term1", title: "Term 1 Assessment", quizzes: 5, xp: 250, time: "45m" },
         { id: "term2", title: "Term 2 Mid-Term", quizzes: 4, xp: 200, time: "40m" },
@@ -87,7 +89,7 @@ const SubjectQuizzesPage = () => {
                 >
                     {activeTab === "topic-wise" && (
                         <div className="flex flex-col gap-3">
-                            {topics.map((topic: any, i: number) => {
+                            {topics.map((topic: TopicData[string][0], i: number) => {
                                 const isExpanded = expandedTopic === topic.id;
                                 return (
                                     <motion.div
@@ -122,7 +124,7 @@ const SubjectQuizzesPage = () => {
                                                     className="overflow-hidden border-t border-border/40"
                                                 >
                                                     <div className="p-4 flex flex-col gap-2">
-                                                        {topic.subtopics.map((sub: any) => (
+                                                        {topic.subtopics.map((sub: TopicData[string][0]['subtopics'][0]) => (
                                                             <div key={sub.id} className="flex items-center justify-between p-3.5 bg-background border border-border/50 rounded-xl hover:border-primary/30 transition-colors">
                                                                 <div>
                                                                     <p className="text-sm font-medium text-foreground">{sub.title}</p>
@@ -151,7 +153,7 @@ const SubjectQuizzesPage = () => {
 
                     {activeTab === "term-wise" && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {terms.map((term: any, i: number) => (
+                            {terms.map((term: TermData[string][0], i: number) => (
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
                                     key={term.id}
