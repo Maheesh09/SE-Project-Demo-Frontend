@@ -119,7 +119,7 @@ export default function SettingsPage() {
                     ].map((t) => (
                       <button
                         key={t.id}
-                        onClick={() => setTheme(t.id as any)}
+                        onClick={() => setTheme(t.id as "light" | "dark" | "system")}
                         className={cn(
                           "flex flex-col items-center gap-2.5 p-4 rounded-xl border-2 transition-all",
                           theme === t.id ? "bg-primary/8 border-primary" : "bg-muted/30 border-border/60 hover:border-primary/40 text-muted-foreground"

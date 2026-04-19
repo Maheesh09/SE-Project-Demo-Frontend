@@ -58,7 +58,7 @@ const StatCard = ({
       transition={{ delay, duration: 0.35 }}
       className={cn(
         "bg-card border border-border/60 rounded-xl md:rounded-2xl",
-        "p-4 md:p-5 flex items-center gap-4 md:flex-col md:items-start md:gap-3",
+        "p-3.5 md:p-4 flex items-center gap-3.5 md:flex-col md:items-start md:gap-2.5",
         "hover:shadow-md hover:-translate-y-0.5 transition-all duration-200",
         accentColor ? "border-l-[3px]" : ""
       )}
@@ -66,18 +66,18 @@ const StatCard = ({
     >
       {/* Icon */}
       <div className={cn(
-        "w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0",
+        "w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0",
         colorClass,
         iconBgClass ?? "bg-muted"
       )}>
-        <Icon className="w-4 h-4 md:w-5 md:h-5" />
+        <Icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
       </div>
 
       <div className="min-w-0 flex-1 md:w-full">
-        <p className="text-2xl md:text-3xl font-bold text-foreground leading-none tabular-nums">
+        <p className="text-xl md:text-2xl font-bold text-foreground leading-none tabular-nums">
           {value}
         </p>
-        <p className="text-xs text-muted-foreground font-medium mt-1 truncate">{label}</p>
+        <p className="text-[11px] md:text-xs text-muted-foreground font-medium mt-1 truncate">{label}</p>
         {subtitle && (
           <p className="text-[10px] text-muted-foreground/70 mt-0.5 truncate hidden md:block">{subtitle}</p>
         )}

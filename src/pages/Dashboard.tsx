@@ -11,7 +11,10 @@ import AppLayout from "@/components/AppLayout";
 import StatCard from "@/components/StatCard";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
+import StreakDisplay from "@/components/StreakDisplay";
 import { useProfile } from "@/hooks/useProfile";
+import { useStreak } from "@/hooks/useStreak";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type DistrictLeaderboard } from "@/lib/api";
 
@@ -275,6 +278,23 @@ const Dashboard = () => {
   const [xpSummary, setXpSummary] = useState<XpSummary | null>(null);
   const [districtLB, setDistrictLB] = useState<DistrictLeaderboard | null>(null);
   const [showSecondary, setShowSecondary] = useState(false);
+  const { toast } = useToast();
+  const { streak: streakFromHook, error: streakError } = useStreak();
+
+  // Handle broken streak notification once per session
+  useEffect(() => {
+    if (streakFromHook && streakFromHook.current_streak === 0 && streakFromHook.longest_streak > 0) {
+      const alerted = sessionStorage.getItem("streak_broken_alerted");
+      if (!alerted) {
+        toast({
+          title: "Streak Broken",
+          description: "Oh no! Your daily streak has been reset. Start a new one today!",
+          className: "bg-red-500/20 text-red-950 dark:text-red-50 border border-red-500/30 backdrop-blur-md shadow-lg",
+        });
+        sessionStorage.setItem("streak_broken_alerted", "true");
+      }
+    }
+  }, [streakFromHook, toast]);
 
   useEffect(() => {
     let cancelled = false;
@@ -307,10 +327,10 @@ const Dashboard = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [getToken, user]);
+  }, [getToken, user?.id, user?.primaryEmailAddress?.emailAddress]);
 
   const subjectScores = (stats?.subject_stats ?? []).map((s) => ({
-    subject: s.subject_name.length > 8 ? s.subject_name.slice(0, 7) + "…" : s.subject_name,
+    subject: (s.subject_name || "").length > 8 ? (s.subject_name || "").slice(0, 7) + "…" : (s.subject_name || ""),
     score: Math.round(s.average_score),
   }));
 
@@ -359,28 +379,41 @@ const Dashboard = () => {
         </div>
       </motion.div>
 
-      {/* ── Grade banner (inline pill) ── */}
-      {profile?.grade && (
-        <motion.div
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="flex items-center gap-2 flex-wrap mb-6 md:mb-8"
-        >
-          <div className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary rounded-full px-3 py-1 text-[11px] font-semibold">
-            <GraduationCap className="w-3 h-3" />
-            <span>{profile.grade.name}</span>
-          </div>
-          {profile.district && (
-            <span className="text-[11px] text-muted-foreground">
-              {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
-            </span>
-          )}
-          {!subjectsLoading && mySubjects.length > 0 && (
-            <span className="text-[11px] text-muted-foreground">· {mySubjects.length} subjects enrolled</span>
-          )}
-        </motion.div>
-      )}
+      {/* ══════════════════════════════════════════
+          TOP SECTION: GRADE & BADGES
+      ══════════════════════════════════════════ */}
+      <div className={`grid grid-cols-1 ${badges.length > 0 ? "xl:grid-cols-3" : ""} gap-4 md:gap-7 mb-4 md:mb-7`}>
+
+        {/* Left: Grade Banner */}
+        {profile?.grade && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className={`h-full ${badges.length > 0 ? "xl:col-span-2" : ""}`}
+          >
+            {/* Mobile slim banner */}
+            <div className="md:hidden bg-card border border-border/60 border-l-4 border-l-primary rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3 shadow-sm h-full">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
+                  <GraduationCap className="w-3.5 h-3.5 text-primary-foreground" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-foreground truncate">{profile.grade.name}</p>
+                  {profile.district && (
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {!subjectsLoading && mySubjects.length > 0 && (
+                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 flex-shrink-0">
+                  {mySubjects.length} subjects
+                </span>
+              )}
+              {subjectsLoading && <span className="w-4 h-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin flex-shrink-0" />}
+            </div>
 
       {/* ── District Rank Badge ── */}
       {badgeUrl && districtRank && RANK_THEMES[districtRank] && (
@@ -440,16 +473,7 @@ const Dashboard = () => {
           iconBgClass="bg-amber-100 dark:bg-amber-900/20"
           delay={0}
         />
-        <StatCard
-          icon={Flame}
-          label="Study Streak"
-          value={statsLoading ? "…" : streak ? `${streak.current_streak}d` : "0d"}
-          subtitle={streak && streak.longest_streak > 0 ? `Best: ${streak.longest_streak} days` : "Complete a quiz daily"}
-          colorClass="text-orange-500"
-          accentColor="#f97316"
-          iconBgClass="bg-orange-100 dark:bg-orange-900/20"
-          delay={0.06}
-        />
+        <StreakDisplay className="border-l-[3px] border-l-[#f97316]" />
         <StatCard
           icon={TrendingUp}
           label="Avg Score"
@@ -458,7 +482,7 @@ const Dashboard = () => {
           colorClass="text-primary"
           accentColor="#acd663"
           iconBgClass="bg-primary/10"
-          delay={0.12}
+          delay={0.18}
         />
       </div>
 
@@ -610,7 +634,7 @@ const Dashboard = () => {
               onAction={() => navigate("/quizzes")}
             />
           ) : (
-            <ResponsiveContainer width="100%" height={140} className="md:[![]:!h-[170px]">
+            <ResponsiveContainer width="100%" height={140} className="md:h-[170px]">
               <BarChart data={subjectScores} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
                 <XAxis dataKey="subject" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} domain={[0, 100]} axisLine={false} tickLine={false} />

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useProfile } from "@/hooks/useProfile";
+import { useToast } from "@/hooks/use-toast";
 
 export default function QuizPlayPage() {
     const location = useLocation();
@@ -13,6 +14,7 @@ export default function QuizPlayPage() {
     const { getToken } = useAuth();
     const { user } = useUser();
     const { profile } = useProfile();
+    const { toast } = useToast();
 
     const quizData = location.state?.quizData;
     const quizMeta = location.state?.quizMeta as
@@ -34,6 +36,7 @@ export default function QuizPlayPage() {
             setIsStartingNext(false);
             setTimeLeft((quizData.total_questions || 10) * 60);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [quizData?.session_id]);
 
 
@@ -51,6 +54,7 @@ export default function QuizPlayPage() {
             });
         }, 1000);
         return () => clearInterval(timerId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [quizData, isSubmitting]);
 
     const formatTime = (seconds: number) => {
@@ -86,7 +90,7 @@ export default function QuizPlayPage() {
             { session_id, answers: payloadAnswers },
             user?.id,
             email
-        ) as any;
+        ) as unknown;
     };
 
     const handleFinishQuiz = async () => {
@@ -95,9 +99,39 @@ export default function QuizPlayPage() {
         try {
             const data = await submitCurrentQuiz();
 
+            try {
+                const token = await getToken();
+                const email = user?.primaryEmailAddress?.emailAddress || "";
+                if (token) {
+                    const result = await api.completeDailyStreak(token, user?.id, email);
+                    if (result.status === "streak_updated") {
+                        toast({
+                        title: "Streak Extended!",
+                        description: `Your daily streak is now ${result.current_streak} days!`,
+                        className: "bg-emerald-500/20 text-emerald-950 dark:text-emerald-50 border border-emerald-500/30 backdrop-blur-md",
+                        });
+                    } else if (result.status === "streak_broken") {
+                        toast({
+                        title: "Streak Broken",
+                        description: "You missed a day, but your new streak starts now at 1 day!",
+                        className: "bg-red-500/20 text-red-950 dark:text-red-50 border border-red-500/30 backdrop-blur-md shadow-lg",
+                        });
+                    } else if (result.status === "already_completed") {
+                        toast({
+                        title: "Daily Goal Met!",
+                        description: "You've already completed today's daily goal. Keep it up!",
+                        className: "bg-emerald-500/20 text-emerald-950 dark:text-emerald-50 border border-emerald-500/30 backdrop-blur-md",
+                        });
+                    }
+                }
+            } catch (err) {
+                // Streak update is non-critical — log only, don't block quiz flow
+                console.warn("Streak update failed (non-critical):", err);
+            }
+
             // Transform answer_results from backend into the "results" shape
             // that QuizReviewPage expects.
-            const transformedResults = (data.answer_results || []).map((ar: any) => ({
+            const transformedResults = (data.answer_results || []).map((ar: { question_id: number; is_correct: boolean; correct_option_id: number; selected_option_id: number | null }) => ({
                 question_id: ar.question_id,
                 is_correct: ar.is_correct,
                 correct_option_id: ar.correct_option_id,
@@ -122,9 +156,9 @@ export default function QuizPlayPage() {
                 },
                 replace: true,   // so Back button goes to /quizzes, not back here
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            alert("Submission failed: " + (err.message || "Network error."));
+            alert("Submission failed: " + (err instanceof Error ? err.message : "Network error."));
             setIsSubmitting(false);
         }
     };
@@ -148,6 +182,25 @@ export default function QuizPlayPage() {
             if (!token) throw new Error("Not authenticated");
             const email = user?.primaryEmailAddress?.emailAddress || "";
 
+            try {
+                const result = await api.completeDailyStreak(token, user?.id, email);
+                if (result.status === "streak_updated") {
+                    toast({
+                    title: "Streak Extended!",
+                    description: `Your daily streak is now ${result.current_streak} days!`,
+                    className: "bg-emerald-500/20 text-emerald-950 dark:text-emerald-50 border border-emerald-500/30 backdrop-blur-md",
+                    });
+                } else if (result.status === "streak_broken") {
+                    toast({
+                    title: "Streak Broken",
+                    description: "You missed a day, but your new streak starts now at 1 day!",
+                    className: "bg-red-500/20 text-red-950 dark:text-red-50 border border-red-500/30 backdrop-blur-md shadow-lg",
+                    });
+                }
+            } catch (err) {
+                console.error("Streak complete error", err);
+            }
+
             const nextQuizData = await api.startQuiz(
                 token,
                 {
@@ -158,15 +211,15 @@ export default function QuizPlayPage() {
                 },
                 user?.id,
                 email
-            ) as any;
+            ) as unknown;
 
             navigate("/quiz/play", {
                 state: { quizData: nextQuizData, quizMeta },
                 replace: true,
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            alert("Failed to start next quiz: " + (err.message || "Network error."));
+            alert("Failed to start next quiz: " + (err instanceof Error ? err.message : "Network error."));
         } finally {
             setIsStartingNext(false);
         }
@@ -241,7 +294,7 @@ export default function QuizPlayPage() {
                             </h2>
 
                             <div className="flex flex-col gap-3 sm:gap-4">
-                                {currentQuestion.options.map((opt: any) => {
+                                {currentQuestion.options.map((opt: { id: number; option_text: string }) => {
                                     const isSelected = selectedOption === opt.id;
                                     return (
                                         <button

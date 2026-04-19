@@ -121,14 +121,15 @@ export default function QuizReviewPage() {
                 if (!cancelled) {
                     setFetchedData(reviewFromApi(data));
                 }
-            } catch (err: any) {
-                if (!cancelled) setFetchError(err.message || "Failed to load quiz review.");
+            } catch (err: unknown) {
+                if (!cancelled) setFetchError(err instanceof Error ? err.message : "Failed to load quiz review.");
             } finally {
                 if (!cancelled) setIsFetching(false);
             }
         })();
 
         return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isFromDashboard, sessionIdParam]);
 
     // ── Resolve the data to render ───────────────────────────────────────────
@@ -200,11 +201,11 @@ export default function QuizReviewPage() {
                 },
                 user?.id,
                 email
-            ) as any;
+            ) as unknown;
             navigate("/quiz/play", { state: { quizData: nextQuizData, quizMeta } });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            alert("Failed to start next quiz: " + (err.message || "Network error."));
+            alert("Failed to start next quiz: " + (err instanceof Error ? err.message : "Network error."));
         } finally {
             setIsStartingNext(false);
         }

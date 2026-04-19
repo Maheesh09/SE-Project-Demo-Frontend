@@ -136,8 +136,16 @@ export interface RecentQuiz {
     completed_at: string;
 }
 
+export interface LevelInfo {
+    level: number;
+    level_name: string;
+    xp_to_next_level: number;
+    progress_percentage: number;
+}
+
 export interface DashboardStats {
     total_xp: number;
+    current_level: LevelInfo;
     total_quizzes: number;
     average_score: number | null;
     subject_stats: SubjectStat[];
@@ -230,7 +238,22 @@ export interface SubjectLeaderboard {
 export interface StudyStreak {
     current_streak: number;
     longest_streak: number;
-    last_activity_date: string | null;
+    // New backend field (was last_activity_date in legacy endpoint)
+    last_completed_date: string | null;
+    // Legacy field alias – kept for StreakDisplay backward compatibility
+    last_activity_date?: string | null;
+}
+
+export interface StreakCompleteResponse {
+    status: "streak_updated" | "already_completed";
+    message: string;
+    current_streak: number;
+    longest_streak: number;
+}
+
+export interface StreakHistoryItem {
+    completed_date: string;
+    tasks_completed: Record<string, unknown> | null;
 }
 
 export interface SubjectXp {
@@ -308,6 +331,12 @@ export interface LeaderboardEntry {
     total_xp: number;
     is_current_user: boolean;
 }
+export interface StudentBadge {
+    id: number;
+    name: string;
+    description: string | null; // Supabase public image URL
+    awarded_at: string;
+}
 
 // ─── Admin Types ─────────────────────────────────────────────────────────────
 
@@ -318,19 +347,19 @@ export interface AdminLoginResponse {
     access_token?: string;
 }
 export interface QuestionCreate {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 export interface QuestionResponse {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 export interface AdminResource {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 export interface ResourceCreatePayload {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 export interface ResourceUpdatePayload {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 // ─── Chat / RAG Types ────────────────────────────────────────────────────────
@@ -511,8 +540,32 @@ export const api = {
     getStudyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<StudyStreak>("/api/v1/me/study-streak", token, { xClerkUserId, xEmail }),
 
+    // ── Daily Streak (MIN-63 new endpoints) ──
+    getDailyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StudyStreak>("/api/v1/streaks/current", token, { xClerkUserId, xEmail }),
+
+    completeDailyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StreakCompleteResponse>("/api/v1/streaks/complete", token, {
+            method: "POST",
+            xClerkUserId,
+            xEmail,
+        }),
+
+    getDailyStreakHistory: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StreakHistoryItem[]>("/api/v1/streaks/history", token, { xClerkUserId, xEmail }),
+
+    completeStudyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StudyStreak>("/api/v1/me/study-streak/complete", token, { 
+            method: "POST",
+            xClerkUserId, 
+            xEmail 
+        }),
+
     getLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<LeaderboardEntry[]>("/api/v1/me/leaderboard", token, { xClerkUserId, xEmail }),
+
+    getMyBadges: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StudentBadge[]>("/api/v1/me/badges", token, { xClerkUserId, xEmail }),
 
     // ── Chat / RAG ──
     getChatSubjects: () =>
