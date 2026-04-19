@@ -16,7 +16,112 @@ import { useProfile } from "@/hooks/useProfile";
 import { useStreak } from "@/hooks/useStreak";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type StudentBadge } from "@/lib/api";
+import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type DistrictLeaderboard } from "@/lib/api";
+
+import { getDistrictBadgeUrl } from "@/lib/badges";
+
+const RANK_THEMES: Record<number, any> = {
+  1: {
+    title: "District Champion",
+    borderGradient: "from-amber-300 via-amber-500 to-amber-300",
+    textGradient: "from-amber-600 to-amber-400 dark:from-amber-400 dark:to-amber-200",
+    glowColor: "bg-amber-500/20",
+    badgeBg: "bg-amber-500",
+    iconColor: "text-amber-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(245,158,11,0.2)]",
+    description: "Incredible work! Your dedication to learning has placed you at the very top of your district. Keep up the streak to defend your title."
+  },
+  2: {
+    title: "District Challenger",
+    borderGradient: "from-slate-300 via-slate-400 to-slate-300",
+    textGradient: "from-slate-600 to-slate-400 dark:from-slate-400 dark:to-slate-200",
+    glowColor: "bg-slate-400/20",
+    badgeBg: "bg-slate-500",
+    iconColor: "text-slate-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(148,163,184,0.2)]",
+    description: "Amazing achievement! You're the #2 student in your district. You're just one step away from the top—keep pushing!"
+  },
+  3: {
+    title: "District Contender",
+    borderGradient: "from-orange-400 via-orange-600 to-orange-400",
+    textGradient: "from-orange-700 to-orange-500 dark:from-orange-500 dark:to-orange-300",
+    glowColor: "bg-orange-500/20",
+    badgeBg: "bg-orange-600",
+    iconColor: "text-orange-600",
+    shadow: "shadow-[0_0_40px_-10px_rgba(234,88,12,0.2)]",
+    description: "Fantastic effort! Ranking 3rd in the district is a massive accomplishment. Keep striving for the top spot!"
+  },
+  4: {
+    title: "District Elite",
+    borderGradient: "from-zinc-400 via-zinc-500 to-zinc-400",
+    textGradient: "from-zinc-700 to-zinc-500 dark:from-zinc-300 dark:to-zinc-100",
+    glowColor: "bg-zinc-500/20",
+    badgeBg: "bg-zinc-600",
+    iconColor: "text-zinc-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(113,113,122,0.2)]",
+    description: "Top 4 in your district! You are among the elite students pushing the limits. The podium is within your reach!"
+  },
+  5: {
+    title: "District Rising Star",
+    borderGradient: "from-slate-400 via-sky-600 to-slate-400",
+    textGradient: "from-slate-700 to-sky-600 dark:from-slate-300 dark:to-sky-400",
+    glowColor: "bg-sky-500/20",
+    badgeBg: "bg-sky-600",
+    iconColor: "text-sky-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(2,132,199,0.2)]",
+    description: "Top 5! You've broken into the upper echelons of your district. The competition is fierce, but so are you!"
+  },
+  6: {
+    title: "District Vanguard",
+    borderGradient: "from-indigo-400 via-violet-600 to-indigo-400",
+    textGradient: "from-indigo-700 to-violet-500 dark:from-indigo-400 dark:to-violet-300",
+    glowColor: "bg-indigo-500/20",
+    badgeBg: "bg-indigo-600",
+    iconColor: "text-indigo-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(99,102,241,0.2)]",
+    description: "Top 6! Your knowledge is shining through the ranks. Keep up the momentum!"
+  },
+  7: {
+    title: "District Master",
+    borderGradient: "from-blue-500 via-indigo-600 to-blue-500",
+    textGradient: "from-blue-600 to-indigo-400 dark:from-blue-400 dark:to-indigo-300",
+    glowColor: "bg-blue-500/20",
+    badgeBg: "bg-blue-600",
+    iconColor: "text-blue-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(59,130,246,0.2)]",
+    description: "Top 7! You've mastered the fundamentals and it shows. Continue ranking up!"
+  },
+  8: {
+    title: "District Scholar",
+    borderGradient: "from-purple-500 via-fuchsia-500 to-purple-500",
+    textGradient: "from-purple-600 to-fuchsia-400 dark:from-purple-400 dark:to-fuchsia-300",
+    glowColor: "bg-purple-500/20",
+    badgeBg: "bg-purple-600",
+    iconColor: "text-purple-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(168,85,247,0.2)]",
+    description: "Top 8 in the district! You're proving your worth as a top-tier scholar."
+  },
+  9: {
+    title: "District Prodigy",
+    borderGradient: "from-slate-500 via-indigo-500 to-slate-500",
+    textGradient: "from-indigo-400 to-blue-400 dark:from-indigo-300 dark:to-blue-200",
+    glowColor: "bg-indigo-500/10",
+    badgeBg: "bg-indigo-500",
+    iconColor: "text-indigo-400",
+    shadow: "shadow-[0_0_40px_-10px_rgba(99,102,241,0.15)]",
+    description: "Top 9 in the district! Keep climbing the ranks and leaving your mark."
+  },
+  10: {
+    title: "District Top 10",
+    borderGradient: "from-cyan-600 via-blue-600 to-cyan-600",
+    textGradient: "from-cyan-600 to-blue-500 dark:from-cyan-400 dark:to-blue-300",
+    glowColor: "bg-cyan-500/10",
+    badgeBg: "bg-cyan-600",
+    iconColor: "text-cyan-500",
+    shadow: "shadow-[0_0_40px_-10px_rgba(8,145,178,0.15)]",
+    description: "Welcome to the Top 10! You've officially made it to the district leaderboard. The real challenge starts now!"
+  }
+};
 
 const foxMascot = "/fox/mascot.png";
 
@@ -171,6 +276,7 @@ const Dashboard = () => {
   const [statsLoading, setStatsLoading] = useState(true);
   const [streak, setStreak] = useState<StudyStreak | null>(null);
   const [xpSummary, setXpSummary] = useState<XpSummary | null>(null);
+  const [districtLB, setDistrictLB] = useState<DistrictLeaderboard | null>(null);
   const [showSecondary, setShowSecondary] = useState(false);
   const { toast } = useToast();
   const { streak: streakFromHook, error: streakError } = useStreak();
@@ -197,19 +303,19 @@ const Dashboard = () => {
         const token = await getToken();
         if (!token) return;
         const email = user?.primaryEmailAddress?.emailAddress || "";
-        const [subs, dashStats, streakData, xpData, badgeData] = await Promise.all([
+        const [subs, dashStats, streakData, xpData, districtData] = await Promise.all([
           api.getMySubjects(token, user?.id, email),
           api.getDashboardStats(token, user?.id, email),
           api.getStudyStreak(token, user?.id, email).catch(() => null),
           api.getXpSummary(token, user?.id, email).catch(() => null),
-          api.getMyBadges(token, user?.id, email).catch(() => []),
+          api.getDistrictLeaderboard(token, undefined, user?.id, email).catch(() => null),
         ]);
         if (!cancelled) {
           setMySubjects(subs);
           setStats(dashStats);
           setStreak(streakData);
           setXpSummary(xpData);
-          setBadges(badgeData);
+          setDistrictLB(districtData);
         }
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
@@ -229,6 +335,10 @@ const Dashboard = () => {
   }));
 
   const formatXP = (xp: number) => xp.toLocaleString();
+
+  const currentUserEntry = districtLB?.entries?.find((e: any) => e.is_current_user);
+  const districtRank = currentUserEntry?.rank;
+  const badgeUrl = districtRank ? getDistrictBadgeUrl(districtRank) : null;
 
   return (
     <AppLayout>
@@ -305,100 +415,54 @@ const Dashboard = () => {
               {subjectsLoading && <span className="w-4 h-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin flex-shrink-0" />}
             </div>
 
-            {/* Desktop rich card */}
-            <div className="hidden md:flex bg-card border border-border/60 rounded-2xl p-4 sm:p-5 flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-primary shadow-sm h-full">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shadow-sm flex-shrink-0">
-                  <GraduationCap className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Your Grade</p>
-                  <h3 className="text-lg font-display font-black text-foreground">{profile.grade.name}</h3>
-                  {profile.district && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                {!subjectsLoading && mySubjects.length > 0 && mySubjects.map((s, i) => {
-                  const color = getSubjectColor(i);
-                  return (
-                    <span
-                      key={s.id}
-                      className={`px-3 py-1.5 rounded-full text-[11px] font-bold border ${color.bg} ${color.text} ${color.border}`}
-                    >
-                      {s.name}
-                    </span>
-                  );
-                })}
-                {subjectsLoading && <span className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />}
+      {/* ── District Rank Badge ── */}
+      {badgeUrl && districtRank && RANK_THEMES[districtRank] && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 100 }}
+          className={cn("relative mb-6 md:mb-8 w-full p-[2px] rounded-2xl overflow-hidden group", RANK_THEMES[districtRank].shadow)}
+        >
+          {/* Animated gradient border */}
+          <div className={cn("absolute inset-0 bg-gradient-to-r opacity-80", RANK_THEMES[districtRank].borderGradient)} />
+          
+          <div className="relative flex flex-col sm:flex-row items-center gap-5 sm:gap-6 bg-card/95 dark:bg-card/90 backdrop-blur-md rounded-2xl px-5 py-5 md:px-7 md:py-6 w-full h-full">
+            <div className="relative flex-shrink-0">
+              <div className={cn("absolute inset-0 blur-2xl rounded-full", RANK_THEMES[districtRank].glowColor)} />
+              <img 
+                src={badgeUrl} 
+                alt={`District Rank ${districtRank} Badge`} 
+                className="relative w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-2xl z-10 transition-transform duration-500 group-hover:scale-110" 
+              />
+              <div className={cn("absolute -top-2 -right-2 text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-lg border-2 border-white dark:border-slate-900 z-20", RANK_THEMES[districtRank].badgeBg)}>
+                Rank {districtRank}
               </div>
             </div>
-          </motion.div>
-        )}
-
-        {/* Right Corner: Badges Spotlight */}
-        {badges.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-            className="xl:col-span-1 h-full"
-          >
-            <div className="bg-card border-none rounded-2xl p-4 sm:p-5 flex flex-col justify-center h-full shadow-[0_0_40px_-10px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_-10px_rgba(255,255,255,0.03)] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
-
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest"> Earned Badges</p>
-                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                  {badges.length}
-                </span>
+            
+            <div className="text-center sm:text-left flex-1 z-10 min-w-0">
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-1.5">
+                <Trophy className={cn("w-5 h-5 fill-current/20 animate-pulse", RANK_THEMES[districtRank].iconColor)} />
+                <h3 className={cn("text-lg sm:text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent truncate", RANK_THEMES[districtRank].textGradient)}>
+                  {RANK_THEMES[districtRank].title}
+                </h3>
               </div>
-
-              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide scroll-smooth">
-                {badges.map((badge) => {
-                  const label = badge.name
-                    .replace(/_/g, " ")
-                    .replace(/\b\w/g, (c) => c.toUpperCase());
-                  const awardedDate = badge.awarded_at
-                    ? new Date(badge.awarded_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                    : "";
-                  return (
-                    <div key={badge.id} className="flex items-center gap-3 min-w-max">
-                      <div className="relative flex-shrink-0">
-                        <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
-                        {badge.description ? (
-                          <img
-                            src={badge.description}
-                            alt={label}
-                            className="w-16 h-16 object-contain drop-shadow-md relative z-10"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                          />
-                        ) : (
-                          <div className="w-16 h-16 rounded-xl gradient-primary flex items-center justify-center relative z-10 shadow-sm border border-primary-foreground/20">
-                            <span className="text-2xl drop-shadow-sm">🏅</span>
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-display font-bold text-foreground leading-tight">{label}</h4>
-                        {awardedDate && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{awardedDate}</p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <p className="text-sm font-semibold text-foreground mb-1 truncate">
+                You are currently <span className={cn("font-extrabold uppercase", RANK_THEMES[districtRank].iconColor)}>#{districtRank}</span> in {profile?.district?.name}!
+              </p>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-lg">
+                {RANK_THEMES[districtRank].description}
+              </p>
             </div>
-          </motion.div>
-        )}
-      </div>
+            
+            {/* Decorative shining stars */}
+            <Star className={cn("hidden sm:block absolute top-6 right-6 w-5 h-5 opacity-50 animate-pulse", RANK_THEMES[districtRank].iconColor)} />
+            <Star className={cn("hidden sm:block absolute bottom-6 right-16 w-3 h-3 opacity-40 animate-pulse", RANK_THEMES[districtRank].iconColor)} style={{ animationDelay: "1s" }} />
+          </div>
+        </motion.div>
+      )}
 
-      {/* ── Primary KPIs (4 cards) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-3 md:mb-4">
+      {/* ── Primary KPIs (3 cards) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-3 md:mb-4">
         <StatCard
           icon={Star}
           label="Total XP"
