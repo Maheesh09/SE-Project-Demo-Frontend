@@ -136,8 +136,16 @@ export interface RecentQuiz {
     completed_at: string;
 }
 
+export interface LevelInfo {
+    level: number;
+    level_name: string;
+    xp_to_next_level: number;
+    progress_percentage: number;
+}
+
 export interface DashboardStats {
     total_xp: number;
+    current_level: LevelInfo;
     total_quizzes: number;
     average_score: number | null;
     subject_stats: SubjectStat[];
@@ -322,6 +330,12 @@ export interface LeaderboardEntry {
     avatar_key: string | null;
     total_xp: number;
     is_current_user: boolean;
+}
+export interface StudentBadge {
+    id: number;
+    name: string;
+    description: string | null; // Supabase public image URL
+    awarded_at: string;
 }
 
 // ─── Admin Types ─────────────────────────────────────────────────────────────
@@ -549,6 +563,9 @@ export const api = {
 
     getLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<LeaderboardEntry[]>("/api/v1/me/leaderboard", token, { xClerkUserId, xEmail }),
+
+    getMyBadges: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StudentBadge[]>("/api/v1/me/badges", token, { xClerkUserId, xEmail }),
 
     // ── Chat / RAG ──
     getChatSubjects: () =>
