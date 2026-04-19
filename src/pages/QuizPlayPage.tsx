@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api";
+import { api, type QuizSubmitResponse } from "@/lib/api";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useToast } from "@/hooks/use-toast";
@@ -97,7 +97,8 @@ export default function QuizPlayPage() {
         if (isSubmitting || isStartingNext) return;
         setIsSubmitting(true);
         try {
-            const data = await submitCurrentQuiz();
+            const data = await submitCurrentQuiz() as QuizSubmitResponse;
+            const newlyEarnedBadges = data.newly_earned_badges || [];
 
             try {
                 const token = await getToken();
@@ -131,7 +132,7 @@ export default function QuizPlayPage() {
 
             // Transform answer_results from backend into the "results" shape
             // that QuizReviewPage expects.
-            const transformedResults = (data.answer_results || []).map((ar: { question_id: number; is_correct: boolean; correct_option_id: number; selected_option_id: number | null }) => ({
+            const transformedResults = (data.answer_results || []).map((ar) => ({
                 question_id: ar.question_id,
                 is_correct: ar.is_correct,
                 correct_option_id: ar.correct_option_id,
@@ -144,6 +145,7 @@ export default function QuizPlayPage() {
                 total_questions: data.total_questions,
                 xp_earned: data.xp_earned,
                 results: transformedResults,
+                newly_earned_badges: newlyEarnedBadges,
             };
 
             // Navigate to the dedicated review page, carrying all data as router state
