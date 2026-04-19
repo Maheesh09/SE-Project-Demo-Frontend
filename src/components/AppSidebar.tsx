@@ -1,7 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Brain, Trophy,
-  BarChart3, MessageCircle, Settings, LogOut, X, Sparkles
+  BarChart3, MessageCircle, Settings, LogOut, X, Sparkles, Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";

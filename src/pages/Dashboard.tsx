@@ -1,3 +1,4 @@
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
@@ -715,6 +716,7 @@ const Dashboard = () => {
                   id: -999,
                   name: "7 day streak",
                   description: "Awarded for completing quizzes 7 days in a row.",
+                  category: "streak" as string | null,
                   badge_key: "seven_day_streak",
                   image_url: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/streak_7day.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9zdHJlYWtfN2RheS5wbmciLCJpYXQiOjE3NzU4MTc4ODMsImV4cCI6MTgwNzM1Mzg4M30.ko7VlDRFpaQat6pA9tyvUD8CLg05WhcYV3hlQmW-bBI"
                 }
@@ -980,4 +982,54 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+// ─── Error Boundary (catches runtime errors so the page shows an error instead of blank) ──
+
+class DashboardErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; message: string }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, message: "" };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, message: error?.message ?? String(error) };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error("[Dashboard] Uncaught error:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-8 bg-background text-foreground">
+          <div className="text-5xl">⚠️</div>
+          <h1 className="text-xl font-bold">Dashboard failed to load</h1>
+          <p className="text-sm text-muted-foreground max-w-md text-center">
+            An unexpected error occurred. Check the browser console for details.
+          </p>
+          <pre className="text-xs bg-muted p-3 rounded-lg max-w-xl w-full overflow-auto">
+            {this.state.message}
+          </pre>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 px-4 py-2 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition"
+          >
+            Reload
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const DashboardWithBoundary = () => (
+  <DashboardErrorBoundary>
+    <Dashboard />
+  </DashboardErrorBoundary>
+);
+
+export default DashboardWithBoundary;

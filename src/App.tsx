@@ -40,7 +40,7 @@ const queryClient = new QueryClient();
  */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isSignedIn, isLoaded: authLoaded } = useAuth();
-  const { profile, isLoading: profileLoading } = useProfile();
+  const { profile, isLoading: profileLoading, error: profileError } = useProfile();
 
   // While Clerk auth or backend profile is loading, show a spinner
   if (!authLoaded || profileLoading) {
@@ -56,11 +56,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Signed in but profile not completed (or null due to error) → force profile completion
-  if (!profile || !profile.profile_completed) {
+  // If there was a profile fetch error, still render the page so we don't
+  // redirect to /complete-profile in an infinite loop. The page itself will
+  // handle the null profile gracefully.
+  if (profileError) {
+    return <>{children}</>;
+  }
+
+  // Signed in but profile definitively not completed → force profile completion
+  if (profile && !profile.profile_completed) {
     return <Navigate to="/complete-profile" replace />;
   }
 
+  // Profile null but no error = still loading edge case, show children
   return <>{children}</>;
 };
 
