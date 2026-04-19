@@ -3,8 +3,7 @@ import { useState, useEffect } from "react";
 import {
   Star, Brain, BookOpen, TrendingUp, BarChart3, ArrowRight,
   Calendar, Trophy, Check, GraduationCap, ChevronRight, Zap,
-  Flame, Target, Award,
-  Flame, Target, ChevronDown, MousePointerClick,
+  Flame, Target, Award, ChevronDown, MousePointerClick,
 } from "lucide-react";
 import BlurText from "@/components/BlurText";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,14 +15,10 @@ import StreakDisplay from "@/components/StreakDisplay";
 import { useProfile } from "@/hooks/useProfile";
 import { useStreakBadge } from "@/hooks/useStreakBadge";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary } from "@/lib/api";
+import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type DistrictLeaderboard } from "@/lib/api";
 import { BadgeCard } from "@/components/BadgeCard";
-
 import { useStreak } from "@/hooks/useStreak";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, useUser } from "@clerk/clerk-react";
-import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type DistrictLeaderboard } from "@/lib/api";
-
 import { getDistrictBadgeUrl } from "@/lib/badges";
 
 const RANK_THEMES: Record<number, any> = {
@@ -421,6 +416,40 @@ const Dashboard = () => {
               )}
               {subjectsLoading && <span className="w-4 h-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin flex-shrink-0" />}
             </div>
+
+            {/* Desktop Grade Banner */}
+            <div className="hidden md:flex bg-card border border-border/60 border-l-[6px] border-l-primary rounded-2xl p-6 h-full items-center justify-between shadow-sm">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                  <GraduationCap className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-1">{profile.grade.name}</h3>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    {profile.district && (
+                      <span className="text-sm font-medium">{profile.district.name}</span>
+                    )}
+                    {profile.province && (
+                      <>
+                        <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                        <span className="text-sm font-medium">{profile.province.name}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                {!subjectsLoading && (
+                  <div className="text-right">
+                    <p className="text-2xl font-black text-primary leading-none">{mySubjects.length}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Subjects Enrolled</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
 
       {/* ── District Rank Badge ── */}
       {badgeUrl && districtRank && RANK_THEMES[districtRank] && (
