@@ -1,5 +1,5 @@
-import { motion } from "framer-motion"; //stat
-import { LucideIcon, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { motion } from "framer-motion";
+import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
@@ -7,9 +7,14 @@ interface StatCardProps {
   label: string;
   value: string;
   subtitle?: string;
-  subtitleTrend?: "up" | "down" | "neutral";
+  /** Tailwind text color class, e.g. "text-amber-500" */
   colorClass?: string;
+  /** Hex or CSS color for the left accent border */
+  accentColor?: string;
+  /** Tailwind bg+opacity class for the icon pill, e.g. "bg-amber-500/10" */
+  iconBgClass?: string;
   delay?: number;
+  size?: "lg" | "sm";
 }
 
 const StatCard = ({
@@ -17,20 +22,34 @@ const StatCard = ({
   label,
   value,
   subtitle,
-  subtitleTrend = "neutral",
   colorClass = "text-primary",
+  accentColor,
+  iconBgClass,
   delay = 0,
+  size = "lg",
 }: StatCardProps) => {
-  const TrendIcon =
-    subtitleTrend === "up" ? TrendingUp :
-      subtitleTrend === "down" ? TrendingDown : Minus;
-
-  const trendColor =
-    subtitleTrend === "up" ? "text-success bg-success/10" :
-      subtitleTrend === "down" ? "text-destructive bg-destructive/10" :
-        "text-muted-foreground bg-muted";
-
-  const iconBg = colorClass.replace("text-", "bg-").replace(/text-\[.+\]/, "bg-primary") + "/10";
+  if (size === "sm") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay, duration: 0.3 }}
+        className="bg-card border border-border/60 rounded-xl p-3 flex items-center gap-3 hover:shadow-sm hover:border-border transition-all duration-200"
+      >
+        <div className={cn(
+          "w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0",
+          colorClass,
+          iconBgClass ?? "bg-muted"
+        )}>
+          <Icon className="w-3.5 h-3.5" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-base font-bold text-foreground tabular-nums leading-none">{value}</p>
+          <p className="text-[10px] text-muted-foreground font-medium mt-0.5 truncate">{label}</p>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -38,45 +57,30 @@ const StatCard = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.35 }}
       className={cn(
-        "bg-card border border-border/60 rounded-xl transition-all duration-300",
-        // Mobile: compact horizontal row
-        "p-3 flex items-center gap-3 hover:shadow-sm hover:-translate-y-0.5",
-        // Desktop: vertical card with larger content
-        "md:p-5 md:flex-col md:items-start md:gap-3 md:hover:shadow-md md:rounded-2xl"
+        "bg-card border border-border/60 rounded-xl md:rounded-2xl",
+        "p-3.5 md:p-4 flex items-center gap-3.5 md:flex-col md:items-start md:gap-2.5",
+        "hover:shadow-md hover:-translate-y-0.5 transition-all duration-200",
+        accentColor ? "border-l-[3px]" : ""
       )}
+      style={accentColor ? { borderLeftColor: accentColor } : undefined}
     >
       {/* Icon */}
       <div className={cn(
-        "rounded-lg flex items-center justify-center flex-shrink-0",
-        "w-8 h-8 md:w-10 md:h-10 md:rounded-xl",
+        "w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0",
         colorClass,
-        iconBg
+        iconBgClass ?? "bg-muted"
       )}>
-        <Icon className="w-4 h-4 md:w-5 md:h-5" />
+        <Icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
       </div>
 
-      {/* Mobile: value + label inline | Desktop: stacked with subtitle badge */}
       <div className="min-w-0 flex-1 md:w-full">
-        {/* Desktop top row: value + trend badge */}
-        <div className="md:flex md:items-start md:justify-between md:gap-2 md:mb-1">
-          <p className={cn(
-            "font-display font-bold text-foreground leading-tight tabular-nums",
-            "text-lg md:text-3xl"
-          )}>
-            {value}
-          </p>
-          {/* Trend badge — hidden on mobile to save space */}
-          {subtitle && (
-            <span className={cn(
-              "hidden md:inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full flex-shrink-0",
-              trendColor
-            )}>
-              <TrendIcon className="w-3 h-3" />
-              <span className="truncate max-w-[60px]">{subtitle}</span>
-            </span>
-          )}
-        </div>
-        <p className="text-[10px] md:text-xs text-muted-foreground font-medium truncate">{label}</p>
+        <p className="text-xl md:text-2xl font-bold text-foreground leading-none tabular-nums">
+          {value}
+        </p>
+        <p className="text-[11px] md:text-xs text-muted-foreground font-medium mt-1 truncate">{label}</p>
+        {subtitle && (
+          <p className="text-[10px] text-muted-foreground/70 mt-0.5 truncate hidden md:block">{subtitle}</p>
+        )}
       </div>
     </motion.div>
   );

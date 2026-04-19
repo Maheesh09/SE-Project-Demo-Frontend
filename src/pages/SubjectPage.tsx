@@ -79,8 +79,8 @@ const SubjectPage = () => {
                 const rtype = view === "textbooks" ? "textbook" : "past_paper";
                 const data = await api.getResources(token, subjectId, rtype, user?.id, email);
                 if (!cancelled) setResources(data);
-            } catch (e: any) {
-                if (!cancelled) setResourceError(e.message ?? "Failed to load resources.");
+            } catch (e: unknown) {
+                if (!cancelled) setResourceError(e instanceof Error ? e.message : "Failed to load resources.");
             } finally {
                 if (!cancelled) setLoadingResources(false);
             }
@@ -237,33 +237,25 @@ const SubjectPage = () => {
     const pastPaperCount = "–";
 
     return (
-        <AppLayout>
+    <AppLayout>
             {/* ── Header ── */}
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 md:mb-8">
                 <button
                     onClick={() => view === "overview" ? navigate("/courses") : setView("overview")}
-                    className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors mb-4"
+                    className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
                 >
                     <ChevronLeft className="w-4 h-4" />
-                    {view === "overview" ? "Back to My Subjects" : `Back to ${subjectName} Overview`}
+                    {view === "overview" ? "My Subjects" : `${subjectName} Overview`}
                 </button>
 
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        <BlurText
-                            text={view === "overview" ? subjectName : view === "textbooks" ? "Textbooks" : "Past Papers"}
-                            delay={50}
-                            animateBy="words"
-                            direction="top"
-                            className="text-4xl font-display font-bold text-foreground mb-1"
-                        />
-                        <p className="text-sm text-muted-foreground">
-                            {view === "overview" && "Access all learning materials, past papers, and quizzes."}
-                            {view === "textbooks" && `Official ${profile?.grade?.name ?? ""} ${subjectName} textbooks.`}
-                            {view === "past-papers" && `Collection of previous examination papers for ${subjectName}.`}
-                        </p>
-                    </div>
-                </div>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                    {view === "overview" ? subjectName : view === "textbooks" ? "Textbooks" : "Past Papers"}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                    {view === "overview" && "Access all learning materials, past papers, and quizzes."}
+                    {view === "textbooks" && `Official ${profile?.grade?.name ?? ""} ${subjectName} textbooks.`}
+                    {view === "past-papers" && `Previous examination papers for ${subjectName}.`}
+                </p>
             </motion.div>
 
             {/* ── Content ── */}
@@ -274,26 +266,25 @@ const SubjectPage = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-5"
                     >
                         {/* Textbooks */}
                         <div
                             onClick={() => setView("textbooks")}
-                            className="group cursor-pointer bg-card border border-border/50 rounded-2xl p-6 flex flex-col hover:border-primary/40 transition-all shadow-sm hover:-translate-y-1"
+                            className="group cursor-pointer bg-card border border-border/60 border-l-[3px] rounded-2xl p-6 flex flex-col hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                            style={{ borderLeftColor: "#acd663" }}
                         >
-                            <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
-                                <BookOpen className="w-7 h-7 text-primary-foreground" />
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
+                                <BookOpen className="w-5 h-5 text-primary" />
                             </div>
-                            <h3 className="text-xl font-display font-bold text-foreground mb-2">Textbooks</h3>
-                            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                            <h3 className="text-base font-semibold text-foreground mb-1.5">Textbooks</h3>
+                            <p className="text-sm text-muted-foreground mb-5 leading-relaxed flex-1">
                                 Official textbooks and reference materials for your studies.
                             </p>
-                            <div className="mt-auto flex items-center justify-between">
-                                <span className="text-xs font-bold text-muted-foreground bg-muted px-3 py-1 rounded-full uppercase tracking-widest">
-                                    PDF Books
-                                </span>
-                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <ArrowRight className="w-4 h-4" strokeWidth={3} />
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full">PDF Books</span>
+                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <ArrowRight className="w-3.5 h-3.5" />
                                 </div>
                             </div>
                         </div>
@@ -301,21 +292,20 @@ const SubjectPage = () => {
                         {/* Past Papers */}
                         <div
                             onClick={() => setView("past-papers")}
-                            className="group cursor-pointer bg-card border border-border/50 rounded-2xl p-6 flex flex-col hover:border-accent/40 transition-all shadow-sm hover:-translate-y-1"
+                            className="group cursor-pointer bg-card border border-border/60 border-l-[3px] rounded-2xl p-6 flex flex-col hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                            style={{ borderLeftColor: "#60a5fa" }}
                         >
-                            <div className="w-14 h-14 rounded-2xl gradient-accent flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
-                                <FileText className="w-7 h-7 text-accent-foreground" />
+                            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center mb-5">
+                                <FileText className="w-5 h-5 text-blue-600" />
                             </div>
-                            <h3 className="text-xl font-display font-bold text-foreground mb-2">Past Papers</h3>
-                            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-                                Practise with previous papers categorized by year and term.
+                            <h3 className="text-base font-semibold text-foreground mb-1.5">Past Papers</h3>
+                            <p className="text-sm text-muted-foreground mb-5 leading-relaxed flex-1">
+                                Practice with previous papers categorized by year and term.
                             </p>
-                            <div className="mt-auto flex items-center justify-between">
-                                <span className="text-xs font-bold text-muted-foreground bg-muted px-3 py-1 rounded-full uppercase tracking-widest">
-                                    Yearly Collection
-                                </span>
-                                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <ArrowRight className="w-4 h-4" strokeWidth={3} />
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full">Yearly Collection</span>
+                                <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <ArrowRight className="w-3.5 h-3.5" />
                                 </div>
                             </div>
                         </div>
@@ -323,21 +313,20 @@ const SubjectPage = () => {
                         {/* Quizzes */}
                         <div
                             onClick={() => navigate(`/subject/${id}/quizzes`)}
-                            className="group cursor-pointer bg-card border border-border/50 rounded-2xl p-6 flex flex-col hover:border-xp/40 transition-all shadow-sm hover:-translate-y-1"
+                            className="group cursor-pointer bg-card border border-border/60 border-l-[3px] rounded-2xl p-6 flex flex-col hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                            style={{ borderLeftColor: "#f59e0b" }}
                         >
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-xp to-[#b59a68] flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
-                                <Brain className="w-7 h-7 text-white" />
+                            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mb-5">
+                                <Brain className="w-5 h-5 text-amber-600" />
                             </div>
-                            <h3 className="text-xl font-display font-bold text-foreground mb-2">Go to Quizzes</h3>
-                            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-                                Take topic-wise or term-wise quizzes to earn XP rewards.
+                            <h3 className="text-base font-semibold text-foreground mb-1.5">Go to Quizzes</h3>
+                            <p className="text-sm text-muted-foreground mb-5 leading-relaxed flex-1">
+                                Take topic-wise or term-wise quizzes and earn XP rewards.
                             </p>
-                            <div className="mt-auto flex items-center justify-between">
-                                <span className="text-xs font-bold text-muted-foreground bg-muted px-3 py-1 rounded-full uppercase tracking-widest">
-                                    +500 XP Available
-                                </span>
-                                <div className="w-8 h-8 rounded-full bg-xp/10 flex items-center justify-center text-xp opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <ArrowRight className="w-4 h-4" strokeWidth={3} />
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full">+XP Available</span>
+                                <div className="w-7 h-7 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <ArrowRight className="w-3.5 h-3.5" />
                                 </div>
                             </div>
                         </div>
@@ -377,13 +366,13 @@ const ErrorBanner = ({ message }: { message: string }) => (
 );
 
 const EmptyState = ({ type }: { type: string }) => (
-    <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-border/50 rounded-3xl bg-muted/10">
-        <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-            <FileText className="w-8 h-8 text-muted-foreground" />
+    <div className="py-20 flex flex-col items-center justify-center text-center border border-dashed border-border/60 rounded-2xl">
+        <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-4">
+            <FileText className="w-6 h-6 text-muted-foreground/50" />
         </div>
-        <h3 className="text-lg font-display font-bold text-foreground mb-1">No {type} found</h3>
+        <h3 className="text-base font-semibold text-foreground mb-1">No {type} found</h3>
         <p className="text-sm text-muted-foreground max-w-sm">
-            No {type} have been uploaded for this subject yet. Check back later.
+            No {type} have been uploaded for this subject yet.
         </p>
     </div>
 );
