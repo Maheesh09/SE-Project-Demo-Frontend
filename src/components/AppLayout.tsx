@@ -11,16 +11,14 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       <AppSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Mobile Top Navigation */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border/60 bg-background/95 backdrop-blur-md sticky top-0 z-30">
+      <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border/60 bg-background/95 backdrop-blur-md sticky top-0 z-30 shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
-            <img src={mindupLogo} alt="MindUp" className="w-5 h-5 object-contain rounded" />
-          </div>
-          <span className="font-display font-bold text-lg tracking-tight text-foreground">MindUp</span>
+          <img src={mindupLogo} alt="" className="w-6 h-6 object-contain rounded-lg" />
+          <span className="font-bold text-base tracking-tight text-foreground">MindUp</span>
         </div>
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="p-2 -mr-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
+          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />

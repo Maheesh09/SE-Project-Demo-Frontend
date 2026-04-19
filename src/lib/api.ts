@@ -136,8 +136,16 @@ export interface RecentQuiz {
     completed_at: string;
 }
 
+export interface LevelInfo {
+    level: number;
+    level_name: string;
+    xp_to_next_level: number;
+    progress_percentage: number;
+}
+
 export interface DashboardStats {
     total_xp: number;
+    current_level: LevelInfo;
     total_quizzes: number;
     average_score: number | null;
     subject_stats: SubjectStat[];
