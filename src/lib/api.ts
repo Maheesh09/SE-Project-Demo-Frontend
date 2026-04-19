@@ -183,6 +183,7 @@ export interface QuizSessionReview {
     xp_earned: number;
     questions: ReviewQuestion[];
     results: ReviewAnswer[];
+    newly_earned_badges?: NewlyEarnedBadge[];
 }
 
 export interface DistrictLeaderboardEntry {
@@ -245,7 +246,7 @@ export interface StudyStreak {
 }
 
 export interface StreakCompleteResponse {
-    status: "streak_updated" | "already_completed";
+    status: "streak_updated" | "already_completed" | "streak_broken";
     message: string;
     current_streak: number;
     longest_streak: number;
@@ -301,6 +302,14 @@ export interface UserBadge {
     earned_at: string; // ISO-8601 date string (normalised from awarded_at)
 }
 
+/** Raw badge record as returned by the backend. */
+export interface StudentBadge {
+    id: number;
+    student_id: number;
+    awarded_at: string;
+    badge: Badge;
+}
+
 export interface TopicProgress {
     topic_id: number;
     topic_name: string;
@@ -351,11 +360,32 @@ export interface LeaderboardEntry {
     total_xp: number;
     is_current_user: boolean;
 }
-export interface StudentBadge {
-    id: number;
-    name: string;
-    description: string | null; // Supabase public image URL
-    awarded_at: string;
+export interface QuizSubmitResponse {
+    score_percentage: number;
+    xp_earned: number;
+    total_bonus_xp: number;
+    completion_bonus_xp: number;
+    streak_bonus_xp: number;
+    current_streak: number;
+    is_perfect_score: boolean;
+    total_correct: number;
+    total_questions: number;
+    is_beginner: boolean;
+    answer_results: QuizAnswerResult[];
+    newly_earned_badges: NewlyEarnedBadge[];
+}
+
+export interface QuizAnswerResult {
+    question_id: number;
+    is_correct: boolean;
+    correct_option_id: number;
+    selected_option_id: number | null;
+}
+
+export interface NewlyEarnedBadge {
+    badge_id: number;
+    badge_name: string;
+    image_url: string | null;
 }
 
 // ─── Admin Types ─────────────────────────────────────────────────────────────
@@ -503,7 +533,7 @@ export const api = {
         }),
 
     submitQuiz: (token: string, payload: unknown, xClerkUserId?: string, xEmail?: string) =>
-        request<unknown>("/api/v1/quiz/submit", token, {
+        request<QuizSubmitResponse>("/api/v1/quiz/submit", token, {
             method: "POST",
             body: JSON.stringify(payload),
             xClerkUserId,
@@ -567,7 +597,7 @@ export const api = {
      * frontend consumers use a single consistent field name.
      */
     getBadges: async (token: string, xClerkUserId?: string, xEmail?: string): Promise<UserBadge[]> => {
-        const raw = await request<{ id: number; student_id: number; awarded_at: string; badge: Badge }[]>(
+        const raw = await request<StudentBadge[]>(
             "/api/v1/me/badges", token, { xClerkUserId, xEmail }
         );
         return raw.map((item) => ({

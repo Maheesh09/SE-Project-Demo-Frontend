@@ -1,11 +1,12 @@
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { CheckCircle2, XCircle, Trophy, ArrowLeft, RotateCcw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle2, XCircle, Trophy, ArrowLeft, RotateCcw, Award } from "lucide-react";
+import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
-import { api, type QuizSessionReview } from "@/lib/api";
+import { api, type QuizSessionReview, type NewlyEarnedBadge } from "@/lib/api";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useState, useEffect } from "react";
 
 // ─── Types (mirrors backend QuizSubmitResponse) ──────────────────────────────
 interface QuestionOption {
@@ -38,10 +39,98 @@ interface ReviewData {
         total_questions: number;
         xp_earned: number;
         results: QuizQuestionResult[];
+        newly_earned_badges?: NewlyEarnedBadge[];
     };
     questions: QuizQuestion[];
     answers: Record<number, number>; // question_id → selected_option_id
     quizMeta?: { subjectId: number; mode: "term" | "topic"; topicId: number | null };
+}
+
+// ─── Celebration Component ───────────────────────────────────────────────────
+
+function BadgeCelebration({ badges, onComplete }: { badges: NewlyEarnedBadge[], onComplete: () => void }) {
+    useEffect(() => {
+        // Fire confetti!
+        const duration = 3 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+        const interval: any = setInterval(function() {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        }, 250);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+        >
+            <div className="max-w-md w-full bg-card border border-border/60 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                {/* Background Glow */}
+                <div className="absolute inset-0 bg-primary/5 pointer-events-none" />
+                
+                <div className="relative z-10 text-center space-y-6">
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", damping: 12, stiffness: 200 }}
+                        className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto"
+                    >
+                        <Award className="w-10 h-10 text-primary" />
+                    </motion.div>
+                    
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-bold text-foreground">Achievement Unlocked!</h2>
+                        <p className="text-sm text-muted-foreground">You've earned new badges for your hard work.</p>
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-4 py-4">
+                        {badges.map((badge, idx) => (
+                            <motion.div
+                                key={badge.badge_id}
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.2 + idx * 0.1 }}
+                                className="flex flex-col items-center gap-2"
+                            >
+                                <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center border border-border/40 overflow-hidden">
+                                    {badge.image_url ? (
+                                        <img src={badge.image_url} alt={badge.badge_name} className="w-full h-full object-contain" />
+                                    ) : (
+                                        <Trophy className="w-8 h-8 text-muted-foreground/40" />
+                                    )}
+                                </div>
+                                <span className="text-xs font-bold text-foreground max-w-[80px] truncate">
+                                    {badge.badge_name.replace(/_/g, " ")}
+                                </span>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    <Button 
+                        onClick={onComplete}
+                        className="w-full py-6 rounded-2xl text-base font-bold shadow-lg"
+                    >
+                        Awesome!
+                    </Button>
+                </div>
+            </div>
+        </motion.div>
+    );
 }
 
 // ─── Difficulty badge colours ─────────────────────────────────────────────────
@@ -75,6 +164,7 @@ function reviewFromApi(data: QuizSessionReview): ReviewData {
                 correct_option_id: r.correct_option_id,
                 selected_option_id: r.selected_option_id,
             })),
+            newly_earned_badges: data.newly_earned_badges,
         },
         questions: data.questions as QuizQuestion[],
         answers,
@@ -91,6 +181,7 @@ export default function QuizReviewPage() {
     const { user } = useUser();
     const { profile } = useProfile();
     const [isStartingNext, setIsStartingNext] = useState(false);
+    const [showCelebration, setShowCelebration] = useState(false);
 
     // ── Mode detection ──────────────────────────────────────────────────────
     // Mode A: came straight from finishing a quiz → router state has result+questions+answers
@@ -213,6 +304,15 @@ export default function QuizReviewPage() {
 
     return (
         <div className="min-h-screen bg-[#f5f0e8]">
+            <AnimatePresence>
+                {showCelebration && result.newly_earned_badges && (
+                    <BadgeCelebration 
+                        badges={result.newly_earned_badges} 
+                        onComplete={() => setShowCelebration(false)} 
+                    />
+                )}
+            </AnimatePresence>
+
             {/* ── Page header ─────────────────────────────────────────────── */}
             <div className="sticky top-0 z-20 bg-[#f5f0e8]/95 backdrop-blur border-b border-[#d4c5b0] px-4 py-3 flex items-center gap-3">
                 <button
