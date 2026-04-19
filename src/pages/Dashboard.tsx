@@ -247,31 +247,47 @@ const Dashboard = () => {
         </div>
       </motion.div>
 
-      {/* ── Grade banner (inline pill) ── */}
-      {profile?.grade && (
-        <motion.div
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="flex items-center gap-2 flex-wrap mb-6 md:mb-8"
-        >
+      {/* ── Grade + Level banner (inline pills) ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="flex items-center gap-2 flex-wrap mb-6 md:mb-8"
+      >
+        {profile?.grade && (
           <div className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary rounded-full px-3 py-1 text-[11px] font-semibold">
             <GraduationCap className="w-3 h-3" />
             <span>{profile.grade.name}</span>
           </div>
-          {profile.district && (
-            <span className="text-[11px] text-muted-foreground">
-              {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
-            </span>
-          )}
-          {!subjectsLoading && mySubjects.length > 0 && (
-            <span className="text-[11px] text-muted-foreground">· {mySubjects.length} subjects enrolled</span>
-          )}
-        </motion.div>
-      )}
+        )}
+        
+        {!statsLoading && stats?.current_level && (
+          <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 rounded-full px-3 py-1 text-[11px] font-semibold transition-all hover:bg-amber-500/20">
+            <Trophy className="w-3 h-3" />
+            <span>{stats.current_level.level_name}</span>
+            {stats.current_level.progress_percentage > 0 && (
+              <div className="w-12 h-1 bg-amber-500/20 rounded-full overflow-hidden ml-1 hidden sm:block">
+                <div 
+                  className="h-full bg-amber-500" 
+                  style={{ width: `${stats.current_level.progress_percentage}%` }}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
-      {/* ── Primary KPIs (3 cards) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-3 md:mb-4">
+        {profile?.district && (
+          <span className="text-[11px] text-muted-foreground">
+            {profile.district.name}{profile.province ? `, ${profile.province.name}` : ""}
+          </span>
+        )}
+        {!subjectsLoading && mySubjects.length > 0 && (
+          <span className="text-[11px] text-muted-foreground">· {mySubjects.length} subjects enrolled</span>
+        )}
+      </motion.div>
+
+      {/* ── Primary KPIs (4 cards) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-3 md:mb-4">
         <StatCard
           icon={Star}
           label="Total XP"
@@ -283,6 +299,18 @@ const Dashboard = () => {
           delay={0}
         />
         <StatCard
+          icon={Trophy}
+          label="Current Level"
+          value={statsLoading ? "…" : stats?.current_level?.level_name ?? "Level 1"}
+          subtitle={stats?.current_level?.xp_to_next_level 
+            ? `${formatXP(stats.current_level.xp_to_next_level)} XP to next level` 
+            : "Maximum level achieved"}
+          colorClass="text-emerald-500"
+          accentColor="#10b981"
+          iconBgClass="bg-emerald-100 dark:bg-emerald-900/20"
+          delay={0.06}
+        />
+        <StatCard
           icon={Flame}
           label="Study Streak"
           value={statsLoading ? "…" : streak ? `${streak.current_streak}d` : "0d"}
@@ -290,7 +318,7 @@ const Dashboard = () => {
           colorClass="text-orange-500"
           accentColor="#f97316"
           iconBgClass="bg-orange-100 dark:bg-orange-900/20"
-          delay={0.06}
+          delay={0.12}
         />
         <StatCard
           icon={TrendingUp}
@@ -300,7 +328,7 @@ const Dashboard = () => {
           colorClass="text-primary"
           accentColor="#acd663"
           iconBgClass="bg-primary/10"
-          delay={0.12}
+          delay={0.18}
         />
       </div>
 
