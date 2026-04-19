@@ -287,17 +287,18 @@ export interface XpSummary {
 export interface Badge {
     id: number;
     name: string;
-    description: string;
-    image_url: string;
-    /** Slug-style key, e.g. "seven_day_streak" */
-    badge_key: string;
+    description: string | null;
+    image_url: string | null;
+    category: string | null;
+    /** Slug-style key, e.g. "seven_day_streak" — may be absent on older records */
+    badge_key?: string;
 }
 
 /** A badge that has been awarded to the current student. */
 export interface UserBadge {
     id: number;
     badge: Badge;
-    earned_at: string; // ISO-8601 date string
+    earned_at: string; // ISO-8601 date string (normalised from awarded_at)
 }
 
 export interface TopicProgress {
@@ -562,11 +563,19 @@ export const api = {
     // ── Badges ──
     /**
      * Returns all badges the current student has earned.
-     * The 7-day streak badge (badge_key: "seven_day_streak") is included
-     * here once the backend awards it.
+     * Normalises the backend's `awarded_at` field to `earned_at` so all
+     * frontend consumers use a single consistent field name.
      */
-    getBadges: (token: string, xClerkUserId?: string, xEmail?: string) =>
-        request<UserBadge[]>("/api/v1/me/badges", token, { xClerkUserId, xEmail }),
+    getBadges: async (token: string, xClerkUserId?: string, xEmail?: string): Promise<UserBadge[]> => {
+        const raw = await request<{ id: number; student_id: number; awarded_at: string; badge: Badge }[]>(
+            "/api/v1/me/badges", token, { xClerkUserId, xEmail }
+        );
+        return raw.map((item) => ({
+            id: item.id,
+            badge: item.badge,
+            earned_at: item.awarded_at,
+        }));
+    },
     // ── Daily Streak (MIN-63 new endpoints) ──
     getDailyStreak: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<StudyStreak>("/api/v1/streaks/current", token, { xClerkUserId, xEmail }),

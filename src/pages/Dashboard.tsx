@@ -1,10 +1,10 @@
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
   Star, Brain, BookOpen, TrendingUp, BarChart3, ArrowRight,
   Calendar, Trophy, Check, GraduationCap, ChevronRight, Zap,
-  Flame, Target, Award,
-  Flame, Target, ChevronDown, MousePointerClick,
+  Flame, Target, Award, ChevronDown, MousePointerClick,
 } from "lucide-react";
 import BlurText from "@/components/BlurText";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,14 +16,10 @@ import StreakDisplay from "@/components/StreakDisplay";
 import { useProfile } from "@/hooks/useProfile";
 import { useStreakBadge } from "@/hooks/useStreakBadge";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary } from "@/lib/api";
+import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type DistrictLeaderboard } from "@/lib/api";
 import { BadgeCard } from "@/components/BadgeCard";
-
 import { useStreak } from "@/hooks/useStreak";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, useUser } from "@clerk/clerk-react";
-import { api, type Subject, type DashboardStats, type StudyStreak, type XpSummary, type DistrictLeaderboard } from "@/lib/api";
-
 import { getDistrictBadgeUrl } from "@/lib/badges";
 
 const RANK_THEMES: Record<number, any> = {
@@ -422,6 +418,40 @@ const Dashboard = () => {
               {subjectsLoading && <span className="w-4 h-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin flex-shrink-0" />}
             </div>
 
+            {/* Desktop Grade Banner */}
+            <div className="hidden md:flex bg-card border border-border/60 border-l-[6px] border-l-primary rounded-2xl p-6 h-full items-center justify-between shadow-sm">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                  <GraduationCap className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-1">{profile.grade.name}</h3>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    {profile.district && (
+                      <span className="text-sm font-medium">{profile.district.name}</span>
+                    )}
+                    {profile.province && (
+                      <>
+                        <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                        <span className="text-sm font-medium">{profile.province.name}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                {!subjectsLoading && (
+                  <div className="text-right">
+                    <p className="text-2xl font-black text-primary leading-none">{mySubjects.length}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Subjects Enrolled</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
       {/* ── District Rank Badge ── */}
       {badgeUrl && districtRank && RANK_THEMES[districtRank] && (
         <motion.div
@@ -686,6 +716,7 @@ const Dashboard = () => {
                   id: -999,
                   name: "7 day streak",
                   description: "Awarded for completing quizzes 7 days in a row.",
+                  category: "streak" as string | null,
                   badge_key: "seven_day_streak",
                   image_url: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/streak_7day.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9zdHJlYWtfN2RheS5wbmciLCJpYXQiOjE3NzU4MTc4ODMsImV4cCI6MTgwNzM1Mzg4M30.ko7VlDRFpaQat6pA9tyvUD8CLg05WhcYV3hlQmW-bBI"
                 }
@@ -951,4 +982,54 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+// ─── Error Boundary (catches runtime errors so the page shows an error instead of blank) ──
+
+class DashboardErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; message: string }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, message: "" };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, message: error?.message ?? String(error) };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error("[Dashboard] Uncaught error:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-8 bg-background text-foreground">
+          <div className="text-5xl">⚠️</div>
+          <h1 className="text-xl font-bold">Dashboard failed to load</h1>
+          <p className="text-sm text-muted-foreground max-w-md text-center">
+            An unexpected error occurred. Check the browser console for details.
+          </p>
+          <pre className="text-xs bg-muted p-3 rounded-lg max-w-xl w-full overflow-auto">
+            {this.state.message}
+          </pre>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 px-4 py-2 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition"
+          >
+            Reload
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const DashboardWithBoundary = () => (
+  <DashboardErrorBoundary>
+    <Dashboard />
+  </DashboardErrorBoundary>
+);
+
+export default DashboardWithBoundary;
