@@ -316,6 +316,12 @@ export interface LeaderboardEntry {
     total_xp: number;
     is_current_user: boolean;
 }
+export interface StudentBadge {
+    id: number;
+    name: string;
+    description: string | null; // Supabase public image URL
+    awarded_at: string;
+}
 
 // ─── Admin Types ─────────────────────────────────────────────────────────────
 
@@ -521,6 +527,9 @@ export const api = {
 
     getLeaderboard: (token: string, xClerkUserId?: string, xEmail?: string) =>
         request<LeaderboardEntry[]>("/api/v1/me/leaderboard", token, { xClerkUserId, xEmail }),
+
+    getMyBadges: (token: string, xClerkUserId?: string, xEmail?: string) =>
+        request<StudentBadge[]>("/api/v1/me/badges", token, { xClerkUserId, xEmail }),
 
     // ── Chat / RAG ──
     getChatSubjects: () =>
