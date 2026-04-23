@@ -2,8 +2,18 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+// iPhone-style cards: bigger corners, layered shadow, springy transitions.
+// Add "lift-hover" or "glass" via className for richer effects.
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)} {...props} />
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-2xl border bg-card text-card-foreground shadow-sm",
+      "transition-all duration-300 ease-quint",
+      className,
+    )}
+    {...props}
+  />
 ));
 Card.displayName = "Card";
 

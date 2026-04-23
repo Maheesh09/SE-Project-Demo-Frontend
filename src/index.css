@@ -7,140 +7,175 @@
 
 @layer base {
   :root {
-    /* Palette: Lime Green #acd663 | Cream #f7f5df | Tan #d4a87a | Taupe #b08a68 */
+    /* ────────────────────────────────────────────────────────── */
+    /* Palette: "Sage & Stone" — calm cream surfaces, lime accents */
+    /* iPhone-style polish: layered shadows, generous radius,      */
+    /* spring easing.                                              */
+    /* ────────────────────────────────────────────────────────── */
 
-    /* Background: warm cream matching landing page #f7f5df */
-    --background: 52 58% 93%;
-    --foreground: 28 35% 15%;
+    /* Surfaces — soft warm off-white, low saturation */
+    --background: 40 25% 96%;
+    --foreground: 28 30% 18%;
 
-    /* Cards: clean white with slight warmth */
-    --card: 48 40% 97%;
-    --card-foreground: 28 35% 15%;
+    /* Cards lift from cream with pure white */
+    --card: 0 0% 100%;
+    --card-foreground: 28 30% 18%;
 
-    --popover: 48 40% 97%;
-    --popover-foreground: 28 35% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 28 30% 18%;
 
-    /* Primary: Bright lime green #acd663 */
-    --primary: 82 55% 61%;
-    --primary-foreground: 0 0% 0%;
+    /* Primary: deeper lime so AA-contrast on white buttons */
+    --primary: 82 55% 45%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary: warm cream tint */
-    --secondary: 48 45% 91%;
-    --secondary-foreground: 28 30% 25%;
+    /* Secondary: subtle warm grey */
+    --secondary: 40 18% 93%;
+    --secondary-foreground: 28 25% 22%;
 
-    /* Muted: pale cream */
-    --muted: 48 30% 90%;
-    --muted-foreground: 28 15% 45%;
+    /* Muted surfaces */
+    --muted: 40 15% 92%;
+    --muted-foreground: 28 12% 42%;
 
-    /* Accent: Tan #d4a87a */
-    --accent: 30 52% 65%;
+    /* Accent: rich terracotta — warm pop */
+    --accent: 30 60% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 60% 50%;
+    --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 48 25% 85%;
-    --input: 48 25% 85%;
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
 
-    /* Ring: Lime green */
-    --ring: 82 55% 61%;
+    --ring: 82 55% 45%;
 
-    --radius: 0.75rem;
+    /* Generous corners — iOS-like */
+    --radius: 1rem;
 
-    /* Sidebar - bright lime green matching #acd663 */
-    --sidebar-background: 82 55% 61%;
-    --sidebar-foreground: 28 35% 15%;
-    --sidebar-primary: 28 35% 15%;
-    --sidebar-primary-foreground: 48 58% 95%;
-    --sidebar-accent: 82 45% 50%;
-    --sidebar-accent-foreground: 28 35% 15%;
-    --sidebar-border: 82 45% 55%;
-    --sidebar-ring: 28 35% 15%;
+    /* Sidebar: cream surface, NOT full-lime (kills visual shouting) */
+    --sidebar-background: 40 20% 98%;
+    --sidebar-foreground: 28 30% 22%;
+    --sidebar-primary: 82 55% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 18% 92%;
+    --sidebar-accent-foreground: 28 30% 22%;
+    --sidebar-border: 40 15% 88%;
+    --sidebar-ring: 82 55% 45%;
 
-    /* Custom tokens */
-    --success: 82 50% 48%;
+    /* Semantic tokens */
+    --success: 142 60% 42%;
     --success-foreground: 0 0% 100%;
-    --warning: 30 52% 65%;
-    --warning-foreground: 0 0% 100%;
-    /* XP: Tan */
-    --xp: 30 52% 65%;
-    /* Streak: Taupe */
-    --streak: 28 27% 55%;
+    --warning: 35 90% 55%;
+    --warning-foreground: 28 35% 12%;
+    --xp: 30 60% 50%;
+    --streak: 18 75% 55%;
 
-    /* Course color tokens */
-    --course-science: 82 55% 61%;
-    --course-english: 30 52% 65%;
-    --course-maths: 28 27% 55%;
-    --course-civics: 82 35% 45%;
-    --course-history: 20 35% 55%;
-    --course-health: 82 45% 55%;
+    /* Course tokens spread across the wheel — each subject is now distinct */
+    --course-science:  142 55% 45%;  /* green */
+    --course-english:  25  80% 55%;  /* orange */
+    --course-maths:    265 65% 60%;  /* purple */
+    --course-civics:   195 75% 45%;  /* teal */
+    --course-history:  0   65% 55%;  /* red */
+    --course-health:   330 70% 60%;  /* pink */
 
-    /* Gradients using palette - bright lime green */
-    --gradient-primary: linear-gradient(135deg, #acd663, #96ba50);
-    --gradient-accent: linear-gradient(135deg, hsl(30, 52%, 65%), hsl(28, 27%, 55%));
-    --gradient-sidebar: linear-gradient(180deg, #acd663, #96ba50);
-    --gradient-card-hover: linear-gradient(135deg, rgba(172, 214, 99, 0.12), rgba(212, 168, 122, 0.06));
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(82, 55%, 50%), hsl(95, 50%, 42%));
+    --gradient-accent: linear-gradient(135deg, hsl(30, 60%, 55%), hsl(20, 60%, 48%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(40, 20%, 98%), hsl(40, 18%, 95%));
+    --gradient-card-hover: linear-gradient(135deg, rgba(172, 214, 99, 0.10), rgba(212, 132, 80, 0.05));
 
-    /* Shadows - subtle clean tone */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
-    --shadow-glow: 0 0 20px rgba(172, 214, 99, 0.35);
+    /* iOS-style layered shadows — softer + more depth */
+    --shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.04),
+                 0 1px 3px rgba(28, 25, 23, 0.06);
+    --shadow-md: 0 2px 4px rgba(28, 25, 23, 0.05),
+                 0 6px 16px rgba(28, 25, 23, 0.08);
+    --shadow-lg: 0 4px 8px rgba(28, 25, 23, 0.04),
+                 0 16px 40px rgba(28, 25, 23, 0.10);
+    --shadow-glow: 0 0 24px rgba(141, 184, 70, 0.30);
 
-    /* Bento glow - lime green rgb */
-    --bento-glow: 172, 214, 99;
+    /* Spring easing curves — iOS-feel motion */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+
+    /* Bento glow rgb */
+    --bento-glow: 141, 184, 70;
   }
 
   .dark {
-    /* Dark mode: rich taupe/brown tones */
-    --background: 28 20% 10%;
-    --foreground: 38 40% 88%;
-    --card: 28 18% 14%;
-    --card-foreground: 38 40% 88%;
-    --popover: 28 18% 14%;
-    --popover-foreground: 38 40% 88%;
-    /* Primary: Bright lime green */
-    --primary: 82 50% 55%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 30 18% 22%;
-    --secondary-foreground: 38 35% 75%;
-    --muted: 28 15% 20%;
-    --muted-foreground: 30 15% 55%;
-    /* Accent: Tan */
-    --accent: 30 45% 58%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 28 15% 22%;
-    --input: 28 15% 22%;
-    --ring: 88 25% 62%;
-    --sidebar-background: 28 22% 8%;
-    --sidebar-foreground: 38 35% 68%;
-    --sidebar-primary: 88 25% 62%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 18% 16%;
-    --sidebar-accent-foreground: 38 35% 88%;
-    --sidebar-border: 30 15% 18%;
-    --sidebar-ring: 88 25% 62%;
+    /* ────────────────────────────────────────────────────────── */
+    /* Dark "Slate Sage" — cool slate base, distinct surface tiers */
+    /* Fixes invisibility: bg→card→popover gain real lightness     */
+    /* steps so panels actually lift.                              */
+    /* ────────────────────────────────────────────────────────── */
 
-    /* Custom tokens for dark mode */
-    --success: 82 45% 45%;
-    --success-foreground: 0 0% 100%;
-    --warning: 30 45% 55%;
-    --warning-foreground: 0 0% 100%;
-    --xp: 30 45% 62%;
-    --streak: 28 22% 58%;
+    --background: 220 18% 11%;
+    --foreground: 220 15% 92%;
 
-    /* Dark-aware gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(82, 50%, 50%), hsl(82, 45%, 40%));
-    --gradient-accent: linear-gradient(135deg, hsl(30, 45%, 55%), hsl(28, 27%, 45%));
-    --gradient-sidebar: linear-gradient(180deg, hsl(28, 22%, 8%), hsl(28, 20%, 6%));
+    --card: 220 14% 16%;
+    --card-foreground: 220 15% 94%;
 
-    /* Dark shadows — more subtle */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.15);
-    --shadow-glow: 0 0 20px rgba(172, 214, 99, 0.2);
+    --popover: 220 14% 19%;
+    --popover-foreground: 220 15% 94%;
+
+    /* Brighter lime so it pops on slate */
+    --primary: 82 65% 60%;
+    --primary-foreground: 220 25% 8%;
+
+    --secondary: 220 12% 22%;
+    --secondary-foreground: 220 12% 88%;
+
+    --muted: 220 10% 20%;
+    --muted-foreground: 220 10% 70%;
+
+    /* Warm orange accent — high visibility on slate */
+    --accent: 25 80% 65%;
+    --accent-foreground: 220 25% 10%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders ACTUALLY visible — was the killer issue */
+    --border: 220 12% 28%;
+    --input: 220 12% 28%;
+    --ring: 82 65% 60%;
+
+    --sidebar-background: 220 18% 8%;
+    --sidebar-foreground: 220 12% 78%;
+    --sidebar-primary: 82 65% 60%;
+    --sidebar-primary-foreground: 220 25% 8%;
+    --sidebar-accent: 220 14% 18%;
+    --sidebar-accent-foreground: 220 15% 92%;
+    --sidebar-border: 220 12% 24%;
+    --sidebar-ring: 82 65% 60%;
+
+    --success: 142 55% 50%;
+    --success-foreground: 220 25% 8%;
+    --warning: 35 85% 60%;
+    --warning-foreground: 220 25% 10%;
+    --xp: 30 80% 65%;
+    --streak: 18 75% 60%;
+
+    /* Course tokens — same hues as light but slightly brighter */
+    --course-science:  142 60% 55%;
+    --course-english:  25  85% 65%;
+    --course-maths:    265 70% 70%;
+    --course-civics:   195 80% 55%;
+    --course-history:  0   70% 65%;
+    --course-health:   330 75% 70%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(82, 65%, 60%), hsl(95, 55%, 48%));
+    --gradient-accent: linear-gradient(135deg, hsl(25, 80%, 65%), hsl(15, 75%, 55%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(220, 20%, 9%), hsl(220, 22%, 7%));
+    --gradient-card-hover: linear-gradient(135deg, rgba(172, 214, 99, 0.08), rgba(255, 145, 90, 0.06));
+
+    /* Dark shadows — deeper for depth */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.30),
+                 0 1px 3px rgba(0, 0, 0, 0.20);
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.30),
+                 0 8px 20px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.30),
+                 0 20px 48px rgba(0, 0, 0, 0.45);
+    --shadow-glow: 0 0 28px rgba(172, 214, 99, 0.35);
   }
 }
 
@@ -156,10 +191,58 @@
   html {
     scroll-behavior: smooth;
     color-scheme: light;
+    /* Reserve scrollbar gutter so layouts don't shift when scrollbars appear */
+    scrollbar-gutter: stable;
   }
 
   html.dark {
     color-scheme: dark;
+  }
+
+  /* ── Global custom scrollbar (themed + slim) ──────────────────────────── */
+  /* Webkit (Chrome, Edge, Safari, etc.) */
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 999px;
+    /* Inset border creates a "padded" pill effect */
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background-color 200ms ease;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  /* Reduce motion — respect OS-level setting */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 
   /* Smooth theme transition on toggle */
@@ -186,18 +269,136 @@
 }
 
 @layer utilities {
+  /* ── iOS-style frosted material ───────────────────────────── */
+  /* Heavier blur, layered border, works in both themes.        */
   .glass {
-    @apply bg-white/50 backdrop-blur-sm border border-border/60;
+    background: hsl(var(--card) / 0.65);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid hsl(var(--border) / 0.7);
     box-shadow: var(--shadow-sm);
   }
 
+  .dark .glass {
+    background: hsl(var(--card) / 0.55);
+    border-color: hsl(0 0% 100% / 0.08);
+  }
+
+  /* Stronger material — for sheets, modals, big surfaces */
+  .glass-thick {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: saturate(180%) blur(30px);
+    -webkit-backdrop-filter: saturate(180%) blur(30px);
+    border: 1px solid hsl(var(--border) / 0.8);
+    box-shadow: var(--shadow-md);
+  }
+
+  .dark .glass-thick {
+    background: hsl(var(--card) / 0.75);
+    border-color: hsl(0 0% 100% / 0.10);
+  }
+
+  /* Hover lift with spring easing — iOS card feel */
   .glass-hover {
-    @apply transition-all duration-300;
+    transition:
+      transform 350ms var(--ease-spring),
+      box-shadow 350ms var(--ease-out-quint),
+      background-color 350ms var(--ease-out-cubic);
   }
 
   .glass-hover:hover {
     box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
+  }
+
+  /* Press-shrink — apply to any clickable for tactile feedback */
+  .press-shrink {
+    transition: transform 200ms var(--ease-spring);
+  }
+
+  .press-shrink:active {
+    transform: scale(0.97);
+  }
+
+  /* iOS-style "lift on hover" for cards and tiles */
+  .lift-hover {
+    transition:
+      transform 350ms var(--ease-spring),
+      box-shadow 350ms var(--ease-out-quint);
+  }
+
+  .lift-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .lift-hover:active {
+    transform: translateY(-1px) scale(0.99);
+    transition-duration: 120ms;
+  }
+
+  /* ── Smooth scroll containers ────────────────────────────────────────── */
+  /* Apply to any overflow-y:auto element you want polished:               */
+  /*   - Smooth scrolling                                                  */
+  /*   - Scroll snap + padding so messages don't get cut off               */
+  /*   - Contains overscroll bleed                                         */
+  /*   - Slimmer themed scrollbar that fades in on container hover         */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+    scroll-padding-top: 1rem;
+    scroll-padding-bottom: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .smooth-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .smooth-scroll::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border) / 0.4);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background-color 250ms var(--ease-out-quint);
+  }
+
+  .smooth-scroll:hover::-webkit-scrollbar-thumb,
+  .smooth-scroll:focus-within::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--primary) / 0.45);
+  }
+
+  .smooth-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--primary) / 0.7);
+  }
+
+  /* ── Edge-fade gradients for scroll containers ───────────────────────── */
+  /* Wrap a scrollable element in a parent with .scroll-fade to add        */
+  /* soft top/bottom fades that hint there's more content above/below.     */
+  .scroll-fade {
+    position: relative;
+  }
+
+  .scroll-fade::before,
+  .scroll-fade::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 32px;
+    pointer-events: none;
+    z-index: 5;
+    transition: opacity 250ms var(--ease-out-quint);
+  }
+
+  .scroll-fade::before {
+    top: 0;
+    background: linear-gradient(to bottom, hsl(var(--card)), transparent);
+  }
+
+  .scroll-fade::after {
+    bottom: 0;
+    background: linear-gradient(to top, hsl(var(--card)), transparent);
   }
 
   .gradient-primary {

@@ -1,15 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AppSidebar from "./AppSidebar";
 import { Menu } from "lucide-react";
 import mindupLogo from "@/assets/mindup-logo.png";
 import { StreakBadgeNotification } from "./StreakBadgeNotification";
 
+const COLLAPSE_STORAGE_KEY = "mindup.sidebar.collapsed";
+
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Desktop sidebar collapse — persists across reloads
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(COLLAPSE_STORAGE_KEY) === "true";
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem(COLLAPSE_STORAGE_KEY, String(isCollapsed));
+  }, [isCollapsed]);
+
   return (
     <div className="min-h-screen relative bg-background">
-      <AppSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <AppSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isCollapsed}
+        onToggleCollapse={() => setIsCollapsed((v) => !v)}
+      />
 
       {/* Mobile Top Navigation */}
       <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border/60 bg-background/95 backdrop-blur-md sticky top-0 z-30 shadow-sm">
@@ -26,9 +43,15 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         </button>
       </div>
 
-      {/* Main Content Area */}
-      <main className="md:ml-72 min-h-screen">
-        <div className="p-4 sm:p-6 md:p-8 max-w-[1400px]">
+      {/* Main Content Area — margin AND inner max-width animate together so
+          content centers in the new space when the sidebar collapses. */}
+      <main
+        className={
+          "min-h-screen transition-[margin-left] duration-300 ease-quint " +
+          (isCollapsed ? "md:ml-20" : "md:ml-72")
+        }
+      >
+        <div className="w-full mx-auto p-4 sm:p-6 md:p-8 max-w-[1600px]">
           {children}
         </div>
       </main>
