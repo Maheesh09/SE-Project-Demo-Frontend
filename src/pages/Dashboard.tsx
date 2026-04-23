@@ -462,20 +462,20 @@ const Dashboard = () => {
         >
           {/* Animated gradient border */}
           <div className={cn("absolute inset-0 bg-gradient-to-r opacity-80", RANK_THEMES[districtRank].borderGradient)} />
-          
+
           <div className="relative flex flex-col sm:flex-row items-center gap-5 sm:gap-6 bg-card/95 dark:bg-card/90 backdrop-blur-md rounded-2xl px-5 py-5 md:px-7 md:py-6 w-full h-full">
             <div className="relative flex-shrink-0">
               <div className={cn("absolute inset-0 blur-2xl rounded-full", RANK_THEMES[districtRank].glowColor)} />
-              <img 
-                src={badgeUrl} 
-                alt={`District Rank ${districtRank} Badge`} 
-                className="relative w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-2xl z-10 transition-transform duration-500 group-hover:scale-110" 
+              <img
+                src={badgeUrl}
+                alt={`District Rank ${districtRank} Badge`}
+                className="relative w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-2xl z-10 transition-transform duration-500 group-hover:scale-110"
               />
               <div className={cn("absolute -top-2 -right-2 text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-lg border-2 border-white dark:border-slate-900 z-20", RANK_THEMES[districtRank].badgeBg)}>
                 Rank {districtRank}
               </div>
             </div>
-            
+
             <div className="text-center sm:text-left flex-1 z-10 min-w-0">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-1.5">
                 <Trophy className={cn("w-5 h-5 fill-current/20 animate-pulse", RANK_THEMES[districtRank].iconColor)} />
@@ -490,7 +490,7 @@ const Dashboard = () => {
                 {RANK_THEMES[districtRank].description}
               </p>
             </div>
-            
+
             {/* Decorative shining stars */}
             <Star className={cn("hidden sm:block absolute top-6 right-6 w-5 h-5 opacity-50 animate-pulse", RANK_THEMES[districtRank].iconColor)} />
             <Star className={cn("hidden sm:block absolute bottom-6 right-16 w-3 h-3 opacity-40 animate-pulse", RANK_THEMES[districtRank].iconColor)} style={{ animationDelay: "1s" }} />
@@ -517,9 +517,9 @@ const Dashboard = () => {
             <span className="flex items-center gap-1.5">
               {streak.current_streak}d
               {streak.current_streak >= 7 && (
-                <motion.span 
-                  initial={{ scale: 0 }} 
-                  animate={{ scale: 1 }} 
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
                   className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-streak/20 text-streak border border-streak/30 shadow-sm"
                 >
                   <Trophy className="w-3.5 h-3.5" />
@@ -691,7 +691,7 @@ const Dashboard = () => {
       ══════════════════════════════════════════ */}
       <div className="mb-4 md:mb-7">
         <SectionHeader title="Earned Badges" delay={0.27} />
-        
+
         {badgesLoading ? (
           <div className="flex justify-center py-6">
             <span className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
@@ -728,8 +728,8 @@ const Dashboard = () => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ delay: 0.28 + idx * 0.05, type: "spring", stiffness: 300 }}
               >
-                <BadgeCard 
-                  badge={ub.badge} 
+                <BadgeCard
+                  badge={ub.badge}
                   earnedAt={ub.earned_at}
                   isNew={(newlyEarned && streakBadge?.id === ub.id) || (ub.earned_at ? (new Date().getTime() - new Date(ub.earned_at).getTime() < 12 * 60 * 60 * 1000) : false)}
                 />

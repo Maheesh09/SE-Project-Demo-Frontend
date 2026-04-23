@@ -12,9 +12,9 @@ interface BadgeCardProps {
 
 export function BadgeCard({ badge, earnedAt, isNew, className }: BadgeCardProps) {
   const isEarned = !!earnedAt;
-  
+
   // Format the date to something like "Apr 8, 2026"
-  const formattedDate = earnedAt 
+  const formattedDate = earnedAt
     ? new Date(earnedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : null;
 
@@ -34,9 +34,9 @@ export function BadgeCard({ badge, earnedAt, isNew, className }: BadgeCardProps)
         isEarned ? "bg-[#121212]" : "bg-muted"
       )}>
         {badge.image_url ? (
-          <img 
-            src={badge.image_url} 
-            alt={badge.name} 
+          <img
+            src={badge.image_url}
+            alt={badge.name}
             className="w-10 h-10 object-contain relative z-10"
             loading="lazy"
           />
@@ -49,7 +49,7 @@ export function BadgeCard({ badge, earnedAt, isNew, className }: BadgeCardProps)
         <h3 className="font-display font-bold text-[15px] text-foreground leading-tight">
           {badge.name}
         </h3>
-        
+
         {isEarned ? (
           <p className="text-[11px] font-medium text-muted-foreground/80 mt-1">
             {formattedDate}
