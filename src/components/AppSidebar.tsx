@@ -243,22 +243,36 @@ const AppSidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse }: 
           })}
         </nav>
 
-        {/* ── Upgrade nudge — hidden in collapsed mode ── */}
-        <div className={cn(
-          "mx-3 mb-3 mt-2 p-3.5 rounded-xl border border-border/60 bg-card group hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 cursor-pointer",
-          isCollapsed && "md:hidden"
-        )}>
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-            <p className="text-xs font-semibold text-foreground">MindUp Pro</p>
-          </div>
-          <p className="text-[10px] text-muted-foreground leading-relaxed mb-2.5">
-            Unlock all courses, AI tutors & study plans.
-          </p>
-          <button className="w-full py-1.5 text-[11px] font-bold rounded-lg border border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200">
-            Upgrade Now
+        {/* ── Upgrade nudge — full card when expanded, just the sparkle when collapsed ── */}
+        {isCollapsed ? (
+          <button
+            onClick={() => navigate("/upgrade")}
+            className="hidden md:flex mx-auto mb-3 mt-2 w-10 h-10 rounded-xl bg-primary/10 border border-primary/30 text-primary items-center justify-center hover:bg-primary hover:text-primary-foreground hover:scale-105 active:scale-95 transition-all duration-300 ease-spring"
+            title="Upgrade to Pro"
+            aria-label="Upgrade to Pro"
+          >
+            <Sparkles className="w-4 h-4" />
           </button>
-        </div>
+        ) : (
+          <div
+            onClick={() => navigate("/upgrade")}
+            className="mx-3 mb-3 mt-2 p-3.5 rounded-xl border border-border/60 bg-card group hover:border-primary/30 hover:bg-primary/5 hover:shadow-md transition-all duration-300 ease-quint cursor-pointer press-shrink"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+              <p className="text-xs font-semibold text-foreground">MindUp Pro</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground leading-relaxed mb-2.5">
+              Unlock all courses, AI tutors & study plans.
+            </p>
+            <button
+              onClick={(e) => { e.stopPropagation(); navigate("/upgrade"); }}
+              className="w-full py-1.5 text-[11px] font-bold rounded-lg border border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+            >
+              Upgrade Now
+            </button>
+          </div>
+        )}
 
         {/* ── Footer: theme toggle + sign out ── */}
         <div className={cn(

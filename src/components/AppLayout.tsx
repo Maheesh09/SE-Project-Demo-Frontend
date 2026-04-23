@@ -44,14 +44,16 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       {/* Main Content Area — margin AND inner max-width animate together so
-          content centers in the new space when the sidebar collapses. */}
+          content centers in the new space when the sidebar collapses.
+          Vertical padding is intentionally tighter than horizontal so pages
+          have more usable height on common laptop screens (768/800px tall). */}
       <main
         className={
           "min-h-screen transition-[margin-left] duration-300 ease-quint " +
           (isCollapsed ? "md:ml-20" : "md:ml-72")
         }
       >
-        <div className="w-full mx-auto p-4 sm:p-6 md:p-8 max-w-[1600px]">
+        <div className="w-full mx-auto px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-5 max-w-[1600px]">
           {children}
         </div>
       </main>

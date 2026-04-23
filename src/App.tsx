@@ -23,6 +23,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import QuizPlayPage from "./pages/QuizPlayPage";
 import QuizReviewPage from "./pages/QuizReviewPage";
+import UpgradePage from "./pages/UpgradePage";
 import { useProfile } from "./hooks/useProfile";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -141,6 +142,7 @@ const App = () => (
             <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
             <Route path="/chatbot" element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="/upgrade" element={<ProtectedRoute><UpgradePage /></ProtectedRoute>} />
             <Route path="/subject/:id" element={<ProtectedRoute><SubjectPage /></ProtectedRoute>} />
             <Route path="/subject/:id/quizzes" element={<ProtectedRoute><SubjectQuizzesPage /></ProtectedRoute>} />
             <Route path="/logout" element={<ProtectedRoute><LogoutPage /></ProtectedRoute>} />

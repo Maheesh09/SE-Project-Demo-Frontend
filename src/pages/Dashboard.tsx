@@ -351,7 +351,7 @@ const Dashboard = () => {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-start md:items-center justify-between gap-4 mb-6 md:mb-8"
+        className="flex items-start md:items-center justify-between gap-4 mb-4 md:mb-6"
       >
         <div className="min-w-0">
           <BlurText
@@ -459,7 +459,7 @@ const Dashboard = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1, type: "spring", stiffness: 100 }}
-          className={cn("relative mb-6 md:mb-8 w-full p-[2px] rounded-2xl overflow-hidden group", RANK_THEMES[districtRank].shadow)}
+          className={cn("relative mb-4 md:mb-6 w-full p-[2px] rounded-2xl overflow-hidden group", RANK_THEMES[districtRank].shadow)}
         >
           {/* Animated gradient border */}
           <div className={cn("absolute inset-0 bg-gradient-to-r opacity-80", RANK_THEMES[districtRank].borderGradient)} />
@@ -573,7 +573,7 @@ const Dashboard = () => {
       </div>
 
       {/* ── Secondary KPIs (collapsible) ── */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="mb-6 md:mb-8">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="mb-4 md:mb-6">
         <button
           onClick={() => setShowSecondary(!showSecondary)}
           className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors mb-2"
@@ -625,7 +625,7 @@ const Dashboard = () => {
       </motion.div>
 
       {/* ── Quick Actions ── */}
-      <div className="mb-6 md:mb-8">
+      <div className="mb-4 md:mb-6">
         <SectionHeader title="Quick Actions" delay={0.2} />
 
         {/* Mobile: horizontal scroll chips */}
