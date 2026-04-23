@@ -59,29 +59,41 @@ const StatCard = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.35 }}
       className={cn(
-        "bg-card border border-border/60 rounded-xl md:rounded-2xl",
-        "p-3.5 md:p-4 flex items-center gap-3.5 md:flex-col md:items-start md:gap-2.5",
-        "hover:shadow-md hover:-translate-y-0.5 transition-all duration-200",
+        "group relative bg-card border border-border/60 rounded-2xl md:rounded-2xl",
+        "p-4 md:p-5 flex items-center gap-3.5 md:flex-col md:items-start md:gap-3",
+        "shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-quint",
+        "active:translate-y-0 active:scale-[0.99] active:duration-100",
+        "overflow-hidden",
         accentColor ? "border-l-[3px]" : ""
       )}
       style={accentColor ? { borderLeftColor: accentColor } : undefined}
     >
+      {/* Hover sheen — radial highlight that fades in on hover */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{
+          background: accentColor
+            ? `radial-gradient(120% 80% at 100% 0%, ${accentColor}14, transparent 60%)`
+            : "radial-gradient(120% 80% at 100% 0%, hsl(var(--primary) / 0.08), transparent 60%)",
+        }}
+      />
+
       {/* Icon */}
       <div className={cn(
-        "w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0",
+        "relative w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 ease-spring group-hover:scale-110",
         colorClass,
         iconBgClass ?? "bg-muted"
       )}>
-        <Icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
+        <Icon className="w-4 h-4 md:w-[18px] md:h-[18px]" />
       </div>
 
-      <div className="min-w-0 flex-1 md:w-full">
-        <p className="text-xl md:text-2xl font-bold text-foreground leading-none tabular-nums">
+      <div className="relative min-w-0 flex-1 md:w-full">
+        <p className="text-2xl md:text-3xl font-bold text-foreground leading-none tabular-nums">
           {value}
         </p>
-        <p className="text-[11px] md:text-xs text-muted-foreground font-medium mt-1 truncate">{label}</p>
+        <p className="text-[11px] md:text-xs text-muted-foreground font-semibold mt-1.5 truncate">{label}</p>
         {subtitle && (
-          <p className="text-[10px] text-muted-foreground/70 mt-0.5 truncate hidden md:block">{subtitle}</p>
+          <p className="text-[10px] text-muted-foreground/70 mt-1 truncate hidden md:block">{subtitle}</p>
         )}
       </div>
     </motion.div>

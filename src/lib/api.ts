@@ -26,10 +26,24 @@ async function request<T>(
     const res = await fetch(`${BASE}${path}`, { ...options, headers });
 
     if (!res.ok) {
-        let detail = `${res.status} ${res.statusText}`;
+        let detail: string = `${res.status} ${res.statusText}`;
         try {
             const body = await res.json();
-            detail = body.detail ?? detail;
+            // FastAPI returns `detail` as either a string OR an array of
+            // validation-error objects (for 422). Normalise to a readable string
+            // so we never end up showing "[object Object]" in the UI.
+            if (typeof body.detail === "string") {
+                detail = body.detail;
+            } else if (Array.isArray(body.detail)) {
+                detail = body.detail
+                    .map((e: { msg?: string; loc?: (string | number)[] }) => {
+                        const field = Array.isArray(e.loc) ? e.loc.slice(1).join(".") : "";
+                        return field ? `${field}: ${e.msg ?? "invalid"}` : (e.msg ?? "invalid");
+                    })
+                    .join("; ");
+            } else if (body.detail) {
+                detail = JSON.stringify(body.detail);
+            }
         } catch {
             /* ignore */
         }

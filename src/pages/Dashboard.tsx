@@ -5,6 +5,7 @@ import {
   Star, Brain, BookOpen, TrendingUp, BarChart3, ArrowRight,
   Calendar, Trophy, Check, GraduationCap, ChevronRight, Zap,
   Flame, Target, Award, ChevronDown, MousePointerClick,
+  AlertTriangle,
 } from "lucide-react";
 import BlurText from "@/components/BlurText";
 import { Link, useNavigate } from "react-router-dom";
@@ -498,8 +499,8 @@ const Dashboard = () => {
         </motion.div>
       )}
 
-      {/* ── Primary KPIs (3 cards) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-3 md:mb-4">
+      {/* ── Primary KPIs (6 cards in a 3-col grid) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 mb-3 md:mb-5">
         <StatCard
           icon={Star}
           label="Total XP"
@@ -1005,7 +1006,9 @@ class DashboardErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-8 bg-background text-foreground">
-          <div className="text-5xl">⚠️</div>
+          <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center text-destructive">
+            <AlertTriangle className="w-8 h-8" />
+          </div>
           <h1 className="text-xl font-bold">Dashboard failed to load</h1>
           <p className="text-sm text-muted-foreground max-w-md text-center">
             An unexpected error occurred. Check the browser console for details.
