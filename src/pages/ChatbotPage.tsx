@@ -88,25 +88,95 @@ const ChatbotPage = () => {
       {/* ── Header ── */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between gap-4 mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-card border border-border/60 flex items-center justify-center shadow-sm flex-shrink-0">
-            <img src={chatbotOwl} alt="AI Tutor" className="w-7 h-7 object-contain" />
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/40 to-violet-500/40 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+            <div className="relative w-12 h-12 rounded-xl bg-card border border-border/60 flex items-center justify-center shadow-sm flex-shrink-0 transition-transform group-hover:scale-105 duration-300">
+              <img src={chatbotOwl} alt="AI Tutor" className="w-8 h-8 object-contain" />
+            </div>
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-foreground leading-tight">MindUp AI Tutor</h1>
+            <h1 className="text-lg font-bold text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 leading-tight">MindUp AI Tutor</h1>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Online</span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-bold">Live Assistance</span>
             </div>
           </div>
         </div>
-        <button
-          onClick={handleNewChat}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card border border-border/60 text-sm font-medium text-foreground hover:bg-muted/50 hover:border-border transition-all"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">New Chat</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setFilterOpen(!filterOpen)}
+            className={cn(
+              "lg:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-card border border-border/60 text-foreground transition-all",
+              (selectedSubject || filterOpen) && "border-primary/50 bg-primary/5 text-primary"
+            )}
+          >
+            <Filter className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleNewChat}
+            className="flex items-center gap-2 h-10 px-3.5 rounded-xl bg-card border border-border/60 text-sm font-medium text-foreground hover:bg-muted/50 hover:border-border transition-all shadow-sm"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">New Chat</span>
+          </button>
+        </div>
       </motion.div>
+
+      {/* ── Mobile Filter Drawer (Inline) ── */}
+      <AnimatePresence>
+        {filterOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="lg:hidden mb-4 overflow-hidden"
+          >
+            <div className="bg-card border border-border/60 rounded-2xl p-4 space-y-3 shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <Filter className="w-3.5 h-3.5 text-primary" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Select Subject Context</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <select 
+                  value={selectedSubject?.id ?? ""} 
+                  onChange={(e) => {
+                    const id = Number(e.target.value);
+                    setSelectedSubject(subjects.find(s => s.id === id) ?? null);
+                  }} 
+                  className="w-full px-3 py-2.5 rounded-xl bg-background border border-border/60 text-xs text-foreground focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:border-primary/30"
+                >
+                  <option value="">All Subjects</option>
+                  {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+                {selectedSubject && topics.length > 0 && (
+                  <select 
+                    value={selectedTopic?.id ?? ""} 
+                    onChange={(e) => {
+                      const id = Number(e.target.value);
+                      setSelectedTopic(topics.find(t => t.id === id) ?? null);
+                    }} 
+                    className="w-full px-3 py-2.5 rounded-xl bg-background border border-border/60 text-xs text-foreground focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:border-primary/30"
+                  >
+                    <option value="">Select Topic (Optional)</option>
+                    {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                )}
+              </div>
+              {selectedSubject && (
+                <button 
+                  onClick={() => { setSelectedSubject(null); setSelectedTopic(null); setFilterOpen(false); }}
+                  className="w-full py-2 text-[10px] font-bold uppercase text-primary hover:bg-primary/5 rounded-lg transition-colors border border-dashed border-primary/20"
+                >
+                  Clear Selection
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-210px)] min-h-[500px]">
 
@@ -205,13 +275,16 @@ const ChatbotPage = () => {
 
           {/* Active filter bar */}
           {selectedSubject && (
-            <div className="px-5 py-2.5 bg-primary/5 border-b border-border/40 flex items-center gap-2">
-              <Filter className="w-3 h-3 text-primary" />
-              <span className="text-xs font-medium text-primary">
-                {selectedSubject.name}{selectedTopic ? ` › ${selectedTopic.name}` : ""}
-              </span>
-              <button onClick={() => { setSelectedSubject(null); setSelectedTopic(null); }} className="ml-auto text-xs text-primary/60 hover:text-primary">
-                Clear
+            <div className="px-5 py-2.5 bg-primary/5 backdrop-blur-md border-b border-border/40 flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-[10px] font-bold text-primary uppercase border border-primary/20">
+                <Filter className="w-2.5 h-2.5" />
+                Context: {selectedSubject.name}{selectedTopic ? ` › ${selectedTopic.name}` : ""}
+              </div>
+              <button 
+                onClick={() => { setSelectedSubject(null); setSelectedTopic(null); }} 
+                className="ml-auto text-[10px] font-bold uppercase tracking-tight text-muted-foreground hover:text-primary transition-colors"
+              >
+                Reset Context
               </button>
             </div>
           )}
@@ -235,10 +308,10 @@ const ChatbotPage = () => {
                     )}
                     <div className="relative max-w-[78%]">
                       <div className={cn(
-                        "px-4 py-3 text-sm leading-relaxed shadow-sm whitespace-pre-wrap",
+                        "px-4 py-3 text-sm leading-relaxed shadow-sm whitespace-pre-wrap transition-all",
                         isUser
-                          ? "gradient-primary text-primary-foreground rounded-2xl rounded-br-sm font-medium"
-                          : "bg-card border border-border/50 text-foreground rounded-2xl rounded-bl-sm"
+                          ? "bg-gradient-to-br from-primary via-primary to-primary/90 text-primary-foreground rounded-2xl rounded-br-sm font-medium shadow-md shadow-primary/10"
+                          : "bg-card border border-border/50 text-foreground rounded-2xl rounded-bl-sm shadow-sm"
                       )}>
                         {msg.text}
                       </div>
@@ -246,7 +319,8 @@ const ChatbotPage = () => {
                         <div className="mt-1.5 flex flex-wrap gap-1">
                           {msg.sources.map((src, i) => (
                             <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/8 text-[10px] font-medium text-primary">
-                              <BookOpen className="w-2.5 h-2.5" />{src.subject} · p.{src.page_start}–{src.page_end}
+                              <BookOpen className="w-2.5 h-2.5" />
+                              {src.citation || `${src.subject} · p.${src.page_start}–${src.page_end}`}
                             </span>
                           ))}
                         </div>
