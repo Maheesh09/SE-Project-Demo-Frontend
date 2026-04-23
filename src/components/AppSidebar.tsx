@@ -1,13 +1,15 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Brain, Trophy,
-  BarChart3, MessageCircle, Settings, LogOut, X, Sparkles, Zap
+  BarChart3, MessageCircle, Settings, LogOut, X, Sparkles, Zap,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import mindupLogo from "@/assets/mindup-logo.png";
 import { useState, useEffect } from "react";
 import ProfileModal from "./ProfileModal";
+import ThemeToggle from "./ThemeToggle";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useStreakBadge } from "@/hooks/useStreakBadge";
@@ -26,7 +28,15 @@ const navItems = [
 // Divider after index 2 (after Quizzes) and after index 4 (after Analytics)
 const DIVIDER_AFTER = [2, 4];
 
-const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) => {
+interface AppSidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+  /** Desktop only — collapses sidebar to a 64px icon-only rail */
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+}
+
+const AppSidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse }: AppSidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -65,9 +75,29 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
       <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
 
       <aside className={cn(
-        "fixed left-0 top-0 bottom-0 w-64 bg-background border-r border-border/60 flex flex-col z-50 transition-transform duration-300 ease-in-out",
+        "fixed left-0 top-0 bottom-0 bg-background border-r border-border/60 flex flex-col z-50",
+        "transition-[width,transform] duration-300 ease-quint",
+        // Mobile: full width drawer that slides in/out
+        // Desktop: width animates between 64px (collapsed rail) and 256px (full)
+        isCollapsed ? "md:w-20 w-64" : "w-64",
         isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"
       )}>
+
+        {/* Desktop collapse toggle — sits on the right edge */}
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            className={cn(
+              "hidden md:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-card border border-border shadow-md",
+              "items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted",
+              "transition-all duration-200 ease-quint hover:scale-110 active:scale-95 z-50"
+            )}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+          </button>
+        )}
 
         {/* Mobile close */}
         {onClose && (
@@ -80,34 +110,58 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
         )}
 
         {/* ── Brand ── */}
-        <NavLink to="/" className="px-5 pt-6 pb-5 flex items-center gap-2.5 group">
+        <NavLink
+          to="/"
+          className={cn(
+            "pt-6 pb-5 flex items-center gap-2.5 group transition-all duration-300 ease-quint",
+            isCollapsed ? "md:px-0 md:justify-center px-5" : "px-5"
+          )}
+        >
           <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
             <img src={mindupLogo} alt="MindUp" className="w-5 h-5 rounded-lg object-contain" />
           </div>
-          <span className="text-[15px] font-bold text-foreground tracking-tight">MindUp</span>
+          <span className={cn(
+            "text-[15px] font-bold text-foreground tracking-tight whitespace-nowrap transition-opacity duration-200",
+            isCollapsed ? "md:hidden" : "opacity-100"
+          )}>
+            MindUp
+          </span>
         </NavLink>
 
-        {/* ── User profile card ── */}
+        {/* ── User profile card ── (full version) */}
         <div
           onClick={() => setIsProfileOpen(true)}
-          className="mx-3 mb-5 p-3 rounded-xl bg-muted/40 border border-border/50 cursor-pointer hover:bg-muted/60 hover:border-border transition-all duration-200 group"
+          className={cn(
+            "mx-3 mb-5 rounded-xl bg-muted/40 border border-border/50 cursor-pointer hover:bg-muted/60 hover:border-border transition-all duration-200 group",
+            // Collapsed on desktop: just the avatar circle
+            isCollapsed ? "md:p-2 md:flex md:justify-center p-3" : "p-3"
+          )}
         >
-          <div className="flex items-center gap-3">
+          <div className={cn(
+            "flex items-center gap-3",
+            isCollapsed && "md:gap-0 md:justify-center"
+          )}>
             <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-xs font-bold text-primary-foreground flex-shrink-0">
               {initial}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className={cn("flex-1 min-w-0", isCollapsed && "md:hidden")}>
               <p className="text-sm font-semibold text-foreground truncate leading-tight">{fullName}</p>
               <p className="text-[10px] text-muted-foreground truncate mt-0.5">
                 {profile?.grade?.name ?? "Student"}
                 {profile?.district ? ` · ${profile.district.name}` : ""}
               </p>
             </div>
-            <div className="w-2 h-2 rounded-full bg-success flex-shrink-0" title="Online" />
+            <div className={cn(
+              "w-2 h-2 rounded-full bg-success flex-shrink-0",
+              isCollapsed && "md:hidden"
+            )} title="Online" />
           </div>
 
-          {/* XP progress */}
-          <div className="mt-2.5 pt-2.5 border-t border-border/40">
+          {/* XP progress — hidden in collapsed mode */}
+          <div className={cn(
+            "mt-2.5 pt-2.5 border-t border-border/40",
+            isCollapsed && "md:hidden"
+          )}>
             <div className="flex justify-between text-[10px] text-muted-foreground mb-1.5 font-medium">
               <span>{currentXP.toLocaleString()} XP earned</span>
               <span className="text-foreground font-bold">{xpProgress}% to next goal</span>
@@ -123,7 +177,7 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
         </div>
 
         {/* ── Navigation ── */}
-        <nav className="flex-1 px-3 overflow-y-auto space-y-0.5">
+        <nav className="flex-1 px-3 overflow-y-auto smooth-scroll space-y-0.5">
           {navItems.map((item, idx) => {
             const isActive = location.pathname === item.to;
             return (
@@ -134,6 +188,7 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
                 <NavLink
                   to={item.to}
                   className="group relative block"
+                  title={isCollapsed ? item.label : undefined}
                 >
                   <AnimatePresence>
                     {isActive && (
@@ -150,10 +205,11 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
 
                   <div className={cn(
                     "relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150",
+                    isCollapsed && "md:justify-center md:px-0",
                     isActive ? "" : "hover:bg-muted/50"
                   )}>
-                    {/* Left accent bar */}
-                    {isActive && (
+                    {/* Left accent bar — hidden when collapsed */}
+                    {isActive && !isCollapsed && (
                       <motion.div
                         initial={{ scaleY: 0 }}
                         animate={{ scaleY: 1 }}
@@ -174,7 +230,8 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
                     </div>
 
                     <span className={cn(
-                      "text-sm transition-colors duration-150",
+                      "text-sm transition-colors duration-150 whitespace-nowrap",
+                      isCollapsed && "md:hidden",
                       isActive ? "text-foreground font-semibold" : "text-muted-foreground font-medium group-hover:text-foreground"
                     )}>
                       {item.label}
@@ -186,8 +243,11 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
           })}
         </nav>
 
-        {/* ── Upgrade nudge ── */}
-        <div className="mx-3 mb-3 mt-2 p-3.5 rounded-xl border border-border/60 bg-card group hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 cursor-pointer">
+        {/* ── Upgrade nudge — hidden in collapsed mode ── */}
+        <div className={cn(
+          "mx-3 mb-3 mt-2 p-3.5 rounded-xl border border-border/60 bg-card group hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 cursor-pointer",
+          isCollapsed && "md:hidden"
+        )}>
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
             <p className="text-xs font-semibold text-foreground">MindUp Pro</p>
@@ -200,14 +260,31 @@ const AppSidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => voi
           </button>
         </div>
 
-        {/* ── Sign out ── */}
-        <div className="px-3 pb-5 border-t border-border/40 pt-3">
+        {/* ── Footer: theme toggle + sign out ── */}
+        <div className={cn(
+          "border-t border-border/40 pt-3 pb-5",
+          // Expanded: row, both side by side
+          // Collapsed: stacked vertically, centered, comfortable spacing
+          isCollapsed
+            ? "md:px-2 md:flex md:flex-col md:items-center md:gap-3 px-3 flex items-center gap-2"
+            : "px-3 flex items-center gap-2"
+        )}>
+          <div className={cn("flex-shrink-0", isCollapsed && "md:flex md:justify-center md:w-full")}>
+            <ThemeToggle />
+          </div>
           <button
             onClick={() => navigate("/logout")}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-destructive/8 hover:text-destructive transition-all duration-150"
+            className={cn(
+              "flex items-center rounded-xl text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-150 ease-quint",
+              isCollapsed
+                ? "md:w-9 md:h-9 md:justify-center md:p-0 flex-1 gap-3 px-3 py-2"
+                : "flex-1 gap-3 px-3 py-2"
+            )}
+            title={isCollapsed ? "Sign Out" : undefined}
+            aria-label="Sign Out"
           >
             <LogOut className="w-4 h-4 flex-shrink-0" />
-            Sign Out
+            <span className={cn("whitespace-nowrap", isCollapsed && "md:hidden")}>Sign Out</span>
           </button>
         </div>
       </aside>

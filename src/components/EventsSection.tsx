@@ -74,10 +74,28 @@ const leaderboardData = [
   { rank: 7, name: "Sanduni Wickrama", avatar: "SW", xp: 8120, streak: 19, level: "Silver" },
 ];
 
-const medalColors: Record<number, { bg: string; border: string; text: string; emoji: string }> = {
-  1: { bg: "bg-gradient-to-r from-yellow-100 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/20", border: "border-yellow-400 dark:border-yellow-600", text: "text-yellow-700 dark:text-yellow-400", emoji: "🥇" },
-  2: { bg: "bg-gradient-to-r from-gray-100 to-slate-50 dark:from-gray-800/40 dark:to-slate-800/30", border: "border-gray-400 dark:border-gray-600", text: "text-gray-600 dark:text-gray-400", emoji: "🥈" },
-  3: { bg: "bg-gradient-to-r from-orange-100 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/20", border: "border-orange-400 dark:border-orange-600", text: "text-orange-700 dark:text-orange-400", emoji: "🥉" },
+const medalColors: Record<number, { bg: string; border: string; text: string; chip: string; ring: string }> = {
+  1: {
+    bg: "bg-gradient-to-r from-yellow-100 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/20",
+    border: "border-yellow-400 dark:border-yellow-600",
+    text: "text-yellow-700 dark:text-yellow-400",
+    chip: "bg-gradient-to-br from-yellow-300 to-amber-500 text-yellow-950 shadow-[0_2px_8px_rgba(245,158,11,0.45)]",
+    ring: "ring-yellow-400/40",
+  },
+  2: {
+    bg: "bg-gradient-to-r from-gray-100 to-slate-50 dark:from-gray-800/40 dark:to-slate-800/30",
+    border: "border-gray-400 dark:border-gray-600",
+    text: "text-gray-600 dark:text-gray-400",
+    chip: "bg-gradient-to-br from-slate-200 to-slate-400 text-slate-900 shadow-[0_2px_8px_rgba(100,116,139,0.45)]",
+    ring: "ring-slate-400/40",
+  },
+  3: {
+    bg: "bg-gradient-to-r from-orange-100 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/20",
+    border: "border-orange-400 dark:border-orange-600",
+    text: "text-orange-700 dark:text-orange-400",
+    chip: "bg-gradient-to-br from-orange-300 to-orange-600 text-orange-950 shadow-[0_2px_8px_rgba(234,88,12,0.45)]",
+    ring: "ring-orange-400/40",
+  },
 };
 
 const merchItems = [
@@ -156,10 +174,15 @@ const EventsSection = () => {
                       isTop3 ? `${medal.bg} ${medal.border} border-l-4` : ""
                     }`}
                   >
-                    {/* Rank */}
+                    {/* Rank — top 3 get a small medal chip with the number on it */}
                     <div className="col-span-1">
                       {isTop3 ? (
-                        <span className="text-xl">{medal.emoji}</span>
+                        <span
+                          className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ring-2 ring-offset-2 ring-offset-background ${medal.chip} ${medal.ring}`}
+                          aria-label={`Rank ${user.rank}`}
+                        >
+                          {user.rank}
+                        </span>
                       ) : (
                         <span className="text-sm font-bold text-foreground/40">#{user.rank}</span>
                       )}

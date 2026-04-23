@@ -87,6 +87,12 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      // iPhone-style easing curves — use as `ease-spring`, `ease-quint`, etc.
+      transitionTimingFunction: {
+        spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        quint: "cubic-bezier(0.22, 1, 0.36, 1)",
+        cubic: "cubic-bezier(0.33, 1, 0.68, 1)",
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
