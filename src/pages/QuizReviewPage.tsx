@@ -133,11 +133,11 @@ function BadgeCelebration({ badges, onComplete }: { badges: NewlyEarnedBadge[], 
     );
 }
 
-// ─── Difficulty badge colours ─────────────────────────────────────────────────
+// ─── Difficulty badge colours (theme-aware: light + dark) ────────────────────
 const difficultyStyle: Record<string, string> = {
-    easy: "bg-emerald-100 text-emerald-700",
-    medium: "bg-amber-100 text-amber-700",
-    hard: "bg-rose-100 text-rose-700",
+    easy: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+    medium: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+    hard: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -229,10 +229,10 @@ export default function QuizReviewPage() {
     // ─── Loading state (dashboard mode) ─────────────────────────────────────
     if (isFetching) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#f5f0e8]">
+            <div className="min-h-screen flex items-center justify-center bg-background">
                 <div className="flex flex-col items-center gap-4">
-                    <span className="w-10 h-10 rounded-full border-4 border-[#5a7a47]/30 border-t-[#5a7a47] animate-spin" />
-                    <p className="text-[#6b5744] text-sm font-medium">Loading quiz review…</p>
+                    <span className="w-10 h-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+                    <p className="text-muted-foreground text-sm font-medium">Loading quiz review…</p>
                 </div>
             </div>
         );
@@ -241,8 +241,8 @@ export default function QuizReviewPage() {
     // ─── Error state ─────────────────────────────────────────────────────────
     if (fetchError) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#f5f0e8] text-[#3d2c1e]">
-                <XCircle className="w-10 h-10 text-rose-500" />
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background text-foreground">
+                <XCircle className="w-10 h-10 text-destructive" />
                 <p className="text-lg font-medium">{fetchError}</p>
                 <Button onClick={() => navigate("/dashboard")}>Go to Dashboard</Button>
             </div>
@@ -252,7 +252,7 @@ export default function QuizReviewPage() {
     // ─── Guard — no data ─────────────────────────────────────────────────────
     if (!reviewData?.result || !reviewData?.questions) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#f5f0e8] text-[#3d2c1e]">
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background text-foreground">
                 <p className="text-lg font-medium">No review data found.</p>
                 <Button onClick={() => navigate("/quizzes")}>Go to Quizzes</Button>
             </div>
@@ -303,29 +303,29 @@ export default function QuizReviewPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f5f0e8]">
+        <div className="min-h-screen bg-background text-foreground">
             <AnimatePresence>
                 {showCelebration && result.newly_earned_badges && (
-                    <BadgeCelebration 
-                        badges={result.newly_earned_badges} 
-                        onComplete={() => setShowCelebration(false)} 
+                    <BadgeCelebration
+                        badges={result.newly_earned_badges}
+                        onComplete={() => setShowCelebration(false)}
                     />
                 )}
             </AnimatePresence>
 
             {/* ── Page header ─────────────────────────────────────────────── */}
-            <div className="sticky top-0 z-20 bg-[#f5f0e8]/95 backdrop-blur border-b border-[#d4c5b0] px-4 py-3 flex items-center gap-3">
+            <div className="sticky top-0 z-20 bg-background/85 backdrop-blur border-b border-border/60 px-4 py-3 flex items-center gap-3">
                 <button
                     onClick={() => navigate(isFromDashboard ? "/dashboard" : "/quizzes")}
-                    className="flex items-center gap-1 text-sm text-[#6b5744] hover:text-[#3d2c1e] transition-colors"
+                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     {isFromDashboard ? "Back to Dashboard" : "Back to Quizzes"}
                 </button>
-                <span className="text-[#c4a882] select-none">|</span>
-                <span className="text-sm font-semibold text-[#3d2c1e]">Quiz Review</span>
+                <span className="text-muted-foreground/40 select-none">|</span>
+                <span className="text-sm font-semibold text-foreground">Quiz Review</span>
                 {isFromDashboard && (
-                    <span className="ml-auto text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold">
+                    <span className="ml-auto text-xs bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 px-2.5 py-1 rounded-full font-semibold">
                         Past Quiz
                     </span>
                 )}
@@ -338,12 +338,12 @@ export default function QuizReviewPage() {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="bg-white rounded-2xl shadow-md p-6 flex flex-col sm:flex-row items-center gap-6"
+                    className="bg-card border border-border/60 rounded-2xl shadow-md p-6 flex flex-col sm:flex-row items-center gap-6"
                 >
                     {/* Circular score gauge */}
                     <div className="relative flex-shrink-0 w-28 h-28">
                         <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                            <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="10" />
+                            <circle cx="50" cy="50" r="42" fill="none" className="stroke-muted" strokeWidth="10" />
                             <circle
                                 cx="50" cy="50" r="42"
                                 fill="none"
@@ -356,28 +356,28 @@ export default function QuizReviewPage() {
                             />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center flex-col">
-                            <span className="text-2xl font-bold text-[#3d2c1e]">{scorePercent}%</span>
+                            <span className="text-2xl font-bold text-foreground">{scorePercent}%</span>
                         </div>
                     </div>
 
                     <div className="flex-1 text-center sm:text-left space-y-1">
-                        <h1 className="text-2xl font-bold text-[#3d2c1e] flex items-center gap-2 justify-center sm:justify-start">
+                        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 justify-center sm:justify-start">
                             <Trophy className="w-5 h-5 text-amber-500" />
                             {isFromDashboard ? "Quiz Results" : "Quiz Complete!"}
                         </h1>
-                        <p className="text-[#6b5744]">
+                        <p className="text-muted-foreground">
                             {isFromDashboard
                                 ? "Here's how you performed on this past quiz."
                                 : "Here's how you performed on this quiz."}
                         </p>
                         <div className="flex flex-wrap gap-3 mt-3 justify-center sm:justify-start">
-                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold">
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300 text-sm font-semibold">
                                 <CheckCircle2 className="w-4 h-4" /> {total_correct} Correct
                             </span>
-                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-100 text-rose-700 text-sm font-semibold">
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300 text-sm font-semibold">
                                 <XCircle className="w-4 h-4" /> {totalIncorrect} Incorrect
                             </span>
-                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-sm font-semibold">
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 text-sm font-semibold">
                                 <Trophy className="w-4 h-4" /> +{xp_earned} XP
                             </span>
                         </div>
@@ -401,38 +401,44 @@ export default function QuizReviewPage() {
                                 transition={{ duration: 0.3, delay: idx * 0.04 }}
                                 className={`rounded-2xl border-2 overflow-hidden shadow-sm ${
                                     isCorrect
-                                        ? "border-emerald-300 bg-emerald-50/60"
-                                        : "border-rose-300 bg-rose-50/60"
+                                        ? "border-emerald-300 dark:border-emerald-500/30 bg-emerald-50/60 dark:bg-emerald-500/5"
+                                        : "border-rose-300 dark:border-rose-500/30 bg-rose-50/60 dark:bg-rose-500/5"
                                 }`}
                             >
                                 {/* Question header */}
                                 <div className={`flex items-start gap-3 px-5 pt-4 pb-3 ${
-                                    isCorrect ? "bg-emerald-100/70" : "bg-rose-100/70"
+                                    isCorrect
+                                        ? "bg-emerald-100/70 dark:bg-emerald-500/10"
+                                        : "bg-rose-100/70 dark:bg-rose-500/10"
                                 }`}>
                                     <div className="mt-0.5 flex-shrink-0">
                                         {isCorrect
-                                            ? <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                                            : <XCircle className="w-5 h-5 text-rose-600" />
+                                            ? <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                            : <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
                                         }
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex flex-wrap gap-2 mb-1">
-                                            <span className="text-xs font-semibold text-[#6b5744]">Q{idx + 1}</span>
-                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${difficultyStyle[q.difficulty] ?? "bg-gray-100 text-gray-600"}`}>
+                                            <span className="text-xs font-semibold text-muted-foreground">Q{idx + 1}</span>
+                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${difficultyStyle[q.difficulty] ?? "bg-muted text-muted-foreground"}`}>
                                                 {q.difficulty}
                                             </span>
                                             {/* Topic Badge - Highlighted if correct answer was missed */}
-                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${!isCorrect ? "bg-rose-200 text-rose-800 border-rose-300 border shadow-sm" : "bg-[#ede8e1] text-[#6b5744]"}`}>
+                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${
+                                                !isCorrect
+                                                    ? "bg-rose-200 text-rose-800 border-rose-300 dark:bg-rose-500/20 dark:text-rose-200 dark:border-rose-500/40 border shadow-sm"
+                                                    : "bg-muted text-muted-foreground"
+                                            }`}>
                                                 {q.topic_name}
                                             </span>
-                                            <span className="text-xs text-amber-600 font-semibold">{q.xp_value} XP</span>
+                                            <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">{q.xp_value} XP</span>
                                         </div>
-                                        <p className="text-[#3d2c1e] font-medium text-sm sm:text-base">{q.question_text}</p>
+                                        <p className="text-foreground font-medium text-sm sm:text-base">{q.question_text}</p>
                                     </div>
                                 </div>
 
                                 {/* Options */}
-                                <div className="px-5 py-3 space-y-2">
+                                <div className="px-5 py-3 space-y-2 bg-card/40">
                                     {q.options.map((opt) => {
                                         const isSelected = opt.id === selectedOptionId;
                                         const isCorrectOpt = opt.id === correctOptionId;
@@ -441,42 +447,35 @@ export default function QuizReviewPage() {
                                             "flex items-center gap-3 px-4 py-2.5 rounded-xl border text-sm transition-all ";
 
                                         if (isCorrectOpt) {
-                                            // Always highlight the correct answer in green
-                                            optClassName += "border-emerald-400 bg-emerald-100 text-emerald-800 font-semibold";
+                                            optClassName += "border-emerald-400 bg-emerald-100 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-200 font-semibold";
                                         } else if (isSelected && !isCorrectOpt) {
-                                            // Wrong selection — red
-                                            optClassName += "border-rose-400 bg-rose-100 text-rose-800 font-semibold";
+                                            optClassName += "border-rose-400 bg-rose-100 text-rose-800 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-200 font-semibold";
                                         } else {
-                                            // Neutral un-selected options
-                                            optClassName += "border-gray-200 bg-white text-[#6b5744]";
+                                            optClassName += "border-border bg-card text-muted-foreground";
                                         }
 
                                         return (
                                             <div key={opt.id} className={optClassName}>
                                                 {isCorrectOpt ? (
-                                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                                                 ) : isSelected && !isCorrectOpt ? (
-                                                    <XCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />
+                                                    <XCircle className="w-4 h-4 text-rose-500 dark:text-rose-400 flex-shrink-0" />
                                                 ) : (
                                                     <span className="w-4 h-4 flex-shrink-0" />
                                                 )}
                                                 <span>{opt.option_text}</span>
                                                 {isCorrectOpt && (
-                                                    <span className="ml-auto text-xs text-emerald-600 font-bold">✓ Correct Answer</span>
+                                                    <span className="ml-auto text-xs text-emerald-600 dark:text-emerald-400 font-bold">✓ Correct Answer</span>
                                                 )}
                                                 {isSelected && !isCorrectOpt && (
-                                                    <span className="ml-auto text-xs text-rose-500 font-bold">✗ Your Answer</span>
-                                                )}
-                                                {!isSelected && !isCorrectOpt && selectedOptionId == null && (
-                                                    /* Question was skipped — no selected option */
-                                                    null
+                                                    <span className="ml-auto text-xs text-rose-500 dark:text-rose-400 font-bold">✗ Your Answer</span>
                                                 )}
                                             </div>
                                         );
                                     })}
                                     {/* If no answer was selected (skipped) */}
                                     {selectedOptionId == null && (
-                                        <p className="text-xs text-[#6b5744] italic px-1">No answer selected (skipped)</p>
+                                        <p className="text-xs text-muted-foreground italic px-1">No answer selected (skipped)</p>
                                     )}
                                 </div>
                             </motion.div>
@@ -489,21 +488,21 @@ export default function QuizReviewPage() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
-                    className="bg-white rounded-2xl shadow-md p-6 mt-4"
+                    className="bg-card border border-border/60 rounded-2xl shadow-md p-6 mt-4"
                 >
-                    <h2 className="text-lg font-bold text-[#3d2c1e] mb-4 border-b border-[#e5ddd0] pb-2">
+                    <h2 className="text-lg font-bold text-foreground mb-4 border-b border-border pb-2">
                         Quiz Summary
                     </h2>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                         {[
-                            { label: "Score", value: `${scorePercent}%`, color: "text-[#3d2c1e]" },
-                            { label: "Correct", value: total_correct, color: "text-emerald-600" },
-                            { label: "Incorrect", value: totalIncorrect, color: "text-rose-600" },
-                            { label: "XP Earned", value: `+${xp_earned}`, color: "text-amber-600" },
+                            { label: "Score", value: `${scorePercent}%`, color: "text-foreground" },
+                            { label: "Correct", value: total_correct, color: "text-emerald-600 dark:text-emerald-400" },
+                            { label: "Incorrect", value: totalIncorrect, color: "text-rose-600 dark:text-rose-400" },
+                            { label: "XP Earned", value: `+${xp_earned}`, color: "text-amber-600 dark:text-amber-400" },
                         ].map(({ label, value, color }) => (
-                            <div key={label} className="flex flex-col items-center bg-[#f9f4ed] rounded-xl p-3">
+                            <div key={label} className="flex flex-col items-center bg-muted/40 rounded-xl p-3">
                                 <span className={`text-2xl font-bold ${color}`}>{value}</span>
-                                <span className="text-xs text-[#6b5744] mt-1">{label}</span>
+                                <span className="text-xs text-muted-foreground mt-1">{label}</span>
                             </div>
                         ))}
                     </div>
@@ -511,7 +510,7 @@ export default function QuizReviewPage() {
                     <div className="flex flex-col sm:flex-row gap-3">
                         <Button
                             onClick={() => navigate("/dashboard")}
-                            className="flex-1 bg-[#5a7a47] hover:bg-[#4a6a37] text-white rounded-xl py-2.5"
+                            className="flex-1 rounded-xl py-2.5"
                         >
                             {isFromDashboard ? "Back to Dashboard" : "Return to Dashboard"}
                         </Button>
@@ -520,7 +519,7 @@ export default function QuizReviewPage() {
                             <Button
                                 onClick={startNextQuiz}
                                 disabled={isStartingNext}
-                                className="flex-1 bg-primary hover:bg-primary/90 text-white rounded-xl py-2.5"
+                                className="flex-1 rounded-xl py-2.5"
                             >
                                 {isStartingNext ? "Starting…" : "Next Quiz"}
                             </Button>
@@ -528,7 +527,7 @@ export default function QuizReviewPage() {
                         <Button
                             onClick={() => navigate("/quizzes")}
                             variant="outline"
-                            className="flex-1 border-[#c4a882] text-[#6b5744] hover:bg-[#f0e8db] rounded-xl py-2.5"
+                            className="flex-1 rounded-xl py-2.5"
                         >
                             <RotateCcw className="w-4 h-4 mr-2" />
                             Take Another Quiz
