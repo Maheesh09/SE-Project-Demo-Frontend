@@ -426,12 +426,17 @@ export interface ChatSource {
     subject: string;
     page_start: string;
     page_end: string;
+    pages: number[];
+    citation: string;
     distance: number;
 }
 
 export interface ChatResponse {
     answer: string;
     sources: ChatSource[];
+    cited_pages: number[];
+    confidence: "high" | "medium" | "low" | "none";
+    is_on_topic: boolean;
     matched: boolean;
     session_id: string;
 }
