@@ -523,6 +523,15 @@ export const api = {
             xEmail,
         }),
 
+    /** Additively add subjects (POST) — never removes previously selected ones. */
+    addMySubjects: (token: string, subjectIds: number[], xClerkUserId?: string, xEmail?: string) =>
+        request<{ ok: boolean; newly_added: number; total_selected: number }>("/api/v1/me/subjects", token, {
+            method: "POST",
+            body: JSON.stringify({ subject_ids: subjectIds }),
+            xClerkUserId,
+            xEmail,
+        }),
+
     // ── Resources ──
     getResources: (token: string, subjectId: number, type?: string, xClerkUserId?: string, xEmail?: string) =>
         request<Resource[]>(
