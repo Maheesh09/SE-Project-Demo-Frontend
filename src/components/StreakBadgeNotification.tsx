@@ -31,11 +31,14 @@ export function StreakBadgeNotification() {
           <div className="flex items-start gap-4 relative z-10">
             {/* Badge Icon */}
             <div className="w-14 h-14 rounded-xl bg-streak/15 flex items-center justify-center flex-shrink-0 shadow-inner">
-              {streakBadge.badge.image_url ? (
+              {(streakBadge.badge.image_url || streakBadge.badge.name === "7-Day Streak" || streakBadge.badge.name === "7 day streak") ? (
                 <img 
-                  src={streakBadge.badge.image_url} 
+                  src={(streakBadge.badge.name === "7-Day Streak" || streakBadge.badge.name === "7 day streak") ? "/Badges/streak_7day.png" : streakBadge.badge.image_url || undefined} 
                   alt={streakBadge.badge.name} 
-                  className="w-10 h-10 object-contain drop-shadow" 
+                  className={cn(
+                    "object-contain drop-shadow",
+                    (streakBadge.badge.name === "7-Day Streak" || streakBadge.badge.name === "7 day streak") ? "w-14 h-14 scale-110" : "w-10 h-10"
+                  )} 
                 />
               ) : (
                 <Sparkles className="w-7 h-7 text-streak" />

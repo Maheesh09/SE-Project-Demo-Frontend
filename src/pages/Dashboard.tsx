@@ -719,7 +719,7 @@ const Dashboard = () => {
                   description: "Awarded for completing quizzes 7 days in a row.",
                   category: "streak" as string | null,
                   badge_key: "seven_day_streak",
-                  image_url: "https://qozmwqaaoyuolfzusefx.supabase.co/storage/v1/object/sign/mindup-resources/Badges/streak_7day.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMTdjZDJjZC02NTQ4LTQzYjMtYWZkYy1kOWM1MjI0ODIzZTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtaW5kdXAtcmVzb3VyY2VzL0JhZGdlcy9zdHJlYWtfN2RheS5wbmciLCJpYXQiOjE3NzU4MTc4ODMsImV4cCI6MTgwNzM1Mzg4M30.ko7VlDRFpaQat6pA9tyvUD8CLg05WhcYV3hlQmW-bBI"
+                  image_url: "/Badges/streak_7day.png"
                 }
               }] : [])
             ].map((ub, idx) => (

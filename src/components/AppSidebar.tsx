@@ -169,8 +169,12 @@ const AppSidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse }: 
             <div className="h-1.5 rounded-full bg-border/60 overflow-hidden">
               <div className="h-full rounded-full gradient-primary transition-all duration-700" style={{ width: `${xpProgress}%` }} />
             </div>
-            <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-streak font-semibold">
-              <Zap className={cn("w-3 h-3", currentStreak > 0 ? "animate-pulse" : "opacity-30")} />
+            <div className={cn(
+              "mt-2.5 flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full w-max transition-colors",
+              "bg-orange-500/10 text-orange-600", // Light mode: transparent orange
+              "dark:bg-orange-500/10 dark:text-orange-400" // Dark mode: light transparent orange
+            )}>
+              <Zap className={cn("w-3 h-3 fill-current", currentStreak > 0 ? "animate-pulse" : "opacity-30")} />
               <span>{currentStreak}-day streak</span>
             </div>
           </div>
