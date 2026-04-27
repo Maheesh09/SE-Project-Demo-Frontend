@@ -22,7 +22,10 @@ export function BadgeCard({ badge, earnedAt, isNew, className }: BadgeCardProps)
     <motion.div
       whileHover={{ x: 4 }}
       className={cn(
-        "relative rounded-xl flex items-center gap-4 px-5 py-4 transition-all bg-[#f8f9fa] border border-border/40 shadow-sm",
+        "relative rounded-xl flex items-center gap-4 px-5 py-4 transition-all shadow-sm border",
+        (badge.name === "7-Day Streak" || badge.name === "7 day streak")
+          ? "bg-orange-500/5 border-orange-500/10 dark:bg-orange-500/5 dark:border-orange-500/10"
+          : "bg-[#f8f9fa] border-border/40 dark:bg-card dark:border-border/60",
         !isEarned && "opacity-60 grayscale",
         isNew && "bg-primary/5 border-primary/20",
         className
@@ -30,14 +33,19 @@ export function BadgeCard({ badge, earnedAt, isNew, className }: BadgeCardProps)
     >
       {/* Hexagon/Badge icon container */}
       <div className={cn(
-        "relative w-14 h-14 flex items-center justify-center flex-shrink-0 rounded-lg overflow-hidden shrink-0",
-        isEarned ? "bg-[#121212]" : "bg-muted"
+        "relative flex items-center justify-center flex-shrink-0 rounded-lg overflow-hidden shrink-0",
+        (badge.name === "7-Day Streak" || badge.name === "7 day streak")
+          ? "w-16 h-16 bg-transparent"
+          : cn("w-14 h-14", isEarned ? "bg-[#121212]" : "bg-muted")
       )}>
-        {badge.image_url ? (
+        {(badge.image_url || badge.name === "7-Day Streak" || badge.name === "7 day streak") ? (
           <img
-            src={badge.image_url}
+            src={(badge.name === "7-Day Streak" || badge.name === "7 day streak") ? "/Badges/streak_7day.png" : badge.image_url || undefined}
             alt={badge.name}
-            className="w-10 h-10 object-contain relative z-10"
+            className={cn(
+              "object-contain relative z-10 drop-shadow-sm transition-transform duration-300",
+              (badge.name === "7-Day Streak" || badge.name === "7 day streak") ? "w-16 h-16 scale-110" : "w-10 h-10"
+            )}
             loading="lazy"
           />
         ) : (
